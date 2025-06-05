@@ -1,0 +1,28 @@
+@import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+    /* Gray custom */
+    --color-gray-50: #f9f9f9;
+    --color-gray-100: #e3e3e3;
+    --color-gray-200: #cfcfcf;
+    --color-gray-300: #b1b1b1;
+    --color-gray-400: #8e8e8e;
+    --color-gray-500: #3b3b3b;
+    --color-gray-600: #2e2e2e;
+    --color-gray-700: #212121;
+    --color-gray-800: #161616;
+    --color-gray-900: #0b0b0b;
+    --color-gray-950: #000000;
+    --color-green-siepa: #00b472;
+    --color-black: #000000;
+}
+
+.scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: #9ca3af #e5e7eb;
+}
+
+.dark .scrollbar-thin {
+    scrollbar-color: initial;
+}
