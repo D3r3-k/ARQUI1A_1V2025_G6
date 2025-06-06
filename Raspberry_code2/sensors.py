@@ -15,7 +15,7 @@ class Sensors:
         i2c = busio.I2C(board.SCL, board.SDA)
 
         # BMP280 (presión y temperatura)
-        self.bmp280 = adafruit_bmp280.Adafruit_BMP280_I2C(i2c, address=0x76)
+        #self.bmp280 = adafruit_bmp280.Adafruit_BMP280_I2C(i2c, address=0x76)
 
         # ADS1115 para MQ135
         self.ads = ADS1115(i2c)
@@ -54,7 +54,8 @@ class Sensors:
 
     def read_pressure_sensor(self):
         try:
-            shared.pressure = round(self.bmp280.pressure, 2)
+           # shared.pressure = round(self.bmp280.pressure, 2)
+            print(f"Error leyendo presión BMP280: {e}")
         except Exception as e:
             print(f"Error leyendo presión BMP280: {e}")
 
