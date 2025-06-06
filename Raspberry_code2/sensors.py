@@ -1,8 +1,6 @@
 import board
 import time
-import random
 import adafruit_dht
-import adafruit_bmp280
 import busio
 from gpiozero import DistanceSensor, DigitalInputDevice
 from adafruit_ads1x15.ads1115 import ADS1115
@@ -14,20 +12,19 @@ class Sensors:
         # I2C para BMP280 y ADS1115
         i2c = busio.I2C(board.SCL, board.SDA)
 
-        # BMP280 (presión y temperatura)
-        #self.bmp280 = adafruit_bmp280.Adafruit_BMP280_I2C(i2c, address=0x76)
-
-        # ADS1115 para MQ135
+        # Inicializar ADC ADS1115
         self.ads = ADS1115(i2c)
-        self.mq135_channel = AnalogIn(self.ads, ADS1115.P0)  # Usando canal A0
 
-        # Sensor DHT11
+        # Canal A1 del ADS1115 para MQ135
+        self.mq135_channel = AnalogIn(self.ads, ADS1115.P1)
+
+        # Sensor DHT11 (temperatura y humedad)
         self.dht = adafruit_dht.DHT11(board.D4)
 
-        # Sensor Ultrasónico
+        # Sensor Ultrasónico HC-SR04
         self.distance_sensor = DistanceSensor(echo=24, trigger=23, max_distance=2.0)
 
-        # Sensor LDR digital
+        # Sensor de luz (LDR digital)
         self.ldr = DigitalInputDevice(18)
 
         print("Sensores inicializados correctamente")
@@ -54,16 +51,16 @@ class Sensors:
 
     def read_pressure_sensor(self):
         try:
-           # shared.pressure = round(self.bmp280.pressure, 2)
-            print(f"Error leyendo presión BMP280: {e}")
+            # Puedes descomentar esta línea si decides usar BMP280 más adelante
+            # shared.pressure = round(self.bmp280.pressure, 2)
+            pass
         except Exception as e:
             print(f"Error leyendo presión BMP280: {e}")
 
     def read_air_quality(self):
         try:
-            # MQ135 entrega valores analógicos. ADC da voltaje entre 0–3.3V aprox
-            voltage = self.mq135_channel.voltage  # Por ejemplo: 1.55 V
-            shared.air_quality = round((voltage / 3.3) * 500, 2)  # Escalamos entre 0–500
+            voltage = self.mq135_channel.voltage  # Ej: 1.55 V
+            shared.air_quality = round((voltage / 3.3) * 500, 2)  # Escala a 0–500
         except Exception as e:
             print(f"Error leyendo MQ135: {e}")
 
