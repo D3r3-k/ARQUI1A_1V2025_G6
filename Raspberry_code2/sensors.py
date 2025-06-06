@@ -2,7 +2,7 @@ import board
 import time
 import adafruit_dht
 import busio
-import smbus
+import smbus2 as smbus
 from gpiozero import DistanceSensor, DigitalInputDevice
 from globals import shared
 
@@ -15,7 +15,7 @@ class Sensors:
         self.dht = adafruit_dht.DHT11(board.D4)
 
         # Sensor ultrasónico
-        self.distance_sensor = DistanceSensor(echo=24, trigger=23, max_distance=2.0)
+        #self.distance_sensor = DistanceSensor(echo=24, trigger=23, max_distance=2.0)
 
         # LDR digital
         self.ldr = DigitalInputDevice(18)
@@ -31,8 +31,9 @@ class Sensors:
 
     def read_ultrasonic(self):
         try:
-            distance_m = self.distance_sensor.distance
-            shared.distance = round(distance_m * 100, 2)
+           # distance_m = self.distance_sensor.distance
+           # shared.distance = round(distance_m * 100, 2)
+           print(f"Error leyendo distancia ultrasónica: {e}")
         except Exception as e:
             print(f"Error leyendo distancia ultrasónica: {e}")
 
@@ -69,11 +70,11 @@ class Sensors:
 
     def print_data(self):
         print(f"Temp: {shared.temperature:.1f}°C | "
-              f"Humidity: {shared.humidity:.1f}% | "
-              f"Distance: {shared.distance:.1f}cm | "
-              f"Light: {shared.light_level}% | "
-              f"Pressure: {shared.pressure:.1f}hPa | "
-              f"Air Quality: {shared.air_quality}")
+            f"Humidity: {shared.humidity:.1f}% | "
+            f"Distance: {shared.distance:.1f}cm | "
+            f"Light: {shared.light_level}% | "
+            f"Pressure: {shared.pressure:.1f}hPa | "
+            f"Air Quality: {shared.air_quality}")
 
     def cleanup(self):
         try:
