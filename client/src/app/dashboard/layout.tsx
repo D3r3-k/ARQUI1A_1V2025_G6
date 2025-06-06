@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import "@/styles/globals.css";
 import { ThemeProvider } from "next-themes";
 import Sidebar from "./components/Sidebar/Sidebar";
 import NavBar from "./components/NavBar/NavBar";
