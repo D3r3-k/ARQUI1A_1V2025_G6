@@ -15,7 +15,7 @@ class Sensors:
         i2c = busio.I2C(board.SCL, board.SDA)
 
         # BMP280 (presión y temperatura)
-        self.bmp280 = adafruit_bmp280.Adafruit_BMP280_I2C(i2c)
+        self.bmp280 = adafruit_bmp280.Adafruit_BMP280_I2C(i2c, address=0x76)
 
         # ADS1115 para MQ135
         self.ads = ADS1115(i2c)
