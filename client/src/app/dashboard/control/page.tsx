@@ -1,3 +1,10 @@
+export const generateMetadata = () => {
+  return {
+    title: "Panel de Control - Módulo de Administración de SIEPA",
+    description: "Accede al panel de control de SIEPA para gestionar usuarios, monitorear el sistema y realizar configuraciones avanzadas.",
+  }
+}
+
 export default function ControlPage() {
   // Hook's
   // State's

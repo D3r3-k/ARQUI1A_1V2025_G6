@@ -1,7 +1,15 @@
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 import Image from 'next/image'
-import FormLogin from './FormLogin/FormLogin'
+import FormLogin from './components/FormLogin/FormLogin'
+
+// Metadata for the Login Page
+export const generateMetadata = () => {
+    return {
+        title: "Iniciar Sesión - SIEPA",
+        description: "Accede a tu cuenta de SIEPA para gestionar el sistema y realizar configuraciones avanzadas.",
+    }
+}
 
 export default function LoginPage() {
     // Hook's

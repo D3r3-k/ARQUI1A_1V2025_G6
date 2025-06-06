@@ -41,7 +41,7 @@ export default function HomePage() {
     <main className="min-h-screen flex flex-col">
       <Navbar />
       {/* Hero Section */}
-      <section className="pt-32 pb-16 md:pt-40 md:pb-24 px-4">
+      <section className="pt-32 pb-16 md:pt-40 md:pb-24 px-4 bg-white">
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
           <div className="space-y-6 animate-slideRight">
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight">
@@ -138,7 +138,7 @@ export default function HomePage() {
         </div>
       </section>
       {/* Benefits Section */}
-      <section id="benefits" className="py-16 md:py-24 px-4">
+      <section id="benefits" className="py-16 md:py-24 px-4 bg-white">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
