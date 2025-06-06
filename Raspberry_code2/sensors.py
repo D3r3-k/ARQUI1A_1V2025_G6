@@ -1,27 +1,33 @@
-from gpiozero import DigitalInputDevice, DistanceSensor
-import adafruit_dht
 import board
 import time
 import random
+import adafruit_dht
+import adafruit_bmp280
+import busio
+from gpiozero import DistanceSensor, DigitalInputDevice
+from adafruit_ads1x15.ads1115 import ADS1115
+from adafruit_ads1x15.analog_in import AnalogIn
 from globals import shared
 
 class Sensors:
-    """
-    Lectura de sensores usando gpiozero y adafruit_dht.
-
-    """
-
     def __init__(self):
-        # Sensor DHT11 en GPIO4 (pin físico 7)
+        # I2C para BMP280 y ADS1115
+        i2c = busio.I2C(board.SCL, board.SDA)
+
+        # BMP280 (presión y temperatura)
+        self.bmp280 = adafruit_bmp280.Adafruit_BMP280_I2C(i2c)
+
+        # ADS1115 para MQ135
+        self.ads = ADS1115(i2c)
+        self.mq135_channel = AnalogIn(self.ads, ADS1115.P0)  # Usando canal A0
+
+        # Sensor DHT11
         self.dht = adafruit_dht.DHT11(board.D4)
 
-        # HC-SR04 en GPIO 23 (TRIG) y 24 (ECHO)
+        # Sensor Ultrasónico
         self.distance_sensor = DistanceSensor(echo=24, trigger=23, max_distance=2.0)
 
-        # MQ135 D0 en GPIO27 (pin físico 13) ← CAMBIADO
-        self.mq135 = DigitalInputDevice(27)
-
-        # LDR en GPIO18
+        # Sensor LDR digital
         self.ldr = DigitalInputDevice(18)
 
         print("Sensores inicializados correctamente")
@@ -48,13 +54,15 @@ class Sensors:
 
     def read_pressure_sensor(self):
         try:
-            shared.pressure = round(random.uniform(1000, 1020), 2)
+            shared.pressure = round(self.bmp280.pressure, 2)
         except Exception as e:
-            print(f"Error simulando presión: {e}")
+            print(f"Error leyendo presión BMP280: {e}")
 
     def read_air_quality(self):
         try:
-            shared.air_quality = 400 if self.mq135.value == 1 else 100
+            # MQ135 entrega valores analógicos. ADC da voltaje entre 0–3.3V aprox
+            voltage = self.mq135_channel.voltage  # Por ejemplo: 1.55 V
+            shared.air_quality = round((voltage / 3.3) * 500, 2)  # Escalamos entre 0–500
         except Exception as e:
             print(f"Error leyendo MQ135: {e}")
 
@@ -74,11 +82,9 @@ class Sensors:
               f"Air Quality: {shared.air_quality}")
 
     def cleanup(self):
-        # Liberar correctamente los recursos de los sensores gpiozero
         try:
-            self.mq135.close()
-            self.ldr.close()
             self.distance_sensor.close()
-            print("Sensores gpiozero cerrados correctamente")
+            self.ldr.close()
+            print("Sensores limpiados")
         except Exception as e:
             print(f"Error cerrando sensores: {e}")
