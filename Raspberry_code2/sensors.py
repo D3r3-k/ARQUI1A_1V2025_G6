@@ -5,8 +5,7 @@ import adafruit_dht
 import adafruit_bmp280
 import busio
 from gpiozero import DistanceSensor, DigitalInputDevice
-from mq135_reader import MQ135Reader  # si lo separas a otro archivo
-
+from adafruit_ads1x15.ads1115 import ADS1115
 from adafruit_ads1x15.analog_in import AnalogIn
 from globals import shared
 
@@ -20,8 +19,7 @@ class Sensors:
 
         # ADS1115 para MQ135
         self.ads = ADS1115(i2c)
-        self.mq135 = MQ135Reader()  # Canal AIN1 por defecto
-
+        self.mq135_channel = AnalogIn(self.ads, ADS1115.P0)  # Usando canal A0
 
         # Sensor DHT11
         self.dht = adafruit_dht.DHT11(board.D4)
