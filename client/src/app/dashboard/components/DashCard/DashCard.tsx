@@ -25,7 +25,7 @@ export default function DashCard({ title, color, desc, type }: DashboardPageProp
           setValueData("8");
           break;
         case "time":
-          setValueData("3 days");
+          setValueData("3 d 12 horas");
           break;
         case "localTime":
           setValueData(new Date().toLocaleTimeString());

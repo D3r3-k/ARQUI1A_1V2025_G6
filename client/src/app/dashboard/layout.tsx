@@ -5,7 +5,6 @@ import Sidebar from "./components/Sidebar/Sidebar";
 import NavBar from "./components/NavBar/NavBar";
 
 export const metadata: Metadata = {
-
     title: "Dashboard - Módulo de Administración de SIEPA",
     description: "Accede al panel de administración de SIEPA para gestionar usuarios, monitorear el sistema y realizar configuraciones avanzadas.",
 };

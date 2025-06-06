@@ -1,24 +1,20 @@
 "use client"
 
+import { useAuth } from '@/hooks/useAuth'
 import { Lock, Mail } from 'lucide-react'
-import { redirect } from 'next/navigation'
 import { useState } from 'react'
 
 export default function FormLogin() {
     // Hook's
+    const { login } = useAuth()
     // State's
     const [email, setEmail] = useState<string>('')
     const [password, setPassword] = useState<string>('')
     // Effect's
     // Handler's
-    const handleOnSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    const handleOnSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
-        if (email == "admin@siepa.com" && password == "admin123") {
-            redirect('/dashboard')
-        }
-        else {
-            alert('Credenciales incorrectas')
-        }
+        await login(email, password);
     }
     const handleOnChangeEmail = (e: React.ChangeEvent<HTMLInputElement>) => {
         setEmail(e.target.value)
@@ -36,7 +32,7 @@ export default function FormLogin() {
                 <div className="relative">
                     <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
                     <input
-                        className="w-full rounded-md border border-gray-200 bg-white/60 px-10 py-2 text-sm outline-none focus:border-green-600 focus:ring-2 focus:ring-green-600/20"
+                        className="w-full rounded-md border border-gray-200 bg-white/60 px-10 py-2 text-sm outline-none focus:border-green-600 focus:ring-2 focus:ring-green-600/20 text-black autofill:bg-white autofill:text-black "
                         type="email"
                         id="email"
                         name="email"
@@ -45,6 +41,10 @@ export default function FormLogin() {
                         autoComplete="email"
                         value={email}
                         onChange={handleOnChangeEmail}
+                        style={{
+                            backgroundColor: 'white',
+                            color: 'black',
+                        }}
                     />
                 </div>
             </div>

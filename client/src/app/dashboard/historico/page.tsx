@@ -1,4 +1,9 @@
-import React from 'react'
+export const generateMetadata = () => {
+  return {
+    title: "Panel histórico - Módulo de Administración de SIEPA",
+    description: "Accede al panel histórico de SIEPA para consultar registros, eventos y datos históricos del sistema.",
+  }
+}
 
 export default function HistoricoPage() {
   // Hook's
