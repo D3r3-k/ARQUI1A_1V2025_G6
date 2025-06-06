@@ -2,29 +2,22 @@ import board
 import time
 import adafruit_dht
 import busio
+import smbus
 from gpiozero import DistanceSensor, DigitalInputDevice
-from adafruit_ads1x15.ads1115 import ADS1115
-from adafruit_ads1x15.analog_in import AnalogIn
 from globals import shared
 
 class Sensors:
     def __init__(self):
-        # I2C para BMP280 y ADS1115
-        i2c = busio.I2C(board.SCL, board.SDA)
+        self.bus = smbus.SMBus(1)  # I2C bus en Raspberry Pi
+        self.pcf8591_address = 0x48  # Dirección por defecto
 
-        # Inicializar ADC ADS1115
-        self.ads = ADS1115(i2c)
-
-        # Canal A1 del ADS1115 para MQ135
-        self.mq135_channel = AnalogIn(self.ads, ADS1115.P1)
-
-        # Sensor DHT11 (temperatura y humedad)
+        # Sensor DHT11
         self.dht = adafruit_dht.DHT11(board.D4)
 
-        # Sensor Ultrasónico HC-SR04
+        # Sensor ultrasónico
         self.distance_sensor = DistanceSensor(echo=24, trigger=23, max_distance=2.0)
 
-        # Sensor de luz (LDR digital)
+        # LDR digital
         self.ldr = DigitalInputDevice(18)
 
         print("Sensores inicializados correctamente")
@@ -51,18 +44,21 @@ class Sensors:
 
     def read_pressure_sensor(self):
         try:
-            # Puedes descomentar esta línea si decides usar BMP280 más adelante
-            # shared.pressure = round(self.bmp280.pressure, 2)
+            # Si usas BMP280, puedes agregarlo aquí luego
             pass
         except Exception as e:
             print(f"Error leyendo presión BMP280: {e}")
 
     def read_air_quality(self):
         try:
-            voltage = self.mq135_channel.voltage  # Ej: 1.55 V
-            shared.air_quality = round((voltage / 3.3) * 500, 2)  # Escala a 0–500
+            # Leer 2 veces por requerimientos del PCF8591
+            self.bus.write_byte(self.pcf8591_address, 0x40)  # Canal A0
+            self.bus.read_byte(self.pcf8591_address)  # Dummy read
+            value = self.bus.read_byte(self.pcf8591_address)  # Valor real (0–255)
+            voltage = (value / 255.0) * 3.3
+            shared.air_quality = round((voltage / 3.3) * 500, 2)
         except Exception as e:
-            print(f"Error leyendo MQ135: {e}")
+            print(f"Error leyendo MQ135 desde PCF8591: {e}")
 
     def read_sensors(self):
         self.read_dht11()
