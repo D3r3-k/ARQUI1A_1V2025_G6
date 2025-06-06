@@ -15,7 +15,7 @@ class Sensors:
         self.dht = adafruit_dht.DHT11(board.D4)
 
         # Sensor ultrasónico
-        #self.distance_sensor = DistanceSensor(echo=24, trigger=23, max_distance=2.0)
+        self.distance_sensor = DistanceSensor(echo=18, trigger=16, max_distance=2.0)
 
         # LDR digital
         self.ldr = DigitalInputDevice(18)
@@ -31,9 +31,8 @@ class Sensors:
 
     def read_ultrasonic(self):
         try:
-           # distance_m = self.distance_sensor.distance
-           # shared.distance = round(distance_m * 100, 2)
-           print(f"Error leyendo distancia ultrasónica: {e}")
+           distance_m = self.distance_sensor.distance
+           shared.distance = round(distance_m * 100, 2)
         except Exception as e:
             print(f"Error leyendo distancia ultrasónica: {e}")
 
