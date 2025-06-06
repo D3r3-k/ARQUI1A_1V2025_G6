@@ -1,7 +1,7 @@
 "use client"
 
 import { useIsMobile } from "@/hooks/useMobile";
-import { ChevronRight, History, LayoutDashboard, LogOut, Moon, Settings, Sun } from "lucide-react";
+import { BarChart2, ChevronRight, LayoutDashboard, LogOut, Moon, Settings, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 import Image from "next/image";
 import Link from "next/link";
@@ -93,7 +93,7 @@ export default function Sidebar() {
               className={`flex items-center gap-3 rounded-md px-3 py-2 transition-all bg-primary text-sm
                 ${getNavClass("/dashboard/historico")}`}
             >
-              <History size={16} />
+              <BarChart2 size={16} />
               <span>Panel Histórico</span>
             </Link>
             <Link
