@@ -15,7 +15,7 @@ class Sensors:
         self.dht = adafruit_dht.DHT11(board.D4)
 
         # Sensor ultrasónico
-        self.distance_sensor = DistanceSensor(echo=18, trigger=16, max_distance=2.0)
+        self.distance_sensor = DistanceSensor(echo=24, trigger=23, max_distance=2.0)
 
         # LDR digital
         self.ldr = DigitalInputDevice(18)
