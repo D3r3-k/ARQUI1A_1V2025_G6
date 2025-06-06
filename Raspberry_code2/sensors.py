@@ -6,6 +6,8 @@ import adafruit_bmp280
 import busio
 from gpiozero import DistanceSensor, DigitalInputDevice
 from mq135_reader import MQ135Reader  # si lo separas a otro archivo
+from adafruit_ads1x15.ads1115 import ADS1115
+
 
 from adafruit_ads1x15.analog_in import AnalogIn
 from globals import shared
@@ -20,7 +22,9 @@ class Sensors:
 
         # ADS1115 para MQ135
         self.ads = ADS1115(i2c)
-        self.mq135 = MQ135Reader()  # Canal AIN1 por defecto
+
+        self.mq135 = MQ135Reader(ads=self.ads, channel=1)  # AIN1
+
 
 
         # Sensor DHT11
@@ -64,8 +68,8 @@ class Sensors:
     def read_air_quality(self):
         try:
             # MQ135 entrega valores analógicos. ADC da voltaje entre 0–3.3V aprox
-            voltage = self.mq135_channel.voltage  # Por ejemplo: 1.55 V
-            shared.air_quality = self.mq135.read()
+            voltage = self.mq135.read()
+            shared.air_quality = voltage
         except Exception as e:
             print(f"Error leyendo MQ135: {e}")
 
