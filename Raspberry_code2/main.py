@@ -17,7 +17,7 @@ logging.basicConfig(
 
 class SIEPA:
 
-    def __init__(self, mqtt_broker="localhost", mqtt_port=1883, group_number="G1"):
+    def __init__(self, mqtt_broker='broker.emqx.io', mqtt_port=1883, group_number="G1"):
         self.running = True
         self.intervals = {
             "principal": 2.0,  # ← ahora cada 2 segundos imprimimos los datos
