@@ -8,7 +8,7 @@ from globals import shared
 class Sensors:
     """
     Lectura de sensores usando gpiozero y adafruit_dht.
-    
+
     """
 
     def __init__(self):
@@ -18,10 +18,10 @@ class Sensors:
         # HC-SR04 en GPIO 23 (TRIG) y 24 (ECHO)
         self.distance_sensor = DistanceSensor(echo=24, trigger=23, max_distance=2.0)
 
-        # MQ135 D0 en GPIO 17
-        self.mq135 = DigitalInputDevice(17)
+        # MQ135 D0 en GPIO27 (pin físico 13) ← CAMBIADO
+        self.mq135 = DigitalInputDevice(27)
 
-        # LDR en GPIO 18 como entrada digital
+        # LDR en GPIO18
         self.ldr = DigitalInputDevice(18)
 
         print("Sensores inicializados correctamente")
@@ -42,7 +42,6 @@ class Sensors:
 
     def read_light_sensor(self):
         try:
-            # Valor 0 = oscuro (porque hay luz en LOW)
             shared.light_level = 0 if self.ldr.value == 1 else 100
         except Exception as e:
             print(f"Error leyendo luz: {e}")
@@ -75,4 +74,11 @@ class Sensors:
               f"Air Quality: {shared.air_quality}")
 
     def cleanup(self):
-        print("Sensores limpiados")
+        # Liberar correctamente los recursos de los sensores gpiozero
+        try:
+            self.mq135.close()
+            self.ldr.close()
+            self.distance_sensor.close()
+            print("Sensores gpiozero cerrados correctamente")
+        except Exception as e:
+            print(f"Error cerrando sensores: {e}")
