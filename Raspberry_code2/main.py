@@ -128,9 +128,9 @@ class SIEPA:
             logging.error(f"Error during cleanup: {e}")
 
 if __name__ == "__main__":
-    MQTT_BROKER = "localhost"
+    MQTT_BROKER = "broker.emqx.io"  # o "broker.hivemq.com"
     MQTT_PORT = 1883
-    GROUP_NUMBER = "1"
+    GROUP_NUMBER = "G1"  # Asegúrate que coincida con tu tópico
 
     try:
         logging.info("Starting SIEPA application...")

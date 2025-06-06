@@ -14,7 +14,7 @@ class MQTTClient:
         self.broker_host = broker_host
         self.broker_port = broker_port
         self.group_number = group_6
-        self.client_id = f"siepa_rasp_{group_6}"
+        self.client_id = f"mqttx_ead2c5cd"
 
         # Topic único para todo el JSON combinado
         self.topic = f"GRUPO{group_6}/sensores/rasp01/temperatura"
