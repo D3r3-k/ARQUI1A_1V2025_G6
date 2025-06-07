@@ -1,6 +1,6 @@
 "use client";
 
-import { redirect, useRouter } from "next/navigation";
+import { redirect } from "next/navigation";
 import { createContext, ReactNode, useEffect, useState } from "react";
 
 const userAdmin = {

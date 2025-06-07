@@ -1,5 +1,6 @@
 "use client";
 
+import { useMqtt } from "@/hooks/useMqtt";
 import { Clock, Cpu, Timer, Wifi } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -12,34 +13,46 @@ interface DashboardPageProps {
 
 export default function DashCard({ title, color, desc, type }: DashboardPageProps) {
   // Hook's
+  const { subscribe, messages } = useMqtt();
+
   // State's
   const [valueData, setValueData] = useState<string>("")
+
   // Effect's
   useEffect(() => {
-    const fetchData = async () => {
-      switch (type) {
-        case "sensors":
-          setValueData("12");
-          break;
-        case "devices":
-          setValueData("8");
-          break;
-        case "time":
-          setValueData("3 d 12 horas");
-          break;
-        case "localTime":
-          setValueData(new Date().toLocaleTimeString());
-          break;
-        default:
-          setValueData("N/A");
-      }
-    };
-    fetchData();
-    return () => {
-      // Cleanup if necessary
-      setValueData("");
-    };
-  }, []);
+    switch (type) {
+      case "sensors":
+        subscribe("sensors/active");
+        break;
+      case "devices":
+        subscribe("devices/online");
+        break;
+      case "time":
+        subscribe("system/uptime");
+        break;
+      case "localTime":
+        setValueData(new Date().toLocaleTimeString());
+        break;
+      default:
+        setValueData("N/A");
+    }
+  }, [type, subscribe]);
+
+  // Este efecto actualiza el valor cuando cambia el mensaje
+  useEffect(() => {
+    switch (type) {
+      case "sensors":
+        setValueData(JSON.parse(messages["sensors/active"] || "{\"message\": \"N/A\"}")?.message || "N/A");
+        break;
+      case "devices":
+        setValueData(JSON.parse(messages["devices/online"] || "{\"message\": \"N/A\"}")?.message || "N/A");
+        break;
+      case "time":
+        setValueData(JSON.parse(messages["system/uptime"] || "{\"message\": \"N/A\"}")?.message || "N/A");
+        break;
+    }
+  }, [messages, type]);
+
 
   //actualizar el valor de valueData cada segundo
   useEffect(() => {
