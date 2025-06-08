@@ -17,7 +17,7 @@ logging.basicConfig(
 
 class SIEPA:
 
-    def __init__(self, mqtt_broker='broker.emqx.io', mqtt_port=1883, group_number="G1"):
+    def __init__(self, mqtt_broker='broker.emqx.io', mqtt_port=1883, group_number="G6"):
         self.running = True
         self.intervals = {
             "principal": 2.0,  # ← ahora cada 2 segundos imprimimos los datos
@@ -35,7 +35,7 @@ class SIEPA:
                 group_6=group_number
             )
 
-            self.display.display_message("SIEPA Starting...")
+            self.display.display_message("Iniciando SIEPA")
             logging.info("SIEPA initialized successfully")
 
         except Exception as e:
@@ -47,7 +47,7 @@ class SIEPA:
         signal.signal(signal.SIGTERM, self._signal_handler)
 
     def _signal_handler(self, signum, frame):
-        logging.info(f"\nReceived signal {signum}, shutting down gracefully...")
+        logging.info(f"\nReceived signal {signum}, Programa cerrado Correctamente...")
         self.running = False
         self._cleanup()
         print()  # Salto de línea para regresar bien al prompt
@@ -56,7 +56,7 @@ class SIEPA:
     def run_tasks(self):
         try:
             self.sensors.read_sensors()
-            self.sensors.print_data()  # ← Imprime datos cada ciclo
+            self.sensors.print_data() 
             self.actuators.check_alerts_and_control()
             self.display.update()
         except Exception as e:
@@ -128,9 +128,9 @@ class SIEPA:
             logging.error(f"Error during cleanup: {e}")
 
 if __name__ == "__main__":
-    MQTT_BROKER = "broker.emqx.io"  # o "broker.hivemq.com"
+    MQTT_BROKER = "broker.emqx.io"  
     MQTT_PORT = 1883
-    GROUP_NUMBER = "G1"  # Asegúrate que coincida con tu tópico
+    GROUP_NUMBER = "G6"  
 
     try:
         logging.info("Starting SIEPA application...")

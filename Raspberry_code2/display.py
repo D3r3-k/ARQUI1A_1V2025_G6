@@ -3,13 +3,9 @@ import time
 from globals import shared
 
 class Display:
-    """
-    Muestra información en una pantalla LCD 16x2 por I2C.
-    Compatible con Raspberry Pi 5.
-    """
 
     def __init__(self):
-        # PCF8574 en dirección I2C 0x27 (ajustar si es necesario)
+        # PCF8574 en dirección I2C 0x27 
         self.lcd = CharLCD('PCF8574', 0x27)
         self.last_t = 0
         self.enable = True

@@ -6,18 +6,21 @@ class Actuators:
 
 
     def __init__(self):
+        # Declaracion de LED's
         self.red_led = LED(17)
         self.yellow_led = LED(22)
         self.green_led = LED(10)
         self.blue_led = LED(9)
 
+        # Declaracion de Buzzer y Motor 
         self.motor = DigitalOutputDevice(20)
         self.buzzer = Buzzer(21)
+
 
         self.auto_off_timers = {}
 
         self.turn_off_all()
-        print("Actuadores inicializados con gpiozero")
+        print("Actuadores inicializados Correctamente")
 
     def turn_off_all(self):
         self.red_led.off()

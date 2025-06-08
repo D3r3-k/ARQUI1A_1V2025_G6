@@ -1,0 +1,7 @@
+Temperatura fuera de umbrales → LED rojo y motor.
+
+Calidad del aire > umbral → LED azul + buzzer.
+
+Iluminación baja → LED verde.
+
+Humedad fuera de rango → LED amarillo.
