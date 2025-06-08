@@ -1,12 +1,15 @@
 "use client";
 
+import { TopicActivity, TopicAmbient, TopicControl, TopicDashboard, TopicHistory } from '@/types/TypesMqtt';
 import mqtt, { MqttClient } from 'mqtt';
 import { createContext, ReactNode, useEffect, useRef, useState } from "react";
 
 interface MqttContextType {
     client: MqttClient | null;
     isConnected: boolean;
-    messages: Record<string, string>;
+    messages: {
+        [topic: string]: TopicDashboard | TopicAmbient | TopicActivity | TopicHistory | TopicControl;
+    };
     subscribe: (topic: string) => void;
     publish: (topic: string, message: string) => void;
 }
@@ -18,7 +21,9 @@ export const MqttProvider = ({ children }: { children: ReactNode }) => {
     const clientRef = useRef<MqttClient | null>(null);
     // State's
     const [isConnected, setIsConnected] = useState(false);
-    const [messages, setMessages] = useState<Record<string, string>>({});
+    const [messages, setMessages] = useState<{
+        [topic: string]: TopicDashboard | TopicAmbient | TopicActivity | TopicHistory | TopicControl;
+    }>({});
 
     // Effect's
     useEffect(() => {
@@ -42,9 +47,9 @@ export const MqttProvider = ({ children }: { children: ReactNode }) => {
         });
 
         client.on('message', (topic, message) => {
-            const msgStr = message.toString();
-
-            setMessages((prev) => {
+            const msgStr: TopicDashboard | TopicAmbient | TopicActivity | TopicHistory | TopicControl = JSON.parse(message.toString());
+            console.log(`Mensaje recibido en el topic ${topic}:`, msgStr);
+            setMessages((prev: any) => {
                 const updated = { ...prev, [topic]: msgStr };
                 localStorage.setItem('mqttMessages', JSON.stringify(updated));
                 return updated;

@@ -1,26 +1,25 @@
 "use client";
 
-import { AudioLines, Droplets, Fan, Lightbulb, Monitor, RefreshCw, ToggleLeft } from "lucide-react";
+import { AudioLines, Fan, Lightbulb, Monitor, RefreshCw, ToggleLeft } from "lucide-react";
 import { useState } from "react";
 import ControlCard from "./components/ControlCard/ControlCard";
+import { useMqtt } from "@/hooks/useMqtt";
 
 export default function ControlPage() {
   // Hook's
+  const { publish } = useMqtt();
   // State's
   const [isAutoMode, setIsAutoMode] = useState<boolean>(false)
-  const [isLocked, setIsLocked] = useState<boolean>(false);
   // Effect's
   // Handler's
   const handleAutoModeToggle = () => {
+    publish('controls', JSON.stringify({ sensor: 'mode', state: 'auto' }));
     setIsAutoMode(true);
   }
   const handleManualModeToggle = () => {
+    publish('controls', JSON.stringify({ sensor: 'mode', state: 'manual' }));
     setIsAutoMode(false);
   }
-  const handleToggleSensor = (id: string, state: boolean) => {
-    console.log(`Actuator ${id} set to ${state ? 'ON' : 'OFF'}`);
-    // In a real app, this would communicate with your backend/MQTT
-  };
   // Render's
   return (
     <main className="flex-1 p-4 lg:p-6">
@@ -39,13 +38,10 @@ export default function ControlPage() {
             <div className="flex space-x-3">
               <button
                 onClick={handleAutoModeToggle}
-                disabled={isLocked}
                 className={`flex items-center space-x-2 px-4 py-2 rounded-lg border transition-colors duration-300 cursor-pointer
-                  ${isLocked
-                    ? 'cursor-not-allowed opacity-60 bg-gray-200 dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-400'
-                    : isAutoMode
-                      ? 'bg-green-600 hover:bg-green-700 text-white border-green-600'
-                      : 'bg-gray-50 hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600'
+                  ${isAutoMode
+                    ? 'bg-green-600 hover:bg-green-700 text-white border-green-600'
+                    : 'bg-gray-50 hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600'
                   }`}
               >
                 <RefreshCw size={16} />
@@ -53,9 +49,7 @@ export default function ControlPage() {
               </button>
               <button
                 onClick={handleManualModeToggle}
-                disabled={isLocked}
                 className={`flex items-center space-x-2 px-4 py-2 rounded-lg border transition-colors duration-300 cursor-pointer
-                  ${isLocked ? 'cursor-not-allowed opacity-60 bg-gray-200 dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-400' : ''}
                   ${!isAutoMode
                     ? 'bg-amber-600 hover:bg-amber-700 text-white border-amber-600'
                     : 'bg-gray-50 hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600'
@@ -113,8 +107,7 @@ export default function ControlPage() {
               description="Regula temperatura del ambiente"
               initialState={true}
               color="white"
-              disabled={isAutoMode || isLocked}
-              onToggle={handleToggleSensor}
+              disabled={isAutoMode}
             />
             <ControlCard
               id="fan-2"
@@ -123,8 +116,7 @@ export default function ControlPage() {
               description="Regula temperatura del ambiente"
               initialState={true}
               color="white"
-              disabled={isAutoMode || isLocked}
-              onToggle={handleToggleSensor}
+              disabled={isAutoMode}
             />
             <ControlCard
               id="led-1"
@@ -133,8 +125,7 @@ export default function ControlPage() {
               description="Iluminación principal del sistema"
               initialState={false}
               color="yellow"
-              disabled={isAutoMode || isLocked}
-              onToggle={handleToggleSensor}
+              disabled={isAutoMode}
             />
             <ControlCard
               id="buzzer-1"
@@ -143,8 +134,7 @@ export default function ControlPage() {
               description="Alarma sonora del sistema"
               initialState={false}
               color="slate"
-              disabled={isAutoMode || isLocked}
-              onToggle={handleToggleSensor}
+              disabled={isAutoMode}
             />
             <ControlCard
               id="lcd-1"
@@ -153,8 +143,7 @@ export default function ControlPage() {
               description="Pantalla de información"
               initialState={true}
               color="cyan"
-              disabled={isAutoMode || isLocked}
-              onToggle={handleToggleSensor}
+              disabled={isAutoMode}
             />
             <ControlCard
               id="led-indicator-1"
@@ -163,8 +152,7 @@ export default function ControlPage() {
               description="Indicadores de estado"
               initialState={false}
               color="green"
-              disabled={isAutoMode || isLocked}
-              onToggle={handleToggleSensor}
+              disabled={isAutoMode}
             />
           </div>
         </div>

@@ -1,8 +1,8 @@
-import { Clock } from "lucide-react";
-import { ForwardRefExoticComponent } from "react";
+"use client";
+
+import { Clock, Cpu } from "lucide-react";
 
 interface ActivityCardProps {
-  IconActivity: ForwardRefExoticComponent<any>;
   spanText?: string;
   desc?: string;
   time?: string;
@@ -10,13 +10,12 @@ interface ActivityCardProps {
 }
 
 export default function ActivityCard({
-  IconActivity,
   spanText,
   desc,
-  time,
   color,
 }: ActivityCardProps) {
   // Hook's
+  // const { subscribe, messages } = useMqtt();
   // State's
   // Effect's
   // Handler's
@@ -31,7 +30,7 @@ export default function ActivityCard({
     <div className="flex items-start gap-4 p-4 cursor-pointer">
       <div className="flex items-start gap-4 transition-transform duration-300 ease-in-out transform hover:translate-x-2">
         <div className="mt-0.5">
-          <IconActivity size={16} className={`${colors[color]}`} />
+          <Cpu size={16} className={`${colors[color]}`} />
         </div>
         <div className="flex-1 space-y-1">
           <p className="text-sm">

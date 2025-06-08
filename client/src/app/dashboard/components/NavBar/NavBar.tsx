@@ -1,7 +1,4 @@
-"use client"
-
-import { Bell, ChevronDown, LogOut, Settings, User } from 'lucide-react';
-import React, { useState } from 'react'
+import { Bell, ChevronDown, User } from 'lucide-react';
 
 export default function NavBar() {
   // Hook's

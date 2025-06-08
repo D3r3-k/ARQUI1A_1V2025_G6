@@ -1,7 +1,7 @@
 "use client";
 
+import { SensorType } from "@/types/TypesDashboard";
 import { Droplets, Gauge, Sun, Thermometer } from "lucide-react";
-export type SensorType = "temperature" | "humidity" | "luminosity" | "pressure";
 interface TabNavigationProps {
   activeTab: SensorType;
   onTabChange: (tab: SensorType) => void;

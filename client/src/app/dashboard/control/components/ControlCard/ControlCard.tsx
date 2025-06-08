@@ -1,5 +1,6 @@
 "use client";
 
+import { useMqtt } from "@/hooks/useMqtt";
 import { ForwardRefExoticComponent, useState } from "react";
 
 interface ControlCardProps {
@@ -8,7 +9,6 @@ interface ControlCardProps {
     title: string;
     description: string;
     initialState: boolean;
-    onToggle?: (id: string, state: boolean) => void;
     isLocked?: boolean;
     color: "blue" | "red" | "green" | "yellow" | "purple" | "gray" | "white" | "slate" | "cyan";
     disabled?: boolean;
@@ -20,31 +20,21 @@ export default function ControlCard({
     title,
     description,
     initialState,
-    onToggle,
     isLocked = false,
     color,
     disabled = false
 }: ControlCardProps) {
     // Hook's
+    const { publish } = useMqtt();
     // State's
     const [isOn, setIsOn] = useState<boolean>(initialState);
-    const [isAnimating, setIsAnimating] = useState<boolean>(false);
 
     // Effect's
     // Handler's
     const handleToggle = () => {
         if (disabled) return;
-
-        setIsAnimating(true);
         setIsOn(!isOn);
-
-        if (onToggle) {
-            onToggle(id, !isOn);
-        }
-
-        setTimeout(() => {
-            setIsAnimating(false);
-        }, 300);
+        publish(`controls`, JSON.stringify({ sensor: id, state: !isOn }));
     };
     // Render's
     const colorClass = {

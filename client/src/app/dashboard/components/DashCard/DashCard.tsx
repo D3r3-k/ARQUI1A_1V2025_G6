@@ -1,6 +1,7 @@
 "use client";
 
 import { useMqtt } from "@/hooks/useMqtt";
+import { TopicDashboard } from "@/types/TypesMqtt";
 import { Clock, Cpu, Timer, Wifi } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -16,7 +17,7 @@ export default function DashCard({ title, color, desc, type }: DashboardPageProp
   const { subscribe, messages } = useMqtt();
 
   // State's
-  const [valueData, setValueData] = useState<string>("")
+  const [valueData, setValueData] = useState<string>("N/A")
 
   // Effect's
   useEffect(() => {
@@ -42,13 +43,26 @@ export default function DashCard({ title, color, desc, type }: DashboardPageProp
   useEffect(() => {
     switch (type) {
       case "sensors":
-        setValueData(JSON.parse(messages["sensors/active"] || "{\"message\": \"N/A\"}")?.message || "N/A");
+        const activeSensors = messages["sensors/active"] as TopicDashboard;
+        if (activeSensors?.value !== undefined)
+          setValueData(activeSensors.value || "N/A");
         break;
       case "devices":
-        setValueData(JSON.parse(messages["devices/online"] || "{\"message\": \"N/A\"}")?.message || "N/A");
+        const onlineDevices = messages["devices/online"] as TopicDashboard;
+        if (onlineDevices?.value !== undefined)
+          setValueData(onlineDevices.value || "N/A");
         break;
       case "time":
-        setValueData(JSON.parse(messages["system/uptime"] || "{\"message\": \"N/A\"}")?.message || "N/A");
+        const uptime = messages["system/uptime"] as TopicDashboard;
+        if (uptime?.value !== undefined) {
+          const uptimeInSeconds = parseInt(uptime.value, 10);
+          const hours = Math.floor(uptimeInSeconds / 3600);
+          const minutes = Math.floor((uptimeInSeconds % 3600) / 60);
+          const seconds = uptimeInSeconds % 60;
+          setValueData(`${hours}h ${minutes}m ${seconds}s`);
+        } else {
+          setValueData("N/A");
+        }
         break;
     }
   }, [messages, type]);
