@@ -82,3 +82,27 @@ class Sensors:
             print("Sensores limpiados")
         except Exception as e:
             print(f"Error cerrando sensores: {e}")
+
+    def apply_remote_commands(self):
+        for device, action in shared.remote_commands.items():
+            # Acciones booleanas
+            state = action.lower() == "on"
+
+            if device == "buzzer":
+                self.control_buzzer(state)
+            elif device == "motor_fan":
+                self.control_motor(state)
+            elif device == "red_led":
+                self.control_led(self.red_led, "red_led", state)
+            elif device == "yellow_led":
+                self.control_led(self.yellow_led, "yellow_led", state)
+            elif device == "green_led":
+                self.control_led(self.green_led, "green_led", state)
+            elif device == "blue_led":
+                self.control_led(self.blue_led, "blue_led", state)
+            else:
+                print(f"Dispositivo desconocido: {device}")
+
+        # Limpia los comandos después de ejecutarlos
+        shared.remote_commands.clear()
+

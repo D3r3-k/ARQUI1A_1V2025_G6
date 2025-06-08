@@ -48,5 +48,5 @@ class GlobalState:
             'air_quality_max': 300,     # Air quality index
             'presence_distance': 50.0   # cm (presence detected)
         }
-
+        self.remote_commands = {}
 shared = GlobalState()  # Create a shared instance of GlobalState
