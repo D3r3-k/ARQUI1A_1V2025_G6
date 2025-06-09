@@ -5,7 +5,10 @@ import paho.mqtt.client as mqtt
 from globals import shared
 
 class MQTTClient:
-
+    """
+    MQTT Client for SIEPA system
+    Handles publishing sensor data and subscribing to control commands
+    """
     
     def __init__(self, broker_host, broker_port, group_6):
         self.broker_host = broker_host
@@ -13,9 +16,17 @@ class MQTTClient:
         self.group_number = group_6
         self.client_id = f"siepa_rasp_{group_6}"
         
-
+        # MQTT Topics según el formato requerido
         self.topics = {
-            "salida": f"GRUPO{group_6}/sensores/rasp01/salida",
+            "temperature": f"GRUPO{group_6}/sensores/rasp01/temperatura",
+            "humidity": f"GRUPO{group_6}/sensores/rasp01/humedad",
+            "light": f"GRUPO{group_6}/sensores/rasp01/luz",
+            "pressure": f"GRUPO{group_6}/sensores/rasp01/presion",
+            "air_quality": f"GRUPO{group_6}/sensores/rasp01/calidad_aire",
+            "distance": f"GRUPO{group_6}/sensores/rasp01/distancia",
+            "alerts": f"GRUPO{group_6}/sensores/rasp01/alertas",
+            "actuators_status": f"GRUPO{group_6}/sensores/rasp01/actuadores",
+            
             # Topic para recibir comandos del dashboard
             "control": f"GRUPO{group_6}/control/rasp01/comandos"
         }
@@ -26,16 +37,14 @@ class MQTTClient:
         self.client.on_message = self._on_message
         self.client.on_disconnect = self._on_disconnect
         
-        # variables de verificacion
         self.connected = False
         self.last_publish_time = 0
         self.publish_interval = 2  # Publish every 2 seconds
         
         logging.info(f"MQTT Client initialized - Group: {group_6}")
-
-    ## cunado el raspberry se conecta : 
+    
     def _on_connect(self, client, userdata, flags, rc):
-
+        """Callback when MQTT client connects"""
         if rc == 0:
             self.connected = True
             logging.info(f"Connected to MQTT broker at {self.broker_host}:{self.broker_port}")
@@ -99,38 +108,94 @@ class MQTTClient:
             logging.info("Disconnected from MQTT broker")
     
     def publish_sensor_data(self):
-
+        """Publish all sensor data to MQTT topics"""
         if not self.connected:
             return
-
+        
         current_time = time.time()
         if current_time - self.last_publish_time < self.publish_interval:
             return
-
+        
         try:
-            timestamp = int(current_time * 1000)  # Timestamp en milisegundos
-
+            timestamp = int(current_time * 1000)  # Timestamp in milliseconds
             
-            payload = {
-                "temperatura": shared.temperature,
-                "humedad": shared.humidity,
-                "luz": shared.light_level,
-                "presion": shared.pressure,
-                "calidad_aire": shared.air_quality,
-                "distancia": shared.distance,
-                "timestamp": timestamp
+            # Individual sensor data
+            sensor_data = {
+                "temperature": {
+                    "value": shared.temperature,
+                    "min": shared.thresholds["temperature_min"],
+                    "max": shared.thresholds["temperature_max"],
+                    "status": "normal",
+                    "unit": "°C",
+                    "timestamp": timestamp
+                },
+                "humidity": {
+                    "value": shared.humidity,
+                    "min": shared.thresholds["humidity_min"],
+                    "max": shared.thresholds["humidity_max"],
+                    "status": "normal",
+                    "unit": "%",
+                    "timestamp": timestamp
+                },
+                "light": {
+                    "value": shared.light_level,
+                    "min": shared.thresholds["humidity_min"],
+                    "max": shared.thresholds["humidity_max"],
+                    "status": "normal",
+                    "unit": "%",
+                    "timestamp": timestamp
+                },
+                "pressure": {
+                    "value": shared.pressure,
+                    "min": shared.thresholds["light_min"],
+                    "max": 20,
+                    "status": "normal",
+                    "unit": "hPa",
+                    "timestamp": timestamp
+                },
+                "air_quality": {
+                    "value": shared.air_quality,
+                    "min": 20,
+                    "max": shared.thresholds["air_quality_max"],
+                    "status": "normal",
+                    "unit": "ppm",
+                    "timestamp": timestamp
+                },
+                "distance": {
+                    "value": shared.distance,
+                    "min": 20,
+                    "max": shared.thresholds["presence_distance"],
+                    "status": "normal",
+                    "unit": "cm",
+                    "timestamp": timestamp
+                }
             }
-
             
-            topic = self.topics["salida"]  
-            self.client.publish(topic, json.dumps(payload))
-            logging.info(f"Published combined sensor data to {topic}")
-
+            # Publish individual sensor readings
+            for sensor, data in sensor_data.items():
+                topic = self.topics[sensor]
+                payload = json.dumps(data)
+                self.client.publish(topic, payload)
+            
+            # Publish alerts status
+            alerts_payload = json.dumps({
+                "alerts": shared.alert_status,
+                "timestamp": timestamp
+            })
+            self.client.publish(self.topics["alerts"], alerts_payload)
+            
+            # Publish actuators status
+            actuators_payload = json.dumps({
+                "actuators": shared.actuator_status,
+                "timestamp": timestamp
+            })
+            self.client.publish(self.topics["actuators_status"], actuators_payload)
+            
             self.last_publish_time = current_time
-
+            logging.debug("Published sensor data to MQTT")
+            
         except Exception as e:
-            logging.error(f"Error publishing combined sensor data: {e}")
-
+            logging.error(f"Error publishing sensor data: {e}")
     
     def publish_alert(self, alert_type, message, value):
         """Publish specific alert"""

@@ -21,6 +21,8 @@ class Display:
         self.lcd.crlf()
         self.lcd.write_string(f"Hum:  {shared.humidity:.1f}%")
         self.last_t = time.time()
+        self.lcd.write_string(f"AIR:  {shared.air_quality:.1f}")
+        self.last_t = time.time()
 
     def display_message(self, message):
         """Muestra mensaje personalizado por unos segundos"""
