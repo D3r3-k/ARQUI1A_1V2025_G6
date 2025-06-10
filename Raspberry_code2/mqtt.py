@@ -31,7 +31,7 @@ class MQTTClient:
             "Historico_Temperatura": f"GRUPO{group_6}/sensores/rasp01/HTemperatura",
             "Historico_Humedad": f"GRUPO{group_6}/sensores/rasp01/HHumedad",
             "Historico_Presion": f"GRUPO{group_6}/sensores/rasp01/HPresion",
-            "Historico_Aire": f"GRUPO{group_6}/sensores/rasp01/HLuz",
+            "Historico_Luz": f"GRUPO{group_6}/sensores/rasp01/HLuz",
 
             # Topic para recibir comandos del dashboard
             "control": f"GRUPO{group_6}/control/rasp01/comandos"
@@ -192,9 +192,9 @@ class MQTTClient:
                     "history": shared.HPresion["history"]
                 },
 
-                "Historico_Aire": {
+                "Historico_Luz": {
                     "timestamp": timestamp,
-                    "history": shared.HAire["history"]
+                    "history": shared.HLuz["history"]
                 },
             }
             
