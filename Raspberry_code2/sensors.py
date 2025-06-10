@@ -5,7 +5,7 @@ import busio
 import smbus2 as smbus
 from gpiozero import DistanceSensor, DigitalInputDevice
 from globals import shared
-import main
+import utiles
 
 class Sensors:
     def __init__(self):
@@ -55,8 +55,8 @@ class Sensors:
         try:
             shared.temperature = float(self.dht.temperature)
             shared.humidity = float(self.dht.humidity)
-            main.Generar_historicos_temperatura(shared.temperature,self.hora,self.fecha); 
-            main.Generar_historicos_humedad(shared.humidity,self.hora,self.fecha); 
+            utiles.Generar_historicos_temperatura(shared.temperature,self.hora,self.fecha); 
+            utiles.Generar_historicos_humedad(shared.humidity,self.hora,self.fecha); 
         except Exception as e:
             print(f"Error leyendo DHT11: {e}")
 
@@ -70,7 +70,7 @@ class Sensors:
     def read_light_sensor(self):
         try:
             shared.light_level = 0 if self.ldr.value == 1 else 100
-            main.Generar_historicos_Luz(shared.air_quality,self.hora,self.fecha); 
+            utiles.Generar_historicos_Luz(shared.air_quality,self.hora,self.fecha); 
         except Exception as e:
             print(f"Error leyendo luz: {e}")
 
@@ -103,7 +103,7 @@ class Sensors:
             p = ((p + var1 + var2) >> 8) + (self.dig_P7 << 4)
 
             shared.pressure = round(p / 25600.0, 2)
-            main.Generar_historicos_temperatura(shared.pressure,self.hora,self.fecha); 
+            utiles.Generar_historicos_temperatura(shared.pressure,self.hora,self.fecha); 
     
 
         except Exception as e:
