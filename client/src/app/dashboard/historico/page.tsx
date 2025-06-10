@@ -2,7 +2,13 @@
 
 import { useEffect, useState } from "react";
 import TabNavigation from "./components/TabNavigation/TabNavigation";
-import { ChartLine, Droplets, Gauge, SunMedium, Thermometer } from "lucide-react";
+import {
+  ChartLine,
+  Droplets,
+  Gauge,
+  SunMedium,
+  Thermometer,
+} from "lucide-react";
 import { Area, AreaChart, ResponsiveContainer, XAxis, YAxis } from "recharts";
 import { useMqtt } from "@/hooks/useMqtt";
 import { SensorType } from "@/types/TypesDashboard";
@@ -14,36 +20,41 @@ export default function HistoricoPage() {
   // State's
   const [activeTab, setActiveTab] = useState<SensorType>("temperature");
   const [historicData, setHistoricData] = useState<TopicHistory>({
-    date_updated: "",
-    sensor: activeTab,
+    timestamp: "",
     history: [],
-  })
-  const [graphData, setGraphData] = useState<any[]>([])
+  });
+  const [graphData, setGraphData] = useState<any[]>([]);
   // Effect's
+  const topic = {
+    temperature: "HTemperatura",
+    humidity: "HHumedad",
+    luminosity: "HLuz",
+    pressure: "HPresion",
+  }[activeTab];
+
   useEffect(() => {
-    subscribe(`history/${activeTab}`);
-    console.log(`Subscribed to history/${activeTab}`);
-    return () => { }
+    subscribe(`GRUPOG6/sensores/rasp01/${topic}`);
+    return () => {};
   }, [activeTab, subscribe]);
 
   useEffect(() => {
-    const historyData = messages[`history/${activeTab}`] as TopicHistory;
+    const historyData = messages[
+      `GRUPOG6/sensores/rasp01/${topic}`
+    ] as TopicHistory;
+    console.log("Received history data:", historyData);
     if (historyData) {
       setHistoricData(historyData);
       const transformedData = historyData.history.map((item) => ({
-        timestamp: `${item.hour}`,
-        [activeTab]: parseFloat(item.value).toFixed(2),
+        timestamp: `${item.hora}`,
+        [activeTab]: parseFloat(item.valor).toFixed(2),
       }));
       setGraphData(transformedData);
-    }else{
+    } else {
       setHistoricData({
-        date_updated: "",
-        sensor: activeTab,
+        timestamp: "",
         history: [],
       });
-      setGraphData([
-        { timestamp: "N/A", [activeTab]: "0" }
-      ]);
+      setGraphData([{ timestamp: "N/A", [activeTab]: "0" }]);
     }
   }, [messages, activeTab]);
 
@@ -111,7 +122,9 @@ export default function HistoricoPage() {
               <div className="flex flex-col gap-4">
                 <div className="flex justify-between items-center">
                   <div className="flex gap-3 items-center">
-                    <div className={`w-12 h-12 p-2 rounded-sm flex items-center justify-center ${historyOpt.color.bg}`}>
+                    <div
+                      className={`w-12 h-12 p-2 rounded-sm flex items-center justify-center ${historyOpt.color.bg}`}
+                    >
                       <historyOpt.icon size={32} className="text-white" />
                     </div>
                     <div className="flex flex-col">
@@ -124,20 +137,39 @@ export default function HistoricoPage() {
                     </div>
                   </div>
                   <div className="flex">
-                    <ChartLine size={24} className="text-gray-500 dark:text-gray-400" />
+                    <ChartLine
+                      size={24}
+                      className="text-gray-500 dark:text-gray-400"
+                    />
                     <span className="text-sm font-semibold text-gray-800 dark:text-gray-400 ml-2">
                       Últimas {historicData.history.length} lecturas
                     </span>
                   </div>
-
                 </div>
                 {/* Grafica */}
-                <ResponsiveContainer width={800} height={500} >
-                  <AreaChart data={graphData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+                <ResponsiveContainer width={"100%"} height={500}>
+                  <AreaChart
+                    data={graphData}
+                    margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
+                  >
                     <defs>
-                      <linearGradient id={`gradient-${activeTab}`} x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor={"#ef4444"} stopOpacity={0.3} />
-                        <stop offset="95%" stopColor={"#ef4444"} stopOpacity={0.05} />
+                      <linearGradient
+                        id={`gradient-${activeTab}`}
+                        x1="0"
+                        y1="0"
+                        x2="0"
+                        y2="1"
+                      >
+                        <stop
+                          offset="5%"
+                          stopColor={"#ef4444"}
+                          stopOpacity={0.3}
+                        />
+                        <stop
+                          offset="95%"
+                          stopColor={"#ef4444"}
+                          stopOpacity={0.05}
+                        />
                       </linearGradient>
                     </defs>
                     <XAxis
@@ -145,16 +177,16 @@ export default function HistoricoPage() {
                       stroke="#6b7280"
                       fontSize={11}
                       tickLine={false}
-                      axisLine={{ stroke: '#d1d5db', strokeWidth: 1 }}
-                      tick={{ fill: '#6b7280' }}
+                      axisLine={{ stroke: "#d1d5db", strokeWidth: 1 }}
+                      tick={{ fill: "#6b7280" }}
                     />
                     <YAxis
                       stroke="#6b7280"
                       fontSize={11}
                       tickLine={false}
-                      axisLine={{ stroke: '#d1d5db', strokeWidth: 1 }}
-                      tick={{ fill: '#6b7280' }}
-                      domain={['dataMin - 1', 'dataMax + 1']}
+                      axisLine={{ stroke: "#d1d5db", strokeWidth: 1 }}
+                      tick={{ fill: "#6b7280" }}
+                      domain={["dataMin - 1", "dataMax + 1"]}
                     />
                     <Area
                       type="linear"
@@ -165,10 +197,10 @@ export default function HistoricoPage() {
                       dot={false}
                       activeDot={{
                         r: 6,
-                        fill: '#ef4444',
+                        fill: "#ef4444",
                         strokeWidth: 3,
-                        stroke: 'white',
-                        filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))'
+                        stroke: "white",
+                        filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.1))",
                       }}
                     />
                   </AreaChart>
@@ -181,7 +213,9 @@ export default function HistoricoPage() {
         <aside className="flex-1 flex flex-col gap-4 col-span-1 lg:col-span-1">
           <div className="bg-white dark:bg-gray-900 p-4 rounded-sm shadow border border-gray-200 dark:border-gray-700 flex flex-col gap-3">
             <div className="flex gap-3 items-center">
-              <div className={`w-10 h-10 p-2 rounded-sm items-center ${historyOpt.color.bg}`}>
+              <div
+                className={`w-10 h-10 p-2 rounded-sm items-center ${historyOpt.color.bg}`}
+              >
                 <historyOpt.icon size={24} className="text-white" />
               </div>
               <span className="text-sm font-bold text-gray-800 dark:text-gray-200">
@@ -191,21 +225,21 @@ export default function HistoricoPage() {
             <div className="flex flex-col justify-center items-center">
               <div className="flex gap-2 justify-center items-end">
                 <span className="text-3xl font-bold text-gray-800 dark:text-gray-200">
-                  {
-                    historicData.history.length > 0
-                      ? historicData.history[historicData.history.length - 1].value
-                      : "N/A"
-                  }
+                  {historicData.history.length > 0
+                    ? historicData.history[historicData.history.length - 1]
+                        .valor
+                    : "N/A"}
                 </span>
-                <span className="text-xl font-bold text-gray-400">{historyOpt.unit}</span>
+                <span className="text-xl font-bold text-gray-400">
+                  {historyOpt.unit}
+                </span>
               </div>
               <span className="text-sm text-gray-400 dark:text-gray-400">
-                {
-
-                  historicData.history.length > 0
-                    ? historicData.history[historicData.history.length - 1].date + " " + historicData.history[historicData.history.length - 1].hour
-                    : "No disponible"
-                }
+                {historicData.history.length > 0
+                  ? historicData.history[historicData.history.length - 1].date +
+                    " " +
+                    historicData.history[historicData.history.length - 1].hora
+                  : "No disponible"}
               </span>
             </div>
           </div>
@@ -214,33 +248,38 @@ export default function HistoricoPage() {
             <div className="flex flex-col border-b border-gray-200 dark:border-gray-700 pb-3 shrink-0 p-4">
               <h3>Datos historicos</h3>
               <span className="text-gray-400 text-sm">
-                actualizacion: {historicData.date_updated || "N/A"}
+                actualizacion: {historicData.timestamp || "N/A"}
               </span>
             </div>
             {/* Contenido historico */}
             <div className="flex flex-col gap-2 flex-1 h-full overflow-y-auto scrollbar-thin px-4">
-              {
-                historicData.history.map((item, index) => (
-                  <div key={index} className="flex justify-between items-center border-b border-gray-200 dark:border-gray-700 py-2 last:border-0">
+              {historicData.history
+                .map((item, index) => (
+                  <div
+                    key={index}
+                    className="flex justify-between items-center border-b border-gray-200 dark:border-gray-700 py-2 last:border-0"
+                  >
                     <div className="flex gap-4 items-center">
                       <span className="w-6 h-6 bg-gray-200 text-gray-800 dark:bg-gray-800 dark:text-gray-400 rounded-sm text-[0.75em] flex justify-center items-center">
                         #{index + 1}
                       </span>
                       <div className="flex flex-col">
                         <span className="text-gray-800 dark:text-gray-200 text-sm">
-                          {item.hour}
+                          {item.hora}
                         </span>
                         <span className="text-gray-400 dark:text-gray-500 text-sm">
                           {item.date}
                         </span>
                       </div>
                     </div>
-                    <span className={`px-2 py-1 rounded-md text-sm font-semibold ${historyOpt.color.bg} ${historyOpt.color.text}`}>
-                      {item.value} {historyOpt.unit}
+                    <span
+                      className={`px-2 py-1 rounded-md text-sm font-semibold ${historyOpt.color.bg} ${historyOpt.color.text}`}
+                    >
+                      {item.valor} {historyOpt.unit}
                     </span>
                   </div>
-                )).reverse()
-              }
+                ))
+                .reverse()}
             </div>
           </div>
         </aside>

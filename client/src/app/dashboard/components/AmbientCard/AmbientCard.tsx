@@ -2,7 +2,14 @@
 
 import { useMqtt } from "@/hooks/useMqtt";
 import { TopicAmbient } from "@/types/TypesMqtt";
-import { Droplets, Gauge, Lightbulb, Thermometer, User, Wind } from "lucide-react";
+import {
+  Droplets,
+  Gauge,
+  Lightbulb,
+  Thermometer,
+  User,
+  Wind,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 
 interface AmbientCardProps {
@@ -11,11 +18,7 @@ interface AmbientCardProps {
   title: string;
 }
 
-export default function AmbientCard({
-  id,
-  color,
-  title,
-}: AmbientCardProps) {
+export default function AmbientCard({ id, color, title }: AmbientCardProps) {
   // Hook's
   const { subscribe, messages } = useMqtt();
   // State's
@@ -25,16 +28,19 @@ export default function AmbientCard({
     min: "N/A",
     max: "N/A",
     timestamp: "N/A",
-  })
+    unit: "N/A",
+  });
   const [timestamp, settimestamp] = useState<string>("");
   // Effect's
   useEffect(() => {
-    subscribe(`ambient/${id}`);
-    return () => { }
-  }, [id, subscribe])
+    subscribe(`GRUPOG6/sensores/rasp01/${id}`);
+    return () => {};
+  }, [id, subscribe]);
 
   useEffect(() => {
-    const ambientData = messages[`ambient/${id}`] as TopicAmbient;
+    const ambientData = messages[
+      `GRUPOG6/sensores/rasp01/${id}`
+    ] as TopicAmbient;
     if (ambientData) {
       setData({
         status: ambientData.status || "normal",
@@ -42,6 +48,7 @@ export default function AmbientCard({
         min: ambientData.min || "N/A",
         max: ambientData.max || "N/A",
         timestamp: ambientData.timestamp || "N/A",
+        unit: ambientData.unit || "N/A",
       });
     }
   }, [messages, id]);
@@ -52,7 +59,7 @@ export default function AmbientCard({
       const currentTime = Date.now();
       const oldtime = Number(data.timestamp);
       const minutesAgo = Math.floor((currentTime - oldtime) / 60000);
-      settimestamp(`Hace ${minutesAgo} minuto${minutesAgo !== 1 ? 's' : ''}`);
+      settimestamp(`Hace ${minutesAgo} minuto${minutesAgo !== 1 ? "s" : ""}`);
     }, 60000);
     return () => clearInterval(interval);
   }, [id, data.timestamp]);
@@ -61,11 +68,9 @@ export default function AmbientCard({
     const currentTime = Date.now();
     const oldtime = Number(data.timestamp);
     const minutesAgo = Math.floor((currentTime - oldtime) / 60000);
-    settimestamp(`Hace ${minutesAgo} minuto${minutesAgo !== 1 ? 's' : ''}`);
-    return () => { }
+    settimestamp(`Hace ${minutesAgo} minuto${minutesAgo !== 1 ? "s" : ""}`);
+    return () => {};
   }, [id, data.timestamp]);
-
-
 
   // Handler's
   // Render's
@@ -111,32 +116,40 @@ export default function AmbientCard({
     bgBar: "bg-gray-500",
   };
   const IconType: any = {
-    temperature: Thermometer,
-    humidity: Droplets,
-    brightness: Lightbulb,
-    co2: Gauge,
-    pressure: Wind,
-    presence: User,
-  }[id]
-  const unit = {
-    temperature: "°C",
-    humidity: "%",
-    brightness: "lux",
-    co2: "ppm",
-    pressure: "hPa",
-    presence: "",
-  }[id] || "";
+    temperatura: Thermometer,
+    humedad: Droplets,
+    luz: Lightbulb,
+    calidad_aire: Gauge,
+    presion: Wind,
+    distancia: User,
+  }[id];
 
   return (
     <div className="rounded-lg border border-gray-100 dark:border-zinc-800 p-6 shadow-sm transition-shadow duration-300 hover:shadow-md">
       <div className="flex items-center gap-4">
-        <div className={`rounded-lg p-3 ${colorCard.bg} transition-colors duration-300`}>
-          <IconType size={24} className={`${colorCard.text} transition-colors duration-300`} />
+        <div
+          className={`rounded-lg p-3 ${colorCard.bg} transition-colors duration-300`}
+        >
+          <IconType
+            size={24}
+            className={`${colorCard.text} transition-colors duration-300`}
+          />
         </div>
         <div className="flex flex-1 items-center justify-between">
-          <h3 className="text-sm font-medium text-gray-400 transition-colors duration-300">{title}</h3>
-          <span className={`rounded-md px-2 py-1 text-xs font-medium transition-colors duration-300 ${data.status === "normal" ?
-            "bg-green-600/20 text-green-700 dark:bg-green-700/20 dark:text-green-400" : data.status === "warning" ? "bg-yellow-600/20 text-yellow-700 dark:bg-yellow-700/20 dark:text-yellow-400" : data.status == "critical" ? "bg-red-600/20 text-red-700 dark:bg-red-700/20 dark:text-red-400" : "bg-gray-600/20 text-gray-700 dark:bg-gray-700/20 dark:text-gray-400"}`}>
+          <h3 className="text-sm font-medium text-gray-400 transition-colors duration-300">
+            {title}
+          </h3>
+          <span
+            className={`rounded-md px-2 py-1 text-xs font-medium transition-colors duration-300 ${
+              data.status === "normal"
+                ? "bg-green-600/20 text-green-700 dark:bg-green-700/20 dark:text-green-400"
+                : data.status === "warning"
+                ? "bg-yellow-600/20 text-yellow-700 dark:bg-yellow-700/20 dark:text-yellow-400"
+                : data.status == "critical"
+                ? "bg-red-600/20 text-red-700 dark:bg-red-700/20 dark:text-red-400"
+                : "bg-gray-600/20 text-gray-700 dark:bg-gray-700/20 dark:text-gray-400"
+            }`}
+          >
             {data.status}
           </span>
         </div>
@@ -144,17 +157,25 @@ export default function AmbientCard({
       <div className="mt-3">
         <div className="flex items-baseline gap-1">
           <p className="text-2xl font-bold transition-colors duration-300">
-            {
-              typeof data.value === "boolean" ? (data.value ? "Sí" : "No") : data.value
-            }
+            {typeof data.value === "boolean"
+              ? data.value
+                ? "Sí"
+                : "No"
+              : data.value}
           </p>
-          <span className="text-sm text-gray-400 transition-colors duration-300">{unit}</span>
+          <span className="text-sm text-gray-400 transition-colors duration-300">
+            {data.unit}
+          </span>
         </div>
       </div>
       <div className="mt-4 space-y-2">
         <div className="flex justify-between text-xs text-gray-400 transition-colors duration-300">
-          <span>{data.min} {unit}</span>
-          <span>{data.max} {unit}</span>
+          <span>
+            {data.min} {data.unit}
+          </span>
+          <span>
+            {data.max} {data.unit}
+          </span>
         </div>
         <div className="h-2 w-full bg-gray-100 dark:bg-gray-500 rounded-full overflow-hidden transition-colors duration-300">
           <div
@@ -168,21 +189,26 @@ export default function AmbientCard({
                   return value ? "100%" : "0%";
                 }
                 const numValue = parseFloat(value as string);
-                if (!isNaN(numValue) && !isNaN(min) && !isNaN(max) && max !== min) {
+                if (
+                  !isNaN(numValue) &&
+                  !isNaN(min) &&
+                  !isNaN(max) &&
+                  max !== min
+                ) {
                   const progress = ((numValue - min) / (max - min)) * 100;
                   return `${Math.max(0, Math.min(100, progress))}%`;
                 }
                 return "0%";
-              })()
+              })(),
             }}
           />
         </div>
         <p className="text-xs text-gray-400 transition-colors duration-300">
-          {
-            timestamp ? `Última actualización: ${timestamp}` : "Última actualización: N/A"
-          }
+          {timestamp
+            ? `Última actualización: ${timestamp}`
+            : "Última actualización: N/A"}
         </p>
       </div>
     </div>
-  )
+  );
 }

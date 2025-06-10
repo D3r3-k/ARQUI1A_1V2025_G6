@@ -5,10 +5,11 @@ export type TopicDashboard = {
 };
 
 export type TopicAmbient = {
-  status: "normal" | "warning" | "critical" | "inactive";
   value: string | number | boolean;
   min: string;
   max: string;
+  status: "normal" | "warning" | "critical" | "inactive";
+  unit?: string;
   timestamp: string;
 };
 
@@ -21,14 +22,13 @@ export type TopicActivity = {
 
 // HISTORY TOPICS
 export type TopicHistory = {
-  date_updated: string;
-  sensor: string;
+  timestamp: string;
   history:
     | [
         {
           date: string;
-          hour: string;
-          value: string;
+          hora: string;
+          valor: string;
         }
       ]
     | [];

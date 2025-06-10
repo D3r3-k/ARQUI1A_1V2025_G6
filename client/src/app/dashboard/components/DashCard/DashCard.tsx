@@ -12,12 +12,17 @@ interface DashboardPageProps {
   type: "sensors" | "devices" | "time" | "localTime";
 }
 
-export default function DashCard({ title, color, desc, type }: DashboardPageProps) {
+export default function DashCard({
+  title,
+  color,
+  desc,
+  type,
+}: DashboardPageProps) {
   // Hook's
   const { subscribe, messages } = useMqtt();
 
   // State's
-  const [valueData, setValueData] = useState<string>("N/A")
+  const [valueData, setValueData] = useState<string>("N/A");
 
   // Effect's
   useEffect(() => {
@@ -67,7 +72,6 @@ export default function DashCard({ title, color, desc, type }: DashboardPageProp
     }
   }, [messages, type]);
 
-
   //actualizar el valor de valueData cada segundo
   useEffect(() => {
     if (type === "localTime") {
@@ -104,17 +108,17 @@ export default function DashCard({ title, color, desc, type }: DashboardPageProp
     orange: {
       text: "text-orange-700 dark:text-orange-400",
       bg: "bg-orange-700/10 dark:bg-orange-700/20",
-    }
+    },
   }[color] || {
     text: "text-gray-700 dark:text-gray-400",
     bg: "bg-gray-500/10 dark:bg-gray-500/20",
-  }
+  };
   const Icon = {
     sensors: Cpu,
     devices: Wifi,
     time: Timer,
-    localTime: Clock
-  }[type]
+    localTime: Clock,
+  }[type];
   return (
     <div className="rounded-lg border border-gray-100 dark:border-zinc-800 p-6 shadow-sm">
       <div className="flex items-center justify-between">
@@ -125,8 +129,10 @@ export default function DashCard({ title, color, desc, type }: DashboardPageProp
       </div>
       <div className="mt-2">
         <p className="text-2xl font-bold">{valueData}</p>
-        <p className="mt-1 text-xs text-gray-400">{desc}</p>
+        <p className="mt-1 text-xs text-gray-400">
+          {type === "time" ? new Date().toLocaleTimeString() : desc}
+        </p>
       </div>
     </div>
-  )
+  );
 }
