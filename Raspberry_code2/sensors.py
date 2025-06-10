@@ -1,5 +1,5 @@
 import board
-import datetime
+import datetime 
 import adafruit_dht
 import busio
 import smbus2 as smbus
@@ -9,7 +9,7 @@ import utiles
 
 class Sensors:
     def __init__(self):
-        ahora = datetime.now()
+        ahora = datetime.datetime.now()
         self.hora = ahora.strftime("%H:%M:%S")
         self.fecha = ahora.strftime("%d-%m-%Y")
         self.bus = smbus.SMBus(1)  # I2C bus en Raspberry Pi
