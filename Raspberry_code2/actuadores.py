@@ -13,7 +13,7 @@ class Actuators:
         self.blue_led = LED(9)
 
         # Declaracion de Buzzer y Motor 
-        self.motor = DigitalOutputDevice(20)
+        self.motor = DigitalOutputDevice(20) # 13,19,26
         self.buzzer = Buzzer(21)
 
 

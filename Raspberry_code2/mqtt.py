@@ -27,6 +27,12 @@ class MQTTClient:
             "alerts": f"GRUPO{group_6}/sensores/rasp01/alertas",
             "actuators_status": f"GRUPO{group_6}/sensores/rasp01/actuadores",
             
+            # Historicos
+            "Historico_Temperatura": f"GRUPO{group_6}/sensores/rasp01/HTemperatura",
+            "Historico_Humedad": f"GRUPO{group_6}/sensores/rasp01/HHumedad",
+            "Historico_Presion": f"GRUPO{group_6}/sensores/rasp01/HPresion",
+            "Historico_Aire": f"GRUPO{group_6}/sensores/rasp01/HLuz",
+
             # Topic para recibir comandos del dashboard
             "control": f"GRUPO{group_6}/control/rasp01/comandos"
         }
@@ -168,7 +174,28 @@ class MQTTClient:
                     "status": "normal",
                     "unit": "cm",
                     "timestamp": timestamp
-                }
+                },
+
+                # Hitoricos
+                "Historico_Temperatura": {
+                    "timestamp": timestamp,
+                    "history": shared.HTemperatura["history"]
+                },
+
+                "Historico_Humedad": {
+                    "timestamp": timestamp,
+                    "history": shared.HHumedad["history"]
+                },
+
+                "Historico_Presion": {
+                    "timestamp": timestamp,
+                    "history": shared.HPresion["history"]
+                },
+
+                "Historico_Aire": {
+                    "timestamp": timestamp,
+                    "history": shared.HAire["history"]
+                },
             }
             
             # Publish individual sensor readings

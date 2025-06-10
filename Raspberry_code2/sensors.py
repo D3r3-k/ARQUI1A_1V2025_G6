@@ -1,13 +1,17 @@
 import board
-import time
+import datetime
 import adafruit_dht
 import busio
 import smbus2 as smbus
 from gpiozero import DistanceSensor, DigitalInputDevice
 from globals import shared
+import main
 
 class Sensors:
     def __init__(self):
+        ahora = datetime.now()
+        self.hora = ahora.strftime("%H:%M:%S")
+        self.fecha = ahora.strftime("%d-%m-%Y")
         self.bus = smbus.SMBus(1)  # I2C bus en Raspberry Pi
         self.pcf8591_address = 0x48  # Dirección por defecto
 
@@ -51,6 +55,8 @@ class Sensors:
         try:
             shared.temperature = float(self.dht.temperature)
             shared.humidity = float(self.dht.humidity)
+            main.Generar_historicos_temperatura(shared.temperature,self.hora,self.fecha); 
+            main.Generar_historicos_humedad(shared.humidity,self.hora,self.fecha); 
         except Exception as e:
             print(f"Error leyendo DHT11: {e}")
 
@@ -64,6 +70,7 @@ class Sensors:
     def read_light_sensor(self):
         try:
             shared.light_level = 0 if self.ldr.value == 1 else 100
+            main.Generar_historicos_Luz(shared.air_quality,self.hora,self.fecha); 
         except Exception as e:
             print(f"Error leyendo luz: {e}")
 
@@ -96,6 +103,8 @@ class Sensors:
             p = ((p + var1 + var2) >> 8) + (self.dig_P7 << 4)
 
             shared.pressure = round(p / 25600.0, 2)
+            main.Generar_historicos_temperatura(shared.pressure,self.hora,self.fecha); 
+    
 
         except Exception as e:
             print(f"Error leyendo presión BMP280: {e}")
@@ -122,7 +131,6 @@ class Sensors:
             f"Humidity: {shared.humidity:.1f}% | "
             f"Distance: {shared.distance:.1f}cm | "
             f"Light: {shared.light_level}% | "
-            f"Pressure: {shared.pressure:.1f}hPa | "
             f"Pressure: {shared.pressure:.1f}hPa | "
             f"Air Quality: {shared.air_quality}")
 

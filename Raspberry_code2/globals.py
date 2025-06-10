@@ -1,4 +1,3 @@
-from queue import LifoQueue   
 class GlobalState:
     _instance = None  
                            
@@ -29,6 +28,8 @@ class GlobalState:
             'air_quality': False,
             'presence': False
         }
+
+
         
         # Actuator status
         self.actuator_status = {
@@ -50,7 +51,31 @@ class GlobalState:
             'air_quality_max': 300,     # Air quality index
             'presence_distance': 50.0   # cm (presence detected)
         }
+
+        # Datos historicos
+        
+        self.HTemperatura = {
+            "timestap": 0,
+            "history": []
+        }
+
+        
+        self.HHumedad = {
+            "timestap": 0,
+            "history": []
+        }
+
+        self.HPresion = {
+            "timestap": 0,
+            "history": []
+        }
+
+        self.HLuz = {
+            "timestap": 0,
+            "history": []
+        }
         self.remote_commands = {}
-        self.pila_temperatura = LifoQueue() 
+        
+
 
 shared = GlobalState()  # Create a shared instance of GlobalState
