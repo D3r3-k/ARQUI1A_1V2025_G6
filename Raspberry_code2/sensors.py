@@ -55,8 +55,8 @@ class Sensors:
         try:
             shared.temperature = float(self.dht.temperature)
             shared.humidity = float(self.dht.humidity)
-            utiles.Generar_historicos_temperatura(shared.temperature,self.hora,self.fecha); 
-            utiles.Generar_historicos_humedad(shared.humidity,self.hora,self.fecha); 
+            # utiles.Generar_historicos_temperatura(shared.temperature,self.hora,self.fecha); 
+            # utiles.Generar_historicos_humedad(shared.humidity,self.hora,self.fecha);
         except Exception as e:
             print(f"Error leyendo DHT11: {e}")
 
@@ -70,7 +70,7 @@ class Sensors:
     def read_light_sensor(self):
         try:
             shared.light_level = 0 if self.ldr.value == 1 else 100
-            utiles.Generar_historicos_Luz(shared.light_level,self.hora,self.fecha); 
+            # utiles.Generar_historicos_Luz(shared.light_level,self.hora,self.fecha); 
         except Exception as e:
             print(f"Error leyendo luz: {e}")
 
@@ -103,7 +103,7 @@ class Sensors:
             p = ((p + var1 + var2) >> 8) + (self.dig_P7 << 4)
 
             shared.pressure = round(p / 25600.0, 2)
-            utiles.Generar_historicos_presion(shared.pressure,self.hora,self.fecha); 
+            # utiles.Generar_historicos_presion(shared.pressure,self.hora,self.fecha); 
     
 
         except Exception as e:
@@ -127,6 +127,10 @@ class Sensors:
         self.read_air_quality()
 
     def print_data(self):
+        utiles.Generar_historicos_temperatura(shared.pressure,self.hora,self.fecha);
+        utiles.Generar_historicos_humedad(shared.pressure,self.hora,self.fecha);
+        utiles.Generar_historicos_Luz(shared.pressure,self.hora,self.fecha);
+        utiles.Generar_historicos_presion(shared.pressure,self.hora,self.fecha);
         print(f"Temp: {shared.temperature:.1f}°C | "
             f"Humidity: {shared.humidity:.1f}% | "
             f"Distance: {shared.distance:.1f}cm | "
