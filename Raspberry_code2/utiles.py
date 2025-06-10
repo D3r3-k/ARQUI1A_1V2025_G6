@@ -7,7 +7,7 @@ def Generar_historicos_temperatura(valor,hora,fecha):
         "hora": hora,
         "valor":valor,
     }
-    shared.HTemperatura["history"].appeden(nuevo_dato)
+    shared.HTemperatura["history"].append(nuevo_dato)
 
 def Generar_historicos_humedad(valor,hora,fecha):
     if(len(shared.HHumedad["history"]) >= 20):
@@ -17,7 +17,7 @@ def Generar_historicos_humedad(valor,hora,fecha):
         "hora": hora,
         "valor":valor,
     }
-    shared.HHumedad["history"].appeden(nuevo_dato)
+    shared.HHumedad["history"].append(nuevo_dato)
 
 def Generar_historicos_presion(valor,hora,fecha):
     if(len(shared.HPresion["history"]) >= 20):
@@ -27,7 +27,7 @@ def Generar_historicos_presion(valor,hora,fecha):
         "hora": hora,
         "valor":valor,
     }
-    shared.HPresion["history"].appeden(nuevo_dato)
+    shared.HPresion["history"].append(nuevo_dato)
 
 def Generar_historicos_Luz(valor,hora,fecha):
     if(len(shared.HLuz["history"]) >= 20):
@@ -37,4 +37,4 @@ def Generar_historicos_Luz(valor,hora,fecha):
         "hora": hora,
         "valor":valor,
     }
-    shared.HLuz["history"].appeden(nuevo_dato)
+    shared.HLuz["history"].append(nuevo_dato)
