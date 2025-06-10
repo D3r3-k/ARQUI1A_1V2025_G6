@@ -1,5 +1,7 @@
+from queue import LifoQueue   
 class GlobalState:
-    _instance = None                                   
+    _instance = None  
+                           
     
     def __new__(cls):                                       # Singleton pattern
         if cls._instance is None:
@@ -49,4 +51,6 @@ class GlobalState:
             'presence_distance': 50.0   # cm (presence detected)
         }
         self.remote_commands = {}
+        self.pila_temperatura = LifoQueue() 
+
 shared = GlobalState()  # Create a shared instance of GlobalState
