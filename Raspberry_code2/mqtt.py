@@ -119,11 +119,11 @@ class MQTTClient:
             return
         
         current_time = time.time()
-        if current_time - self.last_publish_time < self.publish_interval:
-            return
+        ##if current_time - self.last_publish_time < self.publish_interval:
+        ##    return
         
         try:
-            timestamp = int(current_time * 1000)  # Timestamp in milliseconds
+            timestamp = int(current_time * 1000)  
             
             # Individual sensor data
             sensor_data = {

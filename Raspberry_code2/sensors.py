@@ -1,5 +1,5 @@
 import board
-import datetime 
+from datetime import datetime
 import adafruit_dht
 import busio
 import smbus2 as smbus
@@ -9,9 +9,6 @@ import utiles
 
 class Sensors:
     def __init__(self):
-        ahora = datetime.datetime.now()
-        self.hora = ahora.strftime("%H:%M:%S")
-        self.fecha = ahora.strftime("%d-%m-%Y")
 
         self.bus = smbus.SMBus(1)  # I2C bus en Raspberry Pi
 
@@ -58,8 +55,11 @@ class Sensors:
         try:
             shared.temperature = float(self.dht.temperature)
             shared.humidity = float(self.dht.humidity)
-            utiles.Generar_historicos_temperatura(shared.temperature,self.hora,self.fecha); 
-            utiles.Generar_historicos_humedad(shared.humidity,self.hora,self.fecha); 
+            now = datetime.now()
+            hora = now.strftime("%H:%M:%S")
+            fecha = now.strftime("%d-%m-%Y")
+            utiles.Generar_historicos_temperatura(shared.temperature,hora,fecha); 
+            utiles.Generar_historicos_humedad(shared.humidity,hora,fecha); 
         except Exception as e:
             print(f"Error leyendo DHT11: {e}")
 
@@ -73,7 +73,10 @@ class Sensors:
     def read_light_sensor(self):
         try:
             shared.light_level = 0 if self.ldr.value == 1 else 100
-            utiles.Generar_historicos_Luz(shared.light_level,self.hora,self.fecha); 
+            now = datetime.now()
+            hora = now.strftime("%H:%M:%S")
+            fecha = now.strftime("%d-%m-%Y")
+            utiles.Generar_historicos_Luz(shared.light_level,hora,fecha); 
         except Exception as e:
             print(f"Error leyendo luz: {e}")
 
@@ -106,7 +109,10 @@ class Sensors:
             p = ((p + var1 + var2) >> 8) + (self.dig_P7 << 4)
 
             shared.pressure = round(p / 25600.0, 2)
-            utiles.Generar_historicos_presion(shared.pressure,self.hora,self.fecha); 
+            now = datetime.now()
+            hora = now.strftime("%H:%M:%S")
+            fecha = now.strftime("%d-%m-%Y")
+            utiles.Generar_historicos_presion(shared.pressure,hora,fecha); 
     
 
         except Exception as e:
