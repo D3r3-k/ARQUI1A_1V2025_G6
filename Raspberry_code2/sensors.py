@@ -12,7 +12,10 @@ class Sensors:
         ahora = datetime.datetime.now()
         self.hora = ahora.strftime("%H:%M:%S")
         self.fecha = ahora.strftime("%d-%m-%Y")
+
         self.bus = smbus.SMBus(1)  # I2C bus en Raspberry Pi
+
+        #sensor MQ135
         self.pcf8591_address = 0x48  # Dirección por defecto
 
         # Sensor DHT11
@@ -21,7 +24,7 @@ class Sensors:
         # Sensor ultrasónico
         self.distance_sensor = DistanceSensor(echo=24, trigger=23, max_distance=2.0)
 
-        # LDR digital
+        # LDR digital (sensor de iluminacion)
         self.ldr = DigitalInputDevice(18)
 
         # BMP280 
@@ -56,7 +59,7 @@ class Sensors:
             shared.temperature = float(self.dht.temperature)
             shared.humidity = float(self.dht.humidity)
             utiles.Generar_historicos_temperatura(shared.temperature,self.hora,self.fecha); 
-            utiles.Generar_historicos_humedad(shared.humidity,self.hora,self.fecha);
+            utiles.Generar_historicos_humedad(shared.humidity,self.hora,self.fecha); 
         except Exception as e:
             print(f"Error leyendo DHT11: {e}")
 

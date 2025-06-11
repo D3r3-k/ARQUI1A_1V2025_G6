@@ -1,22 +1,25 @@
-from gpiozero import LED, DigitalOutputDevice, Buzzer
+from gpiozero import LED, DigitalOutputDevice, PWMOutputDevice, Buzzer
 from globals import shared
 import threading
 
 class Actuators:
 
-
     def __init__(self):
-        # Declaracion de LED's
+        # Declaración de LEDs
         self.red_led = LED(17)
         self.yellow_led = LED(22)
         self.green_led = LED(10)
         self.blue_led = LED(9)
 
-        # Declaracion de Buzzer y Motor 
-        self.motor = DigitalOutputDevice(20) # 13,19,26
+        # Declaración del motor con puente H
+        self.motor_in1 = DigitalOutputDevice(5)     # IN1
+        self.motor_in2 = DigitalOutputDevice(6)     # IN2
+        self.motor_enable = PWMOutputDevice(13)     # EN (PWM)
+
+        # Buzzer
         self.buzzer = Buzzer(21)
 
-
+        # Diccionario para timers automáticos
         self.auto_off_timers = {}
 
         self.turn_off_all()
@@ -27,7 +30,9 @@ class Actuators:
         self.yellow_led.off()
         self.green_led.off()
         self.blue_led.off()
-        self.motor.off()
+        self.motor_enable.off()
+        self.motor_in1.off()
+        self.motor_in2.off()
         self.buzzer.off()
 
         for key in shared.actuator_status:
@@ -55,21 +60,24 @@ class Actuators:
 
     def control_motor(self, state):
         if state:
-            self.motor.on()
-        else:
-            self.motor.off()
-        shared.actuator_status['motor_fan'] = state
+            self.motor_in1.on()
+            self.motor_in2.off()  # dirección fija
+            self.motor_enable.value = 1.0  # 100% velocidad
+            shared.actuator_status['motor_fan'] = True
 
-        if state:
             if 'motor' in self.auto_off_timers:
                 self.auto_off_timers['motor'].cancel()
             self.auto_off_timers['motor'] = threading.Timer(
                 5.0, self._auto_off_motor
             )
             self.auto_off_timers['motor'].start()
+        else:
+            self._auto_off_motor()
 
     def _auto_off_motor(self):
-        self.motor.off()
+        self.motor_enable.off()
+        self.motor_in1.off()
+        self.motor_in2.off()
         shared.actuator_status['motor_fan'] = False
         print("Motor apagado automáticamente")
 

@@ -169,7 +169,7 @@ class MQTTClient:
                 },
                 "distance": {
                     "value": shared.distance,
-                    "min": 20,
+                    "min": 0,
                     "max": shared.thresholds["presence_distance"],
                     "status": "normal",
                     "unit": "cm",
