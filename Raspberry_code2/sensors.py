@@ -86,7 +86,7 @@ class Sensors:
                 # Fórmula empírica para estimar luxes
                 A = 500
                 B = 1.4
-                lux = A * (1 / R_ldr_k) ** B
+                lux = (value / 255.0) * 1000 
 
             shared.light_level = round(lux, 2)
             print(f"ADC value: {value} | Vout: {Vout:.2f} V | Lux: {lux:.2f}")
