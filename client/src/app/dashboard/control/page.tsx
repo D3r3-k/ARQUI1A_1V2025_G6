@@ -1,24 +1,42 @@
 "use client";
 
 import { AudioLines, Fan, Lightbulb, Monitor, RefreshCw, ToggleLeft } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import ControlCard from "./components/ControlCard/ControlCard";
 import { useMqtt } from "@/hooks/useMqtt";
+import { TopicControl } from "@/types/TypesMqtt";
+
+const topic = `${process.env.NEXT_PUBLIC_TOPICS_LINK}/comandos`;
 
 export default function ControlPage() {
   // Hook's
   const { publish } = useMqtt();
   // State's
-  const [isAutoMode, setIsAutoMode] = useState<boolean>(false)
+  const [isAutoMode, setIsAutoMode] = useState<boolean>(true);
   // Effect's
+  useEffect(() => {
+    // Check localStorage for control mode
+    const storedMode = localStorage.getItem("actuadoresModo");
+    if (storedMode) {
+      setIsAutoMode(JSON.parse(storedMode));
+    }
+    return () => { }
+  }, [])
+
   // Handler's
   const handleAutoModeToggle = () => {
-    publish('controls', JSON.stringify({ sensor: 'mode', state: 'auto' }));
+    if (isAutoMode) return;
     setIsAutoMode(true);
+    localStorage.setItem("actuadoresModo", JSON.stringify(true));
+    const newControlData: TopicControl = { type: 'auto_control', actuador: '', action: true };
+    publish(topic, JSON.stringify(newControlData));
   }
   const handleManualModeToggle = () => {
-    publish('controls', JSON.stringify({ sensor: 'mode', state: 'manual' }));
+    if (!isAutoMode) return;
     setIsAutoMode(false);
+    localStorage.setItem("actuadoresModo", JSON.stringify(false));
+    const newControlData: TopicControl = { type: 'manual_control', actuador: '', action: true };
+    publish(topic, JSON.stringify(newControlData));
   }
   // Render's
   return (
@@ -123,7 +141,7 @@ export default function ControlPage() {
               icon={Lightbulb}
               title="Luces LED"
               description="Iluminación principal del sistema"
-              initialState={false}
+              initialState={true}
               color="yellow"
               disabled={isAutoMode}
             />
@@ -132,7 +150,7 @@ export default function ControlPage() {
               icon={AudioLines}
               title="Buzzer"
               description="Alarma sonora del sistema"
-              initialState={false}
+              initialState={true}
               color="slate"
               disabled={isAutoMode}
             />
@@ -150,7 +168,7 @@ export default function ControlPage() {
               icon={Lightbulb}
               title="LEDs Indicadoras"
               description="Indicadores de estado"
-              initialState={false}
+              initialState={true}
               color="green"
               disabled={isAutoMode}
             />

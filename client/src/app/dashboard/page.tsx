@@ -1,26 +1,10 @@
-"use client";
-
 import DashCard from "./components/DashCard/DashCard";
 import AmbientCard from "./components/AmbientCard/AmbientCard";
-import { useEffect } from "react";
-import { useMqtt } from "@/hooks/useMqtt";
 
 export default function DashboardPage() {
   // Hook's
-  const { subscribe, messages } = useMqtt();
   // State's
   // Effect's
-  useEffect(() => {
-    subscribe("GRUPOG6/sensores/rasp01/salida");
-    return () => {};
-  }, [subscribe]);
-
-  useEffect(() => {
-    console.log("Mensajes recibidos:", messages);
-
-    return () => {};
-  }, [messages]);
-
   // Handler's
   // Render's
   return (
@@ -28,32 +12,32 @@ export default function DashboardPage() {
       <div className="grid gap-6">
         <h1 className="text-2xl font-bold">Dashboard</h1>
         {/* Tarjeta de resumen */}
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+          <div></div>
           <DashCard
             type="sensors"
             title="Sensores Activos"
             color="blue"
-            desc="Configurados"
+            desc="sensores conectados"
           />
           <DashCard
             type="devices"
-            title="Dispositivos en Linea"
+            title="Actuadores en Linea"
             color="green"
-            desc="Dispositivos conectados"
+            desc="Actuadores conectados"
           />
-          <DashCard
+          {/* <DashCard
             type="time"
             title="Tiempo de ejecucion"
             color="purple"
             desc={`Ultima consulta: N/A`}
-          />
+          /> */}
           <DashCard
             type="localTime"
             title="Hora local"
             color="orange"
-            desc={`Zona horaria: ${
-              Intl.DateTimeFormat().resolvedOptions().timeZone
-            }`}
+            desc={`Zona horaria: ${Intl.DateTimeFormat().resolvedOptions().timeZone
+              }`}
           />
         </div>
         {/* Datos de sensores */}
