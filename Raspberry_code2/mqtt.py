@@ -177,20 +177,24 @@ class MQTTClient:
                     "timestamp": timestamp
                 },
                 "Historico_Temperatura": {
-                    "timestamp": timestamp,
-                    "history": shared.HTemperatura["history"]
+                    "history": shared.HTemperatura["history"],
+                    "timestamp": shared.HTemperatur["timestap"],
+                    
                 },
                 "Historico_Humedad": {
-                    "timestamp": timestamp,
-                    "history": shared.HHumedad["history"]
+                    "history": shared.HHumedad["history"],
+                    "timestamp": shared.HHumedad["timestap"],
+                    
                 },
                 "Historico_Presion": {
-                    "timestamp": timestamp,
-                    "history": shared.HPresion["history"]
+                    "history": shared.HPresion["history"],
+                    "timestamp": shared.HPresion["timestap"],
+                    
                 },
                 "Historico_Luz": {
-                    "timestamp": timestamp,
-                    "history": shared.HLuz["history"]
+                    "history": shared.HLuz["history"],
+                    "timestamp": shared.HLuz["history"],
+                    
                 },
             }
 
