@@ -1,0 +1,204 @@
+import json
+import time
+import logging
+import paho.mqtt.client as mqtt
+from globals import shared
+
+class MQTTClient:
+    """
+    MQTT Client for SIEPA system
+    Handles publishing sensor data and subscribing to control commands
+    """
+    
+    def __init__(self, broker_host="localhost", broker_port=1883, group_6="G1"):
+        self.broker_host = broker_host
+        self.broker_port = broker_port
+        self.group_number = group_6
+        self.client_id = f"siepa_rasp_{group_6}"
+        
+        # MQTT Topics según el formato requerido
+        self.topics = {
+            "temperature": f"GRUPO{group_6}/sensores/rasp01/temperatura",
+            "humidity": f"GRUPO{group_6}/sensores/rasp01/humedad",
+            "light": f"GRUPO{group_6}/sensores/rasp01/luz",
+            "pressure": f"GRUPO{group_6}/sensores/rasp01/presion",
+            "air_quality": f"GRUPO{group_6}/sensores/rasp01/calidad_aire",
+            "distance": f"GRUPO{group_6}/sensores/rasp01/distancia",
+            "alerts": f"GRUPO{group_6}/sensores/rasp01/alertas",
+            "actuators_status": f"GRUPO{group_6}/sensores/rasp01/actuadores",
+            
+            # Topic para recibir comandos del dashboard
+            "control": f"GRUPO{group_6}/control/rasp01/comandos"
+        }
+        
+        # Initialize MQTT client
+        self.client = mqtt.Client(client_id=self.client_id)
+        self.client.on_connect = self._on_connect
+        self.client.on_message = self._on_message
+        self.client.on_disconnect = self._on_disconnect
+        
+        self.connected = False
+        self.last_publish_time = 0
+        self.publish_interval = 2  # Publish every 2 seconds
+        
+        logging.info(f"MQTT Client initialized - Group: {group_6}")
+    
+    def _on_connect(self, client, userdata, flags, rc):
+        """Callback when MQTT client connects"""
+        if rc == 0:
+            self.connected = True
+            logging.info(f"Connected to MQTT broker at {self.broker_host}:{self.broker_port}")
+            
+            # Subscribe to control topic
+            client.subscribe(self.topics["control"])
+            logging.info(f"Subscribed to control topic: {self.topics['control']}")
+        else:
+            logging.error(f"Failed to connect to MQTT broker. Return code: {rc}")
+    
+    def _on_message(self, client, userdata, msg):
+        """Handle incoming MQTT messages (control commands from dashboard)"""
+        try:
+            topic = msg.topic
+            payload = json.loads(msg.payload.decode())
+            logging.info(f"Received message on {topic}: {payload}")
+            
+            # Handle control commands
+            if topic == self.topics["control"]:
+                self._handle_control_command(payload)
+                
+        except Exception as e:
+            logging.error(f"Error processing MQTT message: {e}")
+    
+    def _handle_control_command(self, command):
+        """Process control commands from dashboard"""
+        try:
+            cmd_type = command.get("type")
+            device = command.get("device")
+            action = command.get("action")  # "on" or "off"
+            
+            if cmd_type == "actuator_control":
+                # Update shared status for actuator control
+                # This will be picked up by the actuators class
+                if device in shared.actuator_status:
+                    shared.remote_commands[device] = action
+                    logging.info(f"Remote command: {device} -> {action}")
+                    
+        except Exception as e:
+            logging.error(f"Error handling control command: {e}")
+    
+    def _on_disconnect(self, client, userdata, rc):
+        """Callback when MQTT client disconnects"""
+        self.connected = False
+        logging.warning(f"Disconnected from MQTT broker. Return code: {rc}")
+    
+    def connect(self):
+        """Connect to MQTT broker"""
+        try:
+            self.client.connect(self.broker_host, self.broker_port, 60)
+            self.client.loop_start()  # Start background thread for MQTT
+            logging.info("MQTT connection initiated")
+        except Exception as e:
+            logging.error(f"Error connecting to MQTT broker: {e}")
+    
+    def disconnect(self):
+        """Disconnect from MQTT broker"""
+        if self.connected:
+            self.client.loop_stop()
+            self.client.disconnect()
+            logging.info("Disconnected from MQTT broker")
+    
+    def publish_sensor_data(self):
+        """Publish all sensor data to MQTT topics"""
+        if not self.connected:
+            return
+        
+        current_time = time.time()
+        if current_time - self.last_publish_time < self.publish_interval:
+            return
+        
+        try:
+            timestamp = int(current_time * 1000)  # Timestamp in milliseconds
+            
+            # Individual sensor data
+            sensor_data = {
+                "temperature": {
+                    "value": shared.temperature,
+                    "unit": "°C",
+                    "timestamp": timestamp
+                },
+                "humidity": {
+                    "value": shared.humidity,
+                    "unit": "%",
+                    "timestamp": timestamp
+                },
+                "light": {
+                    "value": shared.light_level,
+                    "unit": "%",
+                    "timestamp": timestamp
+                },
+                "pressure": {
+                    "value": shared.pressure,
+                    "unit": "hPa",
+                    "timestamp": timestamp
+                },
+                "air_quality": {
+                    "value": shared.air_quality,
+                    "unit": "ppm",
+                    "timestamp": timestamp
+                },
+                "distance": {
+                    "value": shared.distance,
+                    "unit": "cm",
+                    "timestamp": timestamp
+                }
+            }
+            
+            # Publish individual sensor readings
+            for sensor, data in sensor_data.items():
+                topic = self.topics[sensor]
+                payload = json.dumps(data)
+                self.client.publish(topic, payload)
+            
+            # Publish alerts status
+            alerts_payload = json.dumps({
+                "alerts": shared.alert_status,
+                "timestamp": timestamp
+            })
+            self.client.publish(self.topics["alerts"], alerts_payload)
+            
+            # Publish actuators status
+            actuators_payload = json.dumps({
+                "actuators": shared.actuator_status,
+                "timestamp": timestamp
+            })
+            self.client.publish(self.topics["actuators_status"], actuators_payload)
+            
+            self.last_publish_time = current_time
+            logging.debug("Published sensor data to MQTT")
+            
+        except Exception as e:
+            logging.error(f"Error publishing sensor data: {e}")
+    
+    def publish_alert(self, alert_type, message, value):
+        """Publish specific alert"""
+        if not self.connected:
+            return
+        
+        try:
+            alert_payload = {
+                "type": alert_type,
+                "message": message,
+                "value": value,
+                "timestamp": int(time.time() * 1000),
+                "severity": "critical"
+            }
+            
+            self.client.publish(self.topics["alerts"], json.dumps(alert_payload))
+            logging.info(f"Published alert: {alert_type} - {message}")
+            
+        except Exception as e:
+            logging.error(f"Error publishing alert: {e}")
+    
+    def is_connected(self):
+        """Check if client is connected"""
+        return self.connected
