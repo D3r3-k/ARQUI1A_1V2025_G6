@@ -44,14 +44,14 @@ class GlobalState:
         
         # Alert thresholds (configurable)
         self.thresholds = {
-            'temperature_max': 30.0,    # °C
+            'temperature_max': 25,    # °C
             'temperature_min': 15.0,    # °C
             'humidity_max': 90.0,       # %
             'humidity_min': 30.0,       # %
-            'light_min': 20,            # % (too dark)
-            'light_max': 1000,            # % (too lifht)
-            'air_quality_max': 500,     # Air quality index
-            'air_quality_min': 100,     # Air quality index
+            'light_min': 1.5,            # % (too dark)
+            'light_max': 10,            # % (too lifht)
+            'air_quality_max': 160,     # Air quality index
+            'air_quality_min': 135,     # Air quality index
             'presence_distance_min': 2.0,  # cm (presence detected)
             'presence_distance_max': 100,  # cm (presence detected)
             'Presure_min': 850,         # Presion hpa

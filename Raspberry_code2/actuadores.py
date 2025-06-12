@@ -102,7 +102,7 @@ class Actuators:
                 print(f"  Alerta de temperatura: {shared.temperature}°C")
                 self.control_led(self.red_led, 'red_led', True)
                 shared.alert_status['temperature'] = True
-                shared.local_error_message = "Temp Alert!"
+                shared.local_error_message = "Temperatura Critica!"
                 if shared.temperature > shared.thresholds['temperature_max']:
                     self.control_motor(True)
         else:
@@ -113,7 +113,7 @@ class Actuators:
                 print(f"  Alerta de humedad: {shared.humidity}%")
                 self.control_led(self.yellow_led, 'yellow_led', True)
                 shared.alert_status['humidity'] = True
-                shared.local_error_message = "Humidity Alert!"
+                shared.local_error_message = "Humedad Critica!"
         else:
             shared.alert_status['humidity'] = False
 
@@ -122,7 +122,7 @@ class Actuators:
                 print(f" Alerta por baja luz: {shared.light_level}%")
                 self.control_led(self.green_led, 'green_led', True)
                 shared.alert_status['light'] = True
-                shared.local_error_message = "Low Light!"
+                shared.local_error_message = "Iluminacion Baja!"
         else:
             shared.alert_status['light'] = False
 
@@ -132,7 +132,7 @@ class Actuators:
                 self.control_led(self.blue_led, 'blue_led', True)
                 self.control_buzzer(True, 3.0)
                 shared.alert_status['air_quality'] = True
-                shared.local_error_message = "Bad Air Quality!"
+                shared.local_error_message = "Mala Calidad de Aire!"
         else:
             shared.alert_status['air_quality'] = False
 
