@@ -9,7 +9,7 @@ class Display:
         self.last_t = 0
         self.enable = True
         self.threshold_data = 0.5  
-        self.threshold_message = 5.0
+        self.threshold_message = 0.5
         self.display_index = 0
         self.lcd.clear()
         print("Pantalla LCD inicializada")

@@ -31,8 +31,7 @@ class GlobalState:
             'presence': False
         }
 
-
-        
+   
         # Actuator status
         self.actuator_status = {
             'red_led': False,      # Temperature alert
@@ -58,31 +57,5 @@ class GlobalState:
             'Presure_min': 850,         # Presion hpa
             'Presure_max': 870         # Presion en hpa
         }
-
-        # Datos historicos
-        
-        self.HTemperatura = {
-            "timestap": current_time,
-            "history": []
-        }
-
-        
-        self.HHumedad = {
-            "timestap": current_time,
-            "history": []
-        }
-
-        self.HPresion = {
-            "timestap": current_time,
-            "history": []
-        }
-
-        self.HLuz = {
-            "timestap": current_time,
-            "history": []
-        }
-        self.remote_commands = {}
-        
-
 
 shared = GlobalState()  # Create a shared instance of GlobalState

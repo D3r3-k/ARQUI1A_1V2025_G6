@@ -116,10 +116,6 @@ class MQTTClient:
         current_time = time.time()
         timestamp = int(current_time * 1000)
 
-        print("[MQTT] Publicando histórico HHumedad con tamaño:", len(shared.HHumedad["history"]))
-        if shared.HHumedad["history"]:
-            print("[MQTT] Último dato HHumedad:", json.dumps(shared.HHumedad["history"][-1]))
-
         try:
             # Individual sensor data
             sensor_data = {
