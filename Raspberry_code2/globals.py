@@ -10,7 +10,7 @@ class GlobalState:
         return cls._instance
     
     def _init(self):    
-        current_time = time.time()                                    # Initialize shared variables
+        current_time = time.time()                           # Initialize shared variables
         # Sensor readings
         self.temperature = 0.0
         self.humidity = 0.0
@@ -48,7 +48,7 @@ class GlobalState:
             'temperature_min': 15.0,    # °C
             'humidity_max': 90.0,       # %
             'humidity_min': 30.0,       # %
-            'light_min': 1.5,            # % (too dark)
+            'light_min': 1.6,            # % (too dark)
             'light_max': 10,            # % (too lifht)
             'air_quality_max': 141,     # Air quality index
             'air_quality_min': 135,     # Air quality index
