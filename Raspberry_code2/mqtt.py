@@ -27,11 +27,6 @@ class MQTTClient:
             "alerts": f"GRUPO{group_6}/sensores/rasp02/alertas",
             "actuators_status": f"GRUPO{group_6}/sensores/rasp02/actuadores",
             
-            # Historicos
-            "Historico_Temperatura": f"GRUPO{group_6}/sensores/rasp01/HTemperatura",
-            "Historico_Humedad": f"GRUPO{group_6}/sensores/rasp01/HHumedad",
-            "Historico_Presion": f"GRUPO{group_6}/sensores/rasp01/HPresion",
-            "Historico_Luz": f"GRUPO{group_6}/sensores/rasp01/HLuz",
 
             # Topic para recibir comandos del dashboard
             "control": f"GRUPO{group_6}/control/rasp02/comandos"
@@ -176,27 +171,7 @@ class MQTTClient:
                     "status": "normal",
                     "unit": "cm",
                     "timestamp": timestamp
-                },
-                "Historico_Temperatura": {
-                    "history": shared.HTemperatura["history"],
-                    "timestamp": shared.HTemperatura["timestap"],
-                    
-                },
-                "Historico_Humedad": {
-                    "history": shared.HHumedad["history"],
-                    "timestamp": shared.HHumedad["timestap"],
-                    
-                },
-                "Historico_Presion": {
-                    "history": shared.HPresion["history"],
-                    "timestamp": shared.HPresion["timestap"],
-                    
-                },
-                "Historico_Luz": {
-                    "history": shared.HLuz["timestap"],
-                    "timestamp": shared.HLuz["history"],
-                    
-                },
+                }
             }
 
             # Publish all sensor and historical data with retain=True

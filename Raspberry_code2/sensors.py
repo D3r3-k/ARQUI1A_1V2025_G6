@@ -55,11 +55,6 @@ class Sensors:
         try:
             shared.temperature = float(self.dht.temperature)
             shared.humidity = float(self.dht.humidity)
-            now = datetime.now()
-            hora = now.strftime("%H:%M:%S")
-            fecha = now.strftime("%d-%m-%Y")
-            utiles.Generar_historicos_temperatura(shared.temperature,hora,fecha); 
-            utiles.Generar_historicos_humedad(shared.humidity,hora,fecha); 
         except Exception as e:
             print(f"Error leyendo DHT11: {e}")
 
@@ -96,11 +91,6 @@ class Sensors:
 
             shared.light_level = round(lux, 2)
 
-            now = datetime.now()
-            hora = now.strftime("%H:%M:%S")
-            fecha = now.strftime("%d-%m-%Y")
-            utiles.Generar_historicos_Luz(shared.light_level, hora, fecha)
-
         except Exception as e:
             print(f"Error leyendo luz en luxes: {e}")
 
@@ -134,10 +124,6 @@ class Sensors:
             p = ((p + var1 + var2) >> 8) + (self.dig_P7 << 4)
 
             shared.pressure = round(p / 25600.0, 2)
-            now = datetime.now()
-            hora = now.strftime("%H:%M:%S")
-            fecha = now.strftime("%d-%m-%Y")
-            utiles.Generar_historicos_presion(shared.pressure,hora,fecha); 
     
 
         except Exception as e:
