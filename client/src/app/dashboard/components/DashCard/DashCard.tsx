@@ -2,7 +2,7 @@
 
 import { useMqtt } from "@/hooks/useMqtt";
 import { TopicDashboard } from "@/types/TypesMqtt";
-import { Clock, Cpu, Timer, Wifi } from "lucide-react";
+import { Clock, Cpu, Fan, Timer } from "lucide-react";
 import { useEffect, useState } from "react";
 
 interface DashboardPageProps {
@@ -12,6 +12,13 @@ interface DashboardPageProps {
   type: "sensors" | "devices" | "time" | "localTime";
 }
 
+const TOPIC_MAP: Record<string, string> = {
+  sensors: `${process.env.NEXT_PUBLIC_TOPICS_LINK}/sensors`,
+  devices: `${process.env.NEXT_PUBLIC_TOPICS_LINK}/devices`,
+  time: `${process.env.NEXT_PUBLIC_TOPICS_LINK}/time`,
+  localTime: "localTime", // This is a custom value, not an MQTT topic
+}
+
 export default function DashCard({
   title,
   color,
@@ -19,70 +26,56 @@ export default function DashCard({
   type,
 }: DashboardPageProps) {
   // Hook's
-  const { subscribe, messages } = useMqtt();
+  const { infoTopics } = useMqtt();
+  const [mounted, setMounted] = useState(false);
+  const [localTime, setLocalTime] = useState("");
 
-  // State's
-  const [valueData, setValueData] = useState<string>("N/A");
-
-  // Effect's
   useEffect(() => {
+    setMounted(true);
     switch (type) {
-      case "sensors":
-        subscribe("sensors/active");
-        break;
-      case "devices":
-        subscribe("devices/online");
-        break;
-      case "time":
-        subscribe("system/uptime");
-        break;
       case "localTime":
-        setValueData(new Date().toLocaleTimeString());
-        break;
+        setLocalTime(new Date().toLocaleTimeString());
+        const interval = setInterval(() => {
+          setLocalTime(new Date().toLocaleTimeString());
+        }, 1000);
+        return () => clearInterval(interval);
+
       default:
-        setValueData("N/A");
-    }
-  }, [type, subscribe]);
-
-  // Este efecto actualiza el valor cuando cambia el mensaje
-  useEffect(() => {
-    switch (type) {
-      case "sensors":
-        const activeSensors = messages["sensors/active"] as TopicDashboard;
-        if (activeSensors?.value !== undefined)
-          setValueData(activeSensors.value || "N/A");
         break;
-      case "devices":
-        const onlineDevices = messages["devices/online"] as TopicDashboard;
-        if (onlineDevices?.value !== undefined)
-          setValueData(onlineDevices.value || "N/A");
-        break;
-      case "time":
-        const uptime = messages["system/uptime"] as TopicDashboard;
-        if (uptime?.value !== undefined) {
-          const uptimeInSeconds = parseInt(uptime.value, 10);
-          const hours = Math.floor(uptimeInSeconds / 3600);
-          const minutes = Math.floor((uptimeInSeconds % 3600) / 60);
-          const seconds = uptimeInSeconds % 60;
-          setValueData(`${hours}h ${minutes}m ${seconds}s`);
-        } else {
-          setValueData("N/A");
-        }
-        break;
-    }
-  }, [messages, type]);
-
-  //actualizar el valor de valueData cada segundo
-  useEffect(() => {
-    if (type === "localTime") {
-      const interval = setInterval(() => {
-        setValueData(new Date().toLocaleTimeString());
-      }, 1000);
-      return () => clearInterval(interval);
     }
   }, [type]);
 
-  // Handler's
+  // Data según el tipo de tarjeta
+  const valueData = (() => {
+    switch (type) {
+      case "localTime":
+        return mounted ? localTime : "";
+      case "sensors":
+        return "5";
+      case "devices": {
+        const topic = TOPIC_MAP[type];
+        const data = infoTopics[topic] as TopicDashboard;
+        return data?.value !== undefined ? String(data.value) : "N/A";
+      }
+      case "time": {
+        const topic = TOPIC_MAP[type];
+        const data = infoTopics[topic] as TopicDashboard;
+        if (data?.value !== undefined) {
+          const uptimeInSeconds = parseInt(String(data.value), 10);
+          if (!isNaN(uptimeInSeconds)) {
+            const hours = Math.floor(uptimeInSeconds / 3600);
+            const minutes = Math.floor((uptimeInSeconds % 3600) / 60);
+            const seconds = uptimeInSeconds % 60;
+            return `${hours}h ${minutes}m ${seconds}s`;
+          }
+        }
+        return "N/A";
+      }
+      default:
+        return "N/A";
+    }
+  })();
+
   // Render's
   const iconColor = {
     green: {
@@ -115,10 +108,11 @@ export default function DashCard({
   };
   const Icon = {
     sensors: Cpu,
-    devices: Wifi,
+    devices: Fan,
     time: Timer,
     localTime: Clock,
   }[type];
+
   return (
     <div className="rounded-lg border border-gray-100 dark:border-zinc-800 p-6 shadow-sm">
       <div className="flex items-center justify-between">
@@ -128,9 +122,11 @@ export default function DashCard({
         </div>
       </div>
       <div className="mt-2">
-        <p className="text-2xl font-bold">{valueData}</p>
+        <p className="text-2xl font-bold">
+          {type === "localTime" && !mounted ? "" : valueData}
+        </p>
         <p className="mt-1 text-xs text-gray-400">
-          {type === "time" ? new Date().toLocaleTimeString() : desc}
+          {desc}
         </p>
       </div>
     </div>

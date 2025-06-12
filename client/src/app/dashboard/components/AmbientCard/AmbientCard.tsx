@@ -20,59 +20,30 @@ interface AmbientCardProps {
 
 export default function AmbientCard({ id, color, title }: AmbientCardProps) {
   // Hook's
-  const { subscribe, messages } = useMqtt();
+  const { ambientTopics } = useMqtt();
   // State's
-  const [data, setData] = useState<TopicAmbient>({
-    status: "inactive",
-    value: "N/A",
-    min: "N/A",
-    max: "N/A",
-    timestamp: "N/A",
-    unit: "N/A",
-  });
-  const [timestamp, settimestamp] = useState<string>("");
+  const [timestampLabel, setTimestampLabel] = useState<string>("N/A");
+  // Option's
+  const topic = `${process.env.NEXT_PUBLIC_TOPICS_LINK}/${id}`;
+  const data: TopicAmbient | undefined = ambientTopics[topic];
   // Effect's
   useEffect(() => {
-    subscribe(`GRUPOG6/sensores/rasp01/${id}`);
-    return () => {};
-  }, [id, subscribe]);
-
-  useEffect(() => {
-    const ambientData = messages[
-      `GRUPOG6/sensores/rasp01/${id}`
-    ] as TopicAmbient;
-    if (ambientData) {
-      setData({
-        status: ambientData.status || "normal",
-        value: ambientData.value || false,
-        min: ambientData.min || "N/A",
-        max: ambientData.max || "N/A",
-        timestamp: ambientData.timestamp || "N/A",
-        unit: ambientData.unit || "N/A",
-      });
-    }
-  }, [messages, id]);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (!data?.timestamp) return;
+    if (!data?.timestamp) return setTimestampLabel("N/A");
+    const updateLabel = () => {
       const currentTime = Date.now();
       const oldtime = Number(data.timestamp);
       const minutesAgo = Math.floor((currentTime - oldtime) / 60000);
-      settimestamp(`Hace ${minutesAgo} minuto${minutesAgo !== 1 ? "s" : ""}`);
-    }, 60000);
-    return () => clearInterval(interval);
-  }, [id, data.timestamp]);
+      setTimestampLabel(
+        `Hace ${minutesAgo} minuto${minutesAgo !== 1 ? "s" : ""}`
+      );
+    };
+    updateLabel();
+    const interval = setInterval(updateLabel, 60000);
+    return () => {
+      clearInterval(interval)
+    };
+  }, [data?.timestamp]);
 
-  useEffect(() => {
-    const currentTime = Date.now();
-    const oldtime = Number(data.timestamp);
-    const minutesAgo = Math.floor((currentTime - oldtime) / 60000);
-    settimestamp(`Hace ${minutesAgo} minuto${minutesAgo !== 1 ? "s" : ""}`);
-    return () => {};
-  }, [id, data.timestamp]);
-
-  // Handler's
   // Render's
   const colorCard = {
     red: {
@@ -115,6 +86,7 @@ export default function AmbientCard({ id, color, title }: AmbientCardProps) {
     bg: "bg-gray-100 dark:bg-gray-900/40",
     bgBar: "bg-gray-500",
   };
+
   const IconType: any = {
     temperatura: Thermometer,
     humedad: Droplets,
@@ -123,6 +95,15 @@ export default function AmbientCard({ id, color, title }: AmbientCardProps) {
     presion: Wind,
     distancia: User,
   }[id];
+
+  const safeData = {
+    status: data?.status ?? "inactive",
+    value: data?.value ?? "N/A",
+    min: data?.min ?? "N/A",
+    max: data?.max ?? "N/A",
+    timestamp: data?.timestamp ?? "N/A",
+    unit: data?.unit ?? "N/A",
+  };
 
   return (
     <div className="rounded-lg border border-gray-100 dark:border-zinc-800 p-6 shadow-sm transition-shadow duration-300 hover:shadow-md">
@@ -140,41 +121,40 @@ export default function AmbientCard({ id, color, title }: AmbientCardProps) {
             {title}
           </h3>
           <span
-            className={`rounded-md px-2 py-1 text-xs font-medium transition-colors duration-300 ${
-              data.status === "normal"
-                ? "bg-green-600/20 text-green-700 dark:bg-green-700/20 dark:text-green-400"
-                : data.status === "warning"
+            className={`rounded-md px-2 py-1 text-xs font-medium transition-colors duration-300 ${safeData.status === "normal"
+              ? "bg-green-600/20 text-green-700 dark:bg-green-700/20 dark:text-green-400"
+              : safeData.status === "warning"
                 ? "bg-yellow-600/20 text-yellow-700 dark:bg-yellow-700/20 dark:text-yellow-400"
-                : data.status == "critical"
-                ? "bg-red-600/20 text-red-700 dark:bg-red-700/20 dark:text-red-400"
-                : "bg-gray-600/20 text-gray-700 dark:bg-gray-700/20 dark:text-gray-400"
-            }`}
+                : safeData.status === "critical"
+                  ? "bg-red-600/20 text-red-700 dark:bg-red-700/20 dark:text-red-400"
+                  : "bg-gray-600/20 text-gray-700 dark:bg-gray-700/20 dark:text-gray-400"
+              }`}
           >
-            {data.status}
+            {safeData.status}
           </span>
         </div>
       </div>
       <div className="mt-3">
         <div className="flex items-baseline gap-1">
           <p className="text-2xl font-bold transition-colors duration-300">
-            {typeof data.value === "boolean"
-              ? data.value
+            {typeof safeData.value === "boolean"
+              ? safeData.value
                 ? "Sí"
                 : "No"
-              : data.value}
+              : safeData.value}
           </p>
           <span className="text-sm text-gray-400 transition-colors duration-300">
-            {data.unit}
+            {safeData.unit}
           </span>
         </div>
       </div>
       <div className="mt-4 space-y-2">
         <div className="flex justify-between text-xs text-gray-400 transition-colors duration-300">
           <span>
-            {data.min} {data.unit}
+            {safeData.min} {safeData.unit}
           </span>
           <span>
-            {data.max} {data.unit}
+            {safeData.max} {safeData.unit}
           </span>
         </div>
         <div className="h-2 w-full bg-gray-100 dark:bg-gray-500 rounded-full overflow-hidden transition-colors duration-300">
@@ -182,9 +162,9 @@ export default function AmbientCard({ id, color, title }: AmbientCardProps) {
             className={`h-full rounded-full ${colorCard.bgBar} transition-all duration-500`}
             style={{
               width: (() => {
-                const value = data.value;
-                const min = parseFloat(data.min);
-                const max = parseFloat(data.max);
+                const value = safeData.value;
+                const min = parseFloat(safeData.min);
+                const max = parseFloat(safeData.max);
                 if (typeof value === "boolean") {
                   return value ? "100%" : "0%";
                 }
@@ -204,9 +184,7 @@ export default function AmbientCard({ id, color, title }: AmbientCardProps) {
           />
         </div>
         <p className="text-xs text-gray-400 transition-colors duration-300">
-          {timestamp
-            ? `Última actualización: ${timestamp}`
-            : "Última actualización: N/A"}
+          Última actualización: {timestampLabel}
         </p>
       </div>
     </div>

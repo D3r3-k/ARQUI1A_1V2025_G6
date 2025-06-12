@@ -1,7 +1,6 @@
 // DASHBOARD TOPICS
 export type TopicDashboard = {
   value: string;
-  timestamp?: string;
 };
 
 export type TopicAmbient = {
@@ -9,7 +8,7 @@ export type TopicAmbient = {
   min: string;
   max: string;
   status: "normal" | "warning" | "critical" | "inactive";
-  unit?: string;
+  unit: string;
   timestamp: string;
 };
 
@@ -21,21 +20,30 @@ export type TopicActivity = {
 };
 
 // HISTORY TOPICS
-export type TopicHistory = {
+export type HistoryItem = {
   timestamp: string;
-  history:
-    | [
-        {
-          date: string;
-          hora: string;
-          valor: string;
-        }
-      ]
-    | [];
+  value: string;
+};
+
+export type TopicHistoryStack = {
+  history: HistoryItem[];
 };
 
 // CONTROL TOPICS
 export type TopicControl = {
-  sensor: string;
-  status: boolean;
+  type: "auto_control" | "manual_control";
+  actuador: string;
+  action: boolean;
+};
+
+// ALERT TOPIC
+export type TopicAlert = {
+  temperature: {
+    status: boolean;
+    msg: string;
+  };
+  humidity: boolean;
+  light: boolean;
+  air_quality: boolean;
+  presence: boolean;
 };

@@ -1,7 +1,7 @@
 "use client";
 
 import { SensorType } from "@/types/TypesDashboard";
-import { Droplets, Gauge, Sun, Thermometer } from "lucide-react";
+import { Droplets, Gauge, Sun, Thermometer, Wind } from "lucide-react";
 interface TabNavigationProps {
   activeTab: SensorType;
   onTabChange: (tab: SensorType) => void;
@@ -19,25 +19,30 @@ export default function TabNavigation({
   // Handler's
   // Render's
   const tabConfig = {
-    temperature: {
+    temperatura: {
       icon: Thermometer,
       label: "Temperatura",
       color: "border-red-500 text-red-600 dark:text-red-500",
     },
-    humidity: {
+    humedad: {
       icon: Droplets,
       label: "Humedad",
       color: "border-blue-500 text-blue-600 dark:text-blue-400",
     },
-    luminosity: {
+    luminosidad: {
       icon: Sun,
       label: "Luminosidad",
       color: "border-yellow-500 text-yellow-600 dark:text-yellow-500",
     },
-    pressure: {
+    presion: {
       icon: Gauge,
       label: "Presión",
       color: "border-green-500 text-green-600 dark:text-green-500",
+    },
+    calidad_aire: {
+      icon: Wind,
+      label: "Calidad del Aire",
+      color: "border-purple-500 text-purple-600 dark:text-purple-500",
     },
   };
   return (

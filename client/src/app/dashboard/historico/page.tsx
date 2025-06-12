@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import TabNavigation from "./components/TabNavigation/TabNavigation";
 import {
   ChartLine,
@@ -8,123 +8,95 @@ import {
   Gauge,
   SunMedium,
   Thermometer,
+  Wind,
 } from "lucide-react";
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { useMqtt } from "@/hooks/useMqtt";
 import { SensorType } from "@/types/TypesDashboard";
-import { TopicHistory } from "@/types/TypesMqtt";
+
+// Mapeo de sensor y topic stackeable
+const sensorTopicMap: Record<SensorType, { topic: string; label: string; unit: string; icon: any; color: any }> = {
+  temperatura: {
+    topic: `${process.env.NEXT_PUBLIC_TOPICS_LINK}/temperatura`,
+    label: "Temperatura",
+    unit: "°C",
+    icon: Thermometer,
+    color: {
+      border: "border-red-500",
+      text: "text-red-900 dark:text-red-400",
+      bg: "bg-red-400 dark:bg-red-900/40",
+    },
+  },
+  humedad: {
+    topic: `${process.env.NEXT_PUBLIC_TOPICS_LINK}/humedad`,
+    label: "Humedad",
+    unit: "%",
+    icon: Droplets,
+    color: {
+      border: "border-blue-500",
+      text: "text-blue-900 dark:text-blue-400",
+      bg: "bg-blue-400 dark:bg-blue-900/40",
+    },
+  },
+  luminosidad: {
+    topic: `${process.env.NEXT_PUBLIC_TOPICS_LINK}/luz`,
+    label: "Luminosidad",
+    unit: "lux",
+    icon: SunMedium,
+    color: {
+      border: "border-yellow-500",
+      text: "text-yellow-900 dark:text-yellow-400",
+      bg: "bg-yellow-400 dark:bg-yellow-700/60",
+    },
+  },
+  presion: {
+    topic: `${process.env.NEXT_PUBLIC_TOPICS_LINK}/presion`,
+    label: "Presión",
+    unit: "hPa",
+    icon: Gauge,
+    color: {
+      border: "border-green-500 dark:border-green-700",
+      text: "text-green-900 dark:text-green-400",
+      bg: "bg-green-400 dark:bg-green-900/60",
+    },
+  },
+  calidad_aire: {
+    topic: `${process.env.NEXT_PUBLIC_TOPICS_LINK}/calidad_aire`,
+    label: "Calidad del aire",
+    unit: "AQI",
+    icon: Wind,
+    color: {
+      border: "border-purple-500 dark:border-purple-700",
+      text: "text-purple-900 dark:text-purple-400",
+      bg: "bg-purple-400 dark:bg-purple-900/60",
+    },
+  },
+};
 
 export default function HistoricoPage() {
-  // Hook's
-  const { subscribe, messages, isConnected } = useMqtt();
-  // State's
-  const [activeTab, setActiveTab] = useState<SensorType>("temperature");
-  const [historicData, setHistoricData] = useState<TopicHistory>({
-    timestamp: "",
-    history: [],
-  });
-  const [graphData, setGraphData] = useState<any[]>([]);
-  // Effect's
-  const topicMap = {
-    temperature: "HTemperatura",
-    humidity: "HHumedad",
-    luminosity: "HLuz",
-    pressure: "HPresion",
-  };
+  const { stackTopics } = useMqtt();
+  const [activeTab, setActiveTab] = useState<SensorType>("temperatura");
 
-  const topic = topicMap[activeTab];
-  const topicLink = `GRUPOG6/sensores/rasp01/${topic}`;
+  // Topic y datos según tab activa
+  const sensorOpt = sensorTopicMap[activeTab];
+  const stack = stackTopics[sensorOpt.topic]?.history ?? [];
 
-  // Suscribirse solo cuando haya conexión y un topic válido
-  useEffect(() => {
-    if (isConnected && topic) {
-      subscribe(`GRUPOG6/sensores/rasp01/${topicMap.temperature}`);
-      subscribe(`GRUPOG6/sensores/rasp01/${topicMap.humidity}`);
-      subscribe(`GRUPOG6/sensores/rasp01/${topicMap.luminosity}`);
-      subscribe(`GRUPOG6/sensores/rasp01/${topicMap.pressure}`);
-    }
-  }, [isConnected, topic]);
+  // Preparar datos para la gráfica (siempre orden ascendente por timestamp)
+  const graphData = stack.map((item) => ({
+    timestamp: new Date(Number(item.timestamp)).toLocaleTimeString(),
+    value: parseFloat(item.value),
+  }));
 
-  // Actualizar los datos cuando llegan nuevos mensajes
-  useEffect(() => {
-    if (!topic) return;
-
-    console.log("Messages received:", messages);
-    const historyData = messages[topicLink] as TopicHistory;
-
-    if (historyData) {
-      setHistoricData(historyData);
-      const transformedData = historyData.history.map((item) => ({
-        timestamp: item.hora,
-        [activeTab]: parseFloat(item.valor).toFixed(2),
-      }));
-      setGraphData(transformedData);
-    } else {
-      setHistoricData({
-        timestamp: "",
-        history: [],
-      });
-      setGraphData([{ timestamp: "N/A", [activeTab]: "0" }]);
-    }
-  }, [messages, topic, activeTab]);
-
-  // Handler's
-  // Render's
-  const historyOpt = {
-    temperature: {
-      icon: Thermometer,
-      label: "Temperatura",
-      unit: "°C",
-      color: {
-        border: "border-red-500",
-        text: "text-red-900 dark:text-red-400",
-        bg: "bg-red-400 dark:bg-red-900/40",
-      },
-    },
-    humidity: {
-      icon: Droplets,
-      label: "Humedad",
-      unit: "%",
-      color: {
-        border: "border-blue-500",
-        text: "text-blue-900 dark:text-blue-400",
-        bg: "bg-blue-400 dark:bg-blue-900/40",
-      },
-    },
-    luminosity: {
-      icon: SunMedium,
-      label: "Luminosidad",
-      unit: "lux",
-      color: {
-        border: "border-yellow-500",
-        text: "text-yellow-900 dark:text-yellow-400",
-        bg: "bg-yellow-400 dark:bg-yellow-700/60",
-      },
-    },
-    pressure: {
-      icon: Gauge,
-      label: "Presión",
-      unit: "hPa",
-      color: {
-        border: "border-green-500 dark:border-green-700",
-        text: "text-green-900 dark:text-green-400",
-        bg: "bg-green-400 dark:bg-green-900/60",
-      },
-    },
-  }[activeTab];
+  // Último dato (si hay datos)
+  const latestItem = stack.length > 0 ? stack[stack.length - 1] : undefined;
 
   return (
     <main className="flex-1 p-4 lg:p-6 flex flex-col gap-4">
       <div className="gap-6 flex justify-between">
-        <h1 className="text-2xl font-bold">Historico</h1>
-        {/* <button className={`text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 transition-colors flex items-center gap-2 p-2 rounded-md
-          border border-gray-200 dark:border-gray-700 cursor-pointer`}>
-          <span className="text-sm font-semibold">Actualizar</span>
-          <RefreshCcw size={20} />
-        </button> */}
+        <h1 className="text-2xl font-bold">Histórico</h1>
       </div>
       <section className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        {/* Content */}
+        {/* Main chart section */}
         <div className="lg:col-span-3 flex flex-col gap-4 min-h-full">
           <TabNavigation activeTab={activeTab} onTabChange={setActiveTab} />
           <div className="w-full min-h-5">
@@ -132,17 +104,15 @@ export default function HistoricoPage() {
               <div className="flex flex-col gap-4">
                 <div className="flex justify-between items-center">
                   <div className="flex gap-3 items-center">
-                    <div
-                      className={`w-12 h-12 p-2 rounded-sm flex items-center justify-center ${historyOpt.color.bg}`}
-                    >
-                      <historyOpt.icon size={32} className="text-white" />
+                    <div className={`w-12 h-12 p-2 rounded-sm flex items-center justify-center ${sensorOpt.color.bg}`}>
+                      <sensorOpt.icon size={32} className="text-white" />
                     </div>
                     <div className="flex flex-col">
                       <span className="text-lg font-bold text-gray-800 dark:text-gray-200">
-                        {historyOpt.label}
+                        {sensorOpt.label}
                       </span>
                       <span className="text-sm text-gray-500 dark:text-gray-400">
-                        Tendencia de datos historicos
+                        Tendencia de datos históricos
                       </span>
                     </div>
                   </div>
@@ -152,34 +122,20 @@ export default function HistoricoPage() {
                       className="text-gray-500 dark:text-gray-400"
                     />
                     <span className="text-sm font-semibold text-gray-800 dark:text-gray-400 ml-2">
-                      Últimas {historicData.history.length} lecturas
+                      Últimas {stack.length} lecturas
                     </span>
                   </div>
                 </div>
-                {/* Grafica */}
+                {/* Gráfica */}
                 <ResponsiveContainer width={"100%"} height={500}>
                   <AreaChart
                     data={graphData}
                     margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
                   >
                     <defs>
-                      <linearGradient
-                        id={`gradient-${activeTab}`}
-                        x1="0"
-                        y1="0"
-                        x2="0"
-                        y2="1"
-                      >
-                        <stop
-                          offset="5%"
-                          stopColor={"#ef4444"}
-                          stopOpacity={0.3}
-                        />
-                        <stop
-                          offset="95%"
-                          stopColor={"#ef4444"}
-                          stopOpacity={0.05}
-                        />
+                      <linearGradient id={`gradient-${activeTab}`} x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor={"#ef4444"} stopOpacity={0.3} />
+                        <stop offset="95%" stopColor={"#ef4444"} stopOpacity={0.05} />
                       </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" opacity={0.3} />
@@ -209,16 +165,16 @@ export default function HistoricoPage() {
                       }}
                       formatter={(value: number) => [
                         <span style={{ color: "#ef4444", fontWeight: 'bold' }}>
-                          {value}{historyOpt.unit}
+                          {value}{sensorOpt.unit}
                         </span>,
-                        historyOpt.label
+                        sensorOpt.label
                       ]}
                       labelStyle={{ color: '#374151', fontWeight: '500' }}
                       cursor={{ stroke: "#ef4444", strokeWidth: 1, strokeOpacity: 0.5 }}
                     />
                     <Area
                       type="linear"
-                      dataKey={activeTab}
+                      dataKey="value"
                       stroke={"#ef4444"}
                       strokeWidth={3}
                       fill={`url(#gradient-${activeTab})`}
@@ -241,10 +197,8 @@ export default function HistoricoPage() {
         <aside className="flex-1 flex flex-col gap-4 col-span-1 lg:col-span-1">
           <div className="bg-white dark:bg-gray-900 p-4 rounded-sm shadow border border-gray-200 dark:border-gray-700 flex flex-col gap-3">
             <div className="flex gap-3 items-center">
-              <div
-                className={`w-10 h-10 p-2 rounded-sm items-center ${historyOpt.color.bg}`}
-              >
-                <historyOpt.icon size={24} className="text-white" />
+              <div className={`w-10 h-10 p-2 rounded-sm items-center ${sensorOpt.color.bg}`}>
+                <sensorOpt.icon size={24} className="text-white" />
               </div>
               <span className="text-sm font-bold text-gray-800 dark:text-gray-200">
                 Valor actual
@@ -253,61 +207,56 @@ export default function HistoricoPage() {
             <div className="flex flex-col justify-center items-center">
               <div className="flex gap-2 justify-center items-end">
                 <span className="text-3xl font-bold text-gray-800 dark:text-gray-200">
-                  {historicData.history.length > 0
-                    ? historicData.history[historicData.history.length - 1]
-                        .valor
-                    : "N/A"}
+                  {latestItem ? latestItem.value : "N/A"}
                 </span>
                 <span className="text-xl font-bold text-gray-400">
-                  {historyOpt.unit}
+                  {sensorOpt.unit}
                 </span>
               </div>
               <span className="text-sm text-gray-400 dark:text-gray-400">
-                {historicData.history.length > 0
-                  ? historicData.history[historicData.history.length - 1].date +
-                    " " +
-                    historicData.history[historicData.history.length - 1].hora
+                {latestItem
+                  ? new Date(Number(latestItem.timestamp)).toLocaleString()
                   : "No disponible"}
               </span>
             </div>
           </div>
-          {/* Historico */}
+          {/* Histórico (listado) */}
           <div className="bg-white dark:bg-gray-900 rounded-sm shadow border border-gray-200 dark:border-gray-700 max-h-150 flex flex-col gap-3">
             <div className="flex flex-col border-b border-gray-200 dark:border-gray-700 pb-3 shrink-0 p-4">
-              <h3>Datos historicos</h3>
+              <h3>Datos históricos</h3>
               <span className="text-gray-400 text-sm">
-                actualizacion: {historicData.timestamp || "N/A"}
+                actualizacion: {latestItem ? new Date(Number(latestItem.timestamp)).toLocaleString() : "N/A"}
               </span>
             </div>
-            {/* Contenido historico */}
             <div className="flex flex-col gap-2 flex-1 h-full overflow-y-auto scrollbar-thin px-4">
-              {historicData.history
+              {stack
+                .slice() // copia para no mutar
+                .reverse() // para mostrar el más reciente arriba
                 .map((item, index) => (
                   <div
-                    key={index}
+                    key={item.timestamp + index}
                     className="flex justify-between items-center border-b border-gray-200 dark:border-gray-700 py-2 last:border-0"
                   >
                     <div className="flex gap-4 items-center">
                       <span className="w-6 h-6 bg-gray-200 text-gray-800 dark:bg-gray-800 dark:text-gray-400 rounded-sm text-[0.75em] flex justify-center items-center">
-                        #{index + 1}
+                        #{stack.length - index}
                       </span>
                       <div className="flex flex-col">
                         <span className="text-gray-800 dark:text-gray-200 text-sm">
-                          {item.hora}
+                          {new Date(Number(item.timestamp)).toLocaleTimeString()}
                         </span>
                         <span className="text-gray-400 dark:text-gray-500 text-sm">
-                          {item.date}
+                          {new Date(Number(item.timestamp)).toLocaleDateString()}
                         </span>
                       </div>
                     </div>
                     <span
-                      className={`px-2 py-1 rounded-md text-sm font-semibold ${historyOpt.color.bg} ${historyOpt.color.text}`}
+                      className={`px-2 py-1 rounded-md text-sm font-semibold ${sensorOpt.color.bg} ${sensorOpt.color.text}`}
                     >
-                      {item.valor} {historyOpt.unit}
+                      {item.value} {sensorOpt.unit}
                     </span>
                   </div>
-                ))
-                .reverse()}
+                ))}
             </div>
           </div>
         </aside>

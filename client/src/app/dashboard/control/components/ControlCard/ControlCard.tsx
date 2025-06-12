@@ -1,7 +1,8 @@
 "use client";
 
 import { useMqtt } from "@/hooks/useMqtt";
-import { ForwardRefExoticComponent, useState } from "react";
+import { TopicControl } from "@/types/TypesMqtt";
+import { ForwardRefExoticComponent, useEffect, useState } from "react";
 
 interface ControlCardProps {
     id: string;
@@ -11,8 +12,11 @@ interface ControlCardProps {
     initialState: boolean;
     isLocked?: boolean;
     color: "blue" | "red" | "green" | "yellow" | "purple" | "gray" | "white" | "slate" | "cyan";
-    disabled?: boolean;
+    disabled: boolean;
 }
+
+const topic = `${process.env.NEXT_PUBLIC_TOPICS_LINK}/comandos`;
+const STORAGE_KEY = "controlConfig";
 
 export default function ControlCard({
     id,
@@ -22,20 +26,57 @@ export default function ControlCard({
     initialState,
     isLocked = false,
     color,
-    disabled = false
+    disabled = false,
 }: ControlCardProps) {
     // Hook's
     const { publish } = useMqtt();
     // State's
     const [isOn, setIsOn] = useState<boolean>(initialState);
 
-    // Effect's
-    // Handler's
+    // Cargar estado inicial desde localStorage (si existe)
+    useEffect(() => {
+        try {
+            const configRaw = localStorage.getItem(STORAGE_KEY);
+            if (configRaw) {
+                const config = JSON.parse(configRaw);
+                if (config[id] && typeof config[id].action === "boolean") {
+                    setIsOn(config[id].action);
+                }
+            }
+        } catch (e) {
+            console.warn("Error cargando config de control", e);
+        }
+    }, [id]);
+
+    // Handler
     const handleToggle = () => {
         if (disabled) return;
-        setIsOn(!isOn);
-        publish(`controls`, JSON.stringify({ sensor: id, state: !isOn }));
+        const newState = !isOn;
+        setIsOn(newState);
+
+        // Construir nuevo objeto para este actuador
+        const newControlData: TopicControl = { type: 'manual_control', actuador: id, action: newState };
+
+        // Leer, actualizar y guardar el objeto global de configuración
+        let config: Record<string, TopicControl> = {};
+        try {
+            const configRaw = localStorage.getItem(STORAGE_KEY);
+            if (configRaw) {
+                config = JSON.parse(configRaw);
+            }
+        } catch { /* ignore */ }
+
+        config[id] = newControlData;
+        try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
+        } catch (e) {
+            console.warn("Error guardando config de control", e);
+        }
+
+        // Publicar por MQTT
+        publish(topic, JSON.stringify(newControlData));
     };
+
     // Render's
     const colorClass = {
         blue: {
