@@ -32,7 +32,7 @@ class Display:
         if len(message) > 16:
             self.lcd.crlf()
             self.lcd.write_string(message[16:32])  # segunda línea
-        self.enable = False
+        #self.enable = False
         self.last_t = time.time()
 
     def update(self):
