@@ -5,7 +5,6 @@ import busio
 import smbus2 as smbus
 from gpiozero import DistanceSensor, DigitalInputDevice
 from globals import shared
-import utiles
 
 class Sensors:
     def __init__(self):
