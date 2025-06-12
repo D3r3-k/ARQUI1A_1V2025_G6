@@ -114,9 +114,14 @@ class Actuators:
                 shared.local_error_message = "Temperatura Critica!"
                 if shared.temperature > shared.thresholds['temperature_max']:
                     self.control_motor(True)
+
+            # Si está en estado crítico no hay que iniciar timers de apagado
+            if 'temperature' in self.normal_off_timers:
+                self.normal_off_timers['temperature'].cancel()
+
         else:
             if shared.alert_status['temperature']:
-    
+                # Solo si antes estaba en alerta, programo apagar tras 5s
                 if 'temperature' in self.normal_off_timers:
                     self.normal_off_timers['temperature'].cancel()
 
@@ -125,7 +130,8 @@ class Actuators:
                 )
                 self.normal_off_timers['temperature'].start()
 
-            shared.alert_status['temperature'] = False
+                shared.alert_status['temperature'] = False
+
 
 
         if shared.humidity > shared.thresholds['humidity_max'] or shared.humidity < shared.thresholds['humidity_min']:
