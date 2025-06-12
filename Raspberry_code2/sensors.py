@@ -89,6 +89,8 @@ class Sensors:
                 lux = A * (1 / R_ldr_k) ** B
 
             shared.light_level = round(lux, 2)
+            print(f"ADC value: {value} | Vout: {Vout:.2f} V | Lux: {lux:.2f}")
+
 
         except Exception as e:
             print(f"Error leyendo luz en luxes: {e}")
@@ -170,7 +172,7 @@ class Sensors:
         print(f"Temp: {shared.temperature:.1f}°C | "
             f"Humidity: {shared.humidity:.1f}% | "
             f"Distance: {shared.distance:.1f}cm | "
-            f"Light: {shared.light_level}% | "
+            f"Light: {shared.light_level}lux | "
             f"Pressure: {shared.pressure:.1f}hPa | "
             f"Air Quality: {shared.air_quality}")
 

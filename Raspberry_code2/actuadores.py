@@ -17,7 +17,7 @@ class Actuators:
         self.motor_enable = PWMOutputDevice(13)     # EN (PWM)
 
         # Buzzer
-        self.buzzer = Buzzer(21)
+        self.buzzer = Buzzer(21)  
 
         # Diccionario para timers automáticos
         self.auto_off_timers = {}
