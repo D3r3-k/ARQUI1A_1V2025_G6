@@ -178,7 +178,7 @@ class MQTTClient:
                 },
                 "Historico_Temperatura": {
                     "history": shared.HTemperatura["history"],
-                    "timestamp": shared.HTemperatur["timestap"],
+                    "timestamp": shared.HTemperatura["timestap"],
                     
                 },
                 "Historico_Humedad": {
@@ -192,7 +192,7 @@ class MQTTClient:
                     
                 },
                 "Historico_Luz": {
-                    "history": shared.HLuz["history"],
+                    "history": shared.HLuz["timestap"],
                     "timestamp": shared.HLuz["history"],
                     
                 },
