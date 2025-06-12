@@ -18,14 +18,14 @@ class MQTTClient:
         
         # MQTT Topics según el formato requerido
         self.topics = {
-            "temperature": f"GRUPO{group_6}/sensores/rasp01/temperatura",
-            "humidity": f"GRUPO{group_6}/sensores/rasp01/humedad",
-            "light": f"GRUPO{group_6}/sensores/rasp01/luz",
-            "pressure": f"GRUPO{group_6}/sensores/rasp01/presion",
-            "air_quality": f"GRUPO{group_6}/sensores/rasp01/calidad_aire",
-            "distance": f"GRUPO{group_6}/sensores/rasp01/distancia",
-            "alerts": f"GRUPO{group_6}/sensores/rasp01/alertas",
-            "actuators_status": f"GRUPO{group_6}/sensores/rasp01/actuadores",
+            "temperature": f"GRUPO{group_6}/sensores/rasp02/temperatura",
+            "humidity": f"GRUPO{group_6}/sensores/rasp02/humedad",
+            "light": f"GRUPO{group_6}/sensores/rasp02/luz",
+            "pressure": f"GRUPO{group_6}/sensores/rasp02/presion",
+            "air_quality": f"GRUPO{group_6}/sensores/rasp02/calidad_aire",
+            "distance": f"GRUPO{group_6}/sensores/rasp02/distancia",
+            "alerts": f"GRUPO{group_6}/sensores/rasp02/alertas",
+            "actuators_status": f"GRUPO{group_6}/sensores/rasp02/actuadores",
             
             # Historicos
             "Historico_Temperatura": f"GRUPO{group_6}/sensores/rasp01/HTemperatura",
@@ -34,7 +34,7 @@ class MQTTClient:
             "Historico_Luz": f"GRUPO{group_6}/sensores/rasp01/HLuz",
 
             # Topic para recibir comandos del dashboard
-            "control": f"GRUPO{group_6}/control/rasp01/comandos"
+            "control": f"GRUPO{group_6}/control/rasp02/comandos"
         }
         
         # Initialize MQTT client
