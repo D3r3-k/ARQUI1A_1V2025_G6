@@ -9,7 +9,7 @@ import {
   SunMedium,
   Thermometer,
 } from "lucide-react";
-import { Area, AreaChart, ResponsiveContainer, XAxis, YAxis } from "recharts";
+import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { useMqtt } from "@/hooks/useMqtt";
 import { SensorType } from "@/types/TypesDashboard";
 import { TopicHistory } from "@/types/TypesMqtt";
