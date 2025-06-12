@@ -66,31 +66,20 @@ class Sensors:
 
     def read_light_sensor(self):
         try:
-            # Leer el canal A1 (0x41) del PCF8591
-            self.bus.write_byte(self.pcf8591_address, 0x41)
+            self.bus.write_byte(self.pcf8591_address, 0x41)  # AIN1
             self.bus.read_byte(self.pcf8591_address)  # Dummy read
             value = self.bus.read_byte(self.pcf8591_address)
 
-            # Convertir a voltaje (3.3V referencia)
             Vref = 3.3
             Vout = (value / 255.0) * Vref
 
-            # Calcular resistencia del LDR (en ohms)
-            RL = 10000  # ohmios
             if Vout == 0:
                 lux = 0
             else:
-                R_ldr = RL * (Vref - Vout) / Vout  # en ohmios
-                R_ldr_k = R_ldr / 1000.0  # convertir a kΩ
-
-                # Fórmula empírica para estimar luxes
-                A = 500
-                B = 1.4
-                lux = (value / 255.0) * 1000 
+                lux = 18.0 * (1.0 / Vout) ** 2.2
 
             shared.light_level = round(lux, 2)
             print(f"ADC value: {value} | Vout: {Vout:.2f} V | Lux: {lux:.2f}")
-
 
         except Exception as e:
             print(f"Error leyendo luz en luxes: {e}")
