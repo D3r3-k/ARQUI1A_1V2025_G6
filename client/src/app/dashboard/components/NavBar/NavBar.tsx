@@ -1,7 +1,11 @@
-import { Bell, ChevronDown, User } from 'lucide-react';
+"use client";
+
+import { useMqtt } from '@/hooks/useMqtt';
+import { Bell, ChevronDown, Dot, User } from 'lucide-react';
 
 export default function NavBar() {
   // Hook's
+  const { isConnected } = useMqtt();
   // State's
   // Effect's
   // Handler's
@@ -9,6 +13,30 @@ export default function NavBar() {
   return (
     <header className="sticky top-0 z-10 flex h-14 items-center border-b border-gray-200 bg-white px-4 lg:px-6 dark:border-zinc-800 dark:bg-gray-900 transition-transform duration-300">
       <div className="ml-auto flex items-center gap-4">
+        <div
+          className={`flex justify-center items-center gap-0 border rounded-md pr-2
+            ${isConnected
+              ? 'border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-900/60'
+              : 'border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-900/60'
+            }`
+          }
+        >
+          <Dot
+            size={32}
+            className={isConnected
+              ? "text-green-500 dark:text-green-400"
+              : "text-red-500 dark:text-red-400"
+            }
+          />
+          <span className={`text-sm font-medium
+            ${isConnected
+              ? 'text-green-700 dark:text-green-300'
+              : 'text-red-700 dark:text-red-300'
+            }`
+          }>
+            {isConnected ? 'Conectado' : 'Desconectado'}
+          </span>
+        </div>
         <div className="relative">
           <button
             className="flex items-center gap-2 h-9 w-9 rounded-full px-2 py-1.5 hover:bg-gray-100/50 dark:hover:bg-white/10 cursor-pointer"

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import TabNavigation from "./components/TabNavigation/TabNavigation";
 import { ChartLine, Droplets, Gauge, SunMedium, Thermometer } from "lucide-react";
-import { Area, AreaChart, ResponsiveContainer, XAxis, YAxis } from "recharts";
+import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { useMqtt } from "@/hooks/useMqtt";
 import { SensorType } from "@/types/TypesDashboard";
 import { TopicHistory } from "@/types/TypesMqtt";
@@ -31,11 +31,11 @@ export default function HistoricoPage() {
     if (historyData) {
       setHistoricData(historyData);
       const transformedData = historyData.history.map((item) => ({
-        timestamp: `${item.hour}`,
+        timestamp: `${item.hour} ${item.date}`,
         [activeTab]: parseFloat(item.value).toFixed(2),
       }));
       setGraphData(transformedData);
-    }else{
+    } else {
       setHistoricData({
         date_updated: "",
         sensor: activeTab,
@@ -140,6 +140,7 @@ export default function HistoricoPage() {
                         <stop offset="95%" stopColor={"#ef4444"} stopOpacity={0.05} />
                       </linearGradient>
                     </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" opacity={0.3} />
                     <XAxis
                       dataKey="timestamp"
                       stroke="#6b7280"
@@ -156,13 +157,30 @@ export default function HistoricoPage() {
                       tick={{ fill: '#6b7280' }}
                       domain={['dataMin - 1', 'dataMax + 1']}
                     />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: 'white',
+                        border: '1px solid #d1d5db',
+                        borderRadius: '8px',
+                        boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)',
+                        fontSize: '12px'
+                      }}
+                      formatter={(value: number) => [
+                        <span style={{ color: "#ef4444", fontWeight: 'bold' }}>
+                          {value}{historyOpt.unit}
+                        </span>,
+                        historyOpt.label
+                      ]}
+                      labelStyle={{ color: '#374151', fontWeight: '500' }}
+                      cursor={{ stroke: "#ef4444", strokeWidth: 1, strokeOpacity: 0.5 }}
+                    />
                     <Area
                       type="linear"
                       dataKey={activeTab}
                       stroke={"#ef4444"}
                       strokeWidth={3}
                       fill={`url(#gradient-${activeTab})`}
-                      dot={false}
+                      dot={true}
                       activeDot={{
                         r: 6,
                         fill: '#ef4444',
