@@ -1,1 +1,0 @@
-export type SensorType = "temperature" | "humidity" | "luminosity" | "pressure";
