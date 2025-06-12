@@ -24,6 +24,7 @@ class Actuators:
 
         self.turn_off_all()
         print("Actuadores inicializados Correctamente")
+        self.normal_off_timers = {}; 
 
     def turn_off_all(self):
         self.red_led.off()
@@ -98,6 +99,12 @@ class Actuators:
         shared.actuator_status['buzzer'] = False
         print("Buzzer apagado automáticamente")
 
+    def _turn_off_temperature_alert(self):
+        self.control_led(self.red_led, 'red_led', False)
+        self.control_motor(False)
+        print("Actuadores de temperatura apagados tras normalización")
+
+
     def check_alerts_and_control(self):
         if shared.temperature > shared.thresholds['temperature_max'] or shared.temperature < shared.thresholds['temperature_min']:
             if not shared.alert_status['temperature']:
@@ -108,7 +115,18 @@ class Actuators:
                 if shared.temperature > shared.thresholds['temperature_max']:
                     self.control_motor(True)
         else:
+            if shared.alert_status['temperature']:
+    
+                if 'temperature' in self.normal_off_timers:
+                    self.normal_off_timers['temperature'].cancel()
+
+                self.normal_off_timers['temperature'] = threading.Timer(
+                    5.0, self._turn_off_temperature_alert
+                )
+                self.normal_off_timers['temperature'].start()
+
             shared.alert_status['temperature'] = False
+
 
         if shared.humidity > shared.thresholds['humidity_max'] or shared.humidity < shared.thresholds['humidity_min']:
             if not shared.alert_status['humidity']:
