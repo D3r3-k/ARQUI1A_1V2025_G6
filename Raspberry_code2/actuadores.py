@@ -136,7 +136,8 @@ class Actuators:
         else:
             shared.alert_status['air_quality'] = False
 
-        if shared.distance < shared.thresholds['presence_distance']:
+        if shared.thresholds['presence_distance_min'] <= shared.distance <= shared.thresholds['presence_distance_max']:
+
             if not shared.alert_status['presence']:
                 print(f" Presencia detectada: {shared.distance}cm")
                 shared.alert_status['presence'] = True
