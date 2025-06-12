@@ -71,7 +71,7 @@ export default function ControlCard({
         white: {
             bg: "bg-gray-100 dark:bg-white/30",
             text: "text-gray-900 dark:text-gray-100",
-            bgSwitch: "bg-white border-gray-300 dark:border-gray-700 dark:bg-gray-800",
+            bgSwitch: "bg-gray-500 border-gray-500 dark:border-gray-400 dark:bg-gray-400",
         },
         slate: {
             bg: "bg-slate-600/20 dark:bg-slate-600/30",

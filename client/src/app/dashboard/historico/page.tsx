@@ -16,7 +16,7 @@ import { TopicHistory } from "@/types/TypesMqtt";
 
 export default function HistoricoPage() {
   // Hook's
-  const { subscribe, messages } = useMqtt();
+  const { subscribe, messages, isConnected } = useMqtt();
   // State's
   const [activeTab, setActiveTab] = useState<SensorType>("temperature");
   const [historicData, setHistoricData] = useState<TopicHistory>({
@@ -25,27 +25,37 @@ export default function HistoricoPage() {
   });
   const [graphData, setGraphData] = useState<any[]>([]);
   // Effect's
-  const topic = {
+  const topicMap = {
     temperature: "HTemperatura",
     humidity: "HHumedad",
     luminosity: "HLuz",
     pressure: "HPresion",
-  }[activeTab];
+  };
 
-  useEffect(() => {
-    subscribe(`GRUPOG6/sensores/rasp01/${topic}`);
-    return () => {};
-  }, [activeTab, subscribe]);
+  const topic = topicMap[activeTab];
+  const topicLink = `GRUPOG6/sensores/rasp01/${topic}`;
 
+  // Suscribirse solo cuando haya conexión y un topic válido
   useEffect(() => {
-    const historyData = messages[
-      `GRUPOG6/sensores/rasp01/${topic}`
-    ] as TopicHistory;
-    console.log("Received history data:", historyData);
+    if (isConnected && topic) {
+      subscribe(`GRUPOG6/sensores/rasp01/${topicMap.temperature}`);
+      subscribe(`GRUPOG6/sensores/rasp01/${topicMap.humidity}`);
+      subscribe(`GRUPOG6/sensores/rasp01/${topicMap.luminosity}`);
+      subscribe(`GRUPOG6/sensores/rasp01/${topicMap.pressure}`);
+    }
+  }, [isConnected, topic]);
+
+  // Actualizar los datos cuando llegan nuevos mensajes
+  useEffect(() => {
+    if (!topic) return;
+
+    console.log("Messages received:", messages);
+    const historyData = messages[topicLink] as TopicHistory;
+
     if (historyData) {
       setHistoricData(historyData);
       const transformedData = historyData.history.map((item) => ({
-        timestamp: `${item.hora}`,
+        timestamp: item.hora,
         [activeTab]: parseFloat(item.valor).toFixed(2),
       }));
       setGraphData(transformedData);
@@ -56,7 +66,7 @@ export default function HistoricoPage() {
       });
       setGraphData([{ timestamp: "N/A", [activeTab]: "0" }]);
     }
-  }, [messages, activeTab]);
+  }, [messages, topic, activeTab]);
 
   // Handler's
   // Render's
