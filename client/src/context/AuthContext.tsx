@@ -37,7 +37,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         if (username === userAdmin.username && password === userAdmin.password) {
             setIsAuthenticated(true);
             localStorage.setItem("authSesion", 'true');
-            document.cookie = "auth=true; path=/; max-age=3600"; // 1 hour
+            document.cookie = "auth=true; path=/;";
             redirect("/dashboard");
         } else {
             alert("Credenciales incorrectas");

@@ -1,10 +1,26 @@
+"use client";
+
 import DashCard from "./components/DashCard/DashCard";
 import AmbientCard from "./components/AmbientCard/AmbientCard";
+import { useEffect } from "react";
+import { useMqtt } from "@/hooks/useMqtt";
 
 export default function DashboardPage() {
   // Hook's
+  const { subscribe, messages } = useMqtt();
   // State's
   // Effect's
+  useEffect(() => {
+    subscribe("GRUPOG6/sensores/rasp01/salida");
+    return () => {};
+  }, [subscribe]);
+
+  useEffect(() => {
+    console.log("Mensajes recibidos:", messages);
+
+    return () => {};
+  }, [messages]);
+
   // Handler's
   // Render's
   return (
@@ -13,49 +29,44 @@ export default function DashboardPage() {
         <h1 className="text-2xl font-bold">Dashboard</h1>
         {/* Tarjeta de resumen */}
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <DashCard type="sensors" title="Sensores Activos" color="blue" desc="Configurados" />
-          <DashCard type="devices" title="Dispositivos en Linea" color="green" desc="Dispositivos conectados" />
-          <DashCard type="time" title="Tiempo de ejecucion" color="purple" desc={`Ultima consulta: ${new Date().toLocaleTimeString()}`} />
+          <DashCard
+            type="sensors"
+            title="Sensores Activos"
+            color="blue"
+            desc="Configurados"
+          />
+          <DashCard
+            type="devices"
+            title="Dispositivos en Linea"
+            color="green"
+            desc="Dispositivos conectados"
+          />
+          <DashCard
+            type="time"
+            title="Tiempo de ejecucion"
+            color="purple"
+            desc={`Ultima consulta: N/A`}
+          />
           <DashCard
             type="localTime"
             title="Hora local"
             color="orange"
-            desc={`Zona horaria: ${Intl.DateTimeFormat().resolvedOptions().timeZone}`}
+            desc={`Zona horaria: ${
+              Intl.DateTimeFormat().resolvedOptions().timeZone
+            }`}
           />
         </div>
         {/* Datos de sensores */}
-        <h2 className="text-xl font-semibold tracking-tight mt-2">Datos Ambientales</h2>
+        <h2 className="text-xl font-semibold tracking-tight mt-2">
+          Datos Ambientales
+        </h2>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          <AmbientCard
-            id="temperature"
-            color="red"
-            title="Temperatura"
-          />
-          <AmbientCard
-            id="humidity"
-            color="blue"
-            title="Humedad"
-          />
-          <AmbientCard
-            id="brightness"
-            color="yellow"
-            title="Luminosidad"
-          />
-          <AmbientCard
-            id="co2"
-            color="zinc"
-            title="Nivel de CO2"
-          />
-          <AmbientCard
-            id="pressure"
-            color="purple"
-            title="Presión Atmosférica"
-          />
-          <AmbientCard
-            id="presence"
-            color="green"
-            title="Presencia Detectada"
-          />
+          <AmbientCard id="temperatura" color="red" title="Temperatura" />
+          <AmbientCard id="humedad" color="blue" title="Humedad" />
+          <AmbientCard id="luz" color="yellow" title="Luminosidad" />
+          <AmbientCard id="calidad_aire" color="zinc" title="Nivel de CO2" />
+          <AmbientCard id="presion" color="purple" title="Presión Atmosférica" />
+          <AmbientCard id="distancia" color="green" title="Presencia Detectada" />
         </div>
         {/* Actividad */}
         {/* <div className="mt-2">
@@ -83,5 +94,5 @@ export default function DashboardPage() {
         </div> */}
       </div>
     </main>
-  )
+  );
 }
