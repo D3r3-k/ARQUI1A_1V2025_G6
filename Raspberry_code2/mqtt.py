@@ -117,14 +117,15 @@ class MQTTClient:
         """Publish all sensor data to MQTT topics"""
         if not self.connected:
             return
-        
+
         current_time = time.time()
-        ##if current_time - self.last_publish_time < self.publish_interval:
-        ##    return
-        
+        timestamp = int(current_time * 1000)
+
+        print("[MQTT] Publicando histórico HHumedad con tamaño:", len(shared.HHumedad["history"]))
+        if shared.HHumedad["history"]:
+            print("[MQTT] Último dato HHumedad:", json.dumps(shared.HHumedad["history"][-1]))
+
         try:
-            timestamp = int(current_time * 1000)  
-            
             # Individual sensor data
             sensor_data = {
                 "temperature": {
@@ -175,54 +176,50 @@ class MQTTClient:
                     "unit": "cm",
                     "timestamp": timestamp
                 },
-
-                # Hitoricos
                 "Historico_Temperatura": {
                     "timestamp": timestamp,
                     "history": shared.HTemperatura["history"]
                 },
-
                 "Historico_Humedad": {
                     "timestamp": timestamp,
                     "history": shared.HHumedad["history"]
                 },
-
                 "Historico_Presion": {
                     "timestamp": timestamp,
                     "history": shared.HPresion["history"]
                 },
-
                 "Historico_Luz": {
                     "timestamp": timestamp,
                     "history": shared.HLuz["history"]
                 },
             }
-            
-            # Publish individual sensor readings
+
+            # Publish all sensor and historical data with retain=True
             for sensor, data in sensor_data.items():
                 topic = self.topics[sensor]
                 payload = json.dumps(data)
-                self.client.publish(topic, payload)
-            
-            # Publish alerts status
+                self.client.publish(topic, payload, retain=True)  # <--- retain=True aquí
+
+            # Publish alerts
             alerts_payload = json.dumps({
                 "alerts": shared.alert_status,
                 "timestamp": timestamp
             })
-            self.client.publish(self.topics["alerts"], alerts_payload)
-            
+            self.client.publish(self.topics["alerts"], alerts_payload, retain=True)
+
             # Publish actuators status
             actuators_payload = json.dumps({
                 "actuators": shared.actuator_status,
                 "timestamp": timestamp
             })
-            self.client.publish(self.topics["actuators_status"], actuators_payload)
-            
+            self.client.publish(self.topics["actuators_status"], actuators_payload, retain=True)
+
             self.last_publish_time = current_time
             logging.debug("Published sensor data to MQTT")
-            
+
         except Exception as e:
             logging.error(f"Error publishing sensor data: {e}")
+
     
     def publish_alert(self, alert_type, message, value):
         """Publish specific alert"""

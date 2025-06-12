@@ -1,6 +1,7 @@
+import time
 class GlobalState:
     _instance = None  
-                           
+                             
     
     def __new__(cls):                                       # Singleton pattern
         if cls._instance is None:
@@ -8,7 +9,8 @@ class GlobalState:
             cls._instance._init()
         return cls._instance
     
-    def _init(self):                                        # Initialize shared variables
+    def _init(self):    
+        current_time = time.time()                                    # Initialize shared variables
         # Sensor readings
         self.temperature = 0.0
         self.humidity = 0.0
@@ -55,23 +57,23 @@ class GlobalState:
         # Datos historicos
         
         self.HTemperatura = {
-            "timestap": 0,
+            "timestap": current_time,
             "history": []
         }
 
         
         self.HHumedad = {
-            "timestap": 0,
+            "timestap": current_time,
             "history": []
         }
 
         self.HPresion = {
-            "timestap": 0,
+            "timestap": current_time,
             "history": []
         }
 
         self.HLuz = {
-            "timestap": 0,
+            "timestap": current_time,
             "history": []
         }
         self.remote_commands = {}
