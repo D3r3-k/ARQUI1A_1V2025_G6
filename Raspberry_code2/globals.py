@@ -55,8 +55,8 @@ class GlobalState:
             'air_quality_min': 100,     # Air quality index
             'presence_distance_min': 2.0,  # cm (presence detected)
             'presence_distance_max': 100,  # cm (presence detected)
-            'Presure_min': 2,         # Presion hpa
-            'Presure_max': 250         # Presion en hpa
+            'Presure_min': 850,         # Presion hpa
+            'Presure_max': 870         # Presion en hpa
         }
 
         # Datos historicos

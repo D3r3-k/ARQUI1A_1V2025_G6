@@ -149,7 +149,7 @@ class MQTTClient:
                     "min": shared.thresholds["light_min"],
                     "max": shared.thresholds["light_max"],
                     "status": "normal",
-                    "unit": "%",
+                    "unit": "Lux",
                     "timestamp": timestamp
                 },
 
@@ -163,8 +163,8 @@ class MQTTClient:
                 },
                 "air_quality": {
                     "value": shared.air_quality,
-                    "min": shared.thresholds["air_quality_max"],
-                    "max": shared.thresholds["air_quality_min"],
+                    "min": shared.thresholds["air_quality_min"],
+                    "max": shared.thresholds["air_quality_max"],
                     "status": "normal",
                     "unit": "ppm",
                     "timestamp": timestamp
