@@ -17,7 +17,7 @@ class Actuators:
         self.motor_enable = PWMOutputDevice(13)     # EN (PWM)
 
         # Buzzer
-        self.buzzer = Buzzer(21)  
+        self.buzzer = PWMOutputDevice(21)   
 
         # Diccionario para timers automáticos
         self.auto_off_timers = {}
@@ -83,7 +83,9 @@ class Actuators:
 
     def control_buzzer(self, state, duration=2.0):
         if state:
-            self.buzzer.on()
+            self.buzzer.frequency = 2000  # 2kHz es común para buzzers pasivos
+            self.buzzer.value = 0.5       # ciclo de trabajo del 50%
+
             shared.actuator_status['buzzer'] = True
             timer = threading.Timer(duration, self._auto_off_buzzer)
             timer.start()
