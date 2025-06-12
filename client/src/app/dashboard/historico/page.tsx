@@ -6,6 +6,7 @@ import {
   ChartLine,
   Droplets,
   Gauge,
+  LucideIcon,
   SunMedium,
   Thermometer,
   Wind,
@@ -15,7 +16,7 @@ import { useMqtt } from "@/hooks/useMqtt";
 import { SensorType } from "@/types/TypesDashboard";
 
 // Mapeo de sensor y topic stackeable
-const sensorTopicMap: Record<SensorType, { topic: string; label: string; unit: string; icon: any; color: any }> = {
+const sensorTopicMap: Record<SensorType, { topic: string; label: string; unit: string; icon: LucideIcon; color: { border: string; text: string; bg: string } }> = {
   temperatura: {
     topic: `${process.env.NEXT_PUBLIC_TOPICS_LINK}/temperatura`,
     label: "Temperatura",
@@ -163,8 +164,8 @@ export default function HistoricoPage() {
                         boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)',
                         fontSize: '12px'
                       }}
-                      formatter={(value: number) => [
-                        <span style={{ color: "#ef4444", fontWeight: 'bold' }}>
+                      formatter={(value: number, index: number) => [
+                        <span key={index} style={{ color: "#ef4444", fontWeight: 'bold' }}>
                           {value}{sensorOpt.unit}
                         </span>,
                         sensorOpt.label

@@ -2,11 +2,12 @@
 
 import { useMqtt } from "@/hooks/useMqtt";
 import { TopicControl } from "@/types/TypesMqtt";
-import { ForwardRefExoticComponent, useEffect, useState } from "react";
+import { LucideIcon } from "lucide-react";
+import { useEffect, useState } from "react";
 
 interface ControlCardProps {
     id: string;
-    icon: ForwardRefExoticComponent<any>;
+    icon: LucideIcon
     title: string;
     description: string;
     initialState: boolean;
