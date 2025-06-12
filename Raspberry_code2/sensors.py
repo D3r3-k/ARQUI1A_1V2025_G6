@@ -72,13 +72,38 @@ class Sensors:
 
     def read_light_sensor(self):
         try:
-            shared.light_level = 0 if self.ldr.value == 1 else 100
+            # Leer el canal A1 (0x41) del PCF8591
+            self.bus.write_byte(self.pcf8591_address, 0x41)
+            self.bus.read_byte(self.pcf8591_address)  # Dummy read
+            value = self.bus.read_byte(self.pcf8591_address)
+
+            # Convertir a voltaje (3.3V referencia)
+            Vref = 3.3
+            Vout = (value / 255.0) * Vref
+
+            # Calcular resistencia del LDR (en ohms)
+            RL = 10000  # ohmios
+            if Vout == 0:
+                lux = 0
+            else:
+                R_ldr = RL * (Vref - Vout) / Vout  # en ohmios
+                R_ldr_k = R_ldr / 1000.0  # convertir a kΩ
+
+                # Fórmula empírica para estimar luxes
+                A = 500
+                B = 1.4
+                lux = A * (1 / R_ldr_k) ** B
+
+            shared.light_level = round(lux, 2)
+
             now = datetime.now()
             hora = now.strftime("%H:%M:%S")
             fecha = now.strftime("%d-%m-%Y")
-            utiles.Generar_historicos_Luz(shared.light_level,hora,fecha); 
+            utiles.Generar_historicos_Luz(shared.light_level, hora, fecha)
+
         except Exception as e:
-            print(f"Error leyendo luz: {e}")
+            print(f"Error leyendo luz en luxes: {e}")
+
 
     def read_pressure_sensor(self):
         try:
@@ -117,7 +142,7 @@ class Sensors:
 
         except Exception as e:
             print(f"Error leyendo presión BMP280: {e}")
-            
+
     def read_air_quality(self):
         try:
             # Leer 2 veces por requisitos del PCF8591

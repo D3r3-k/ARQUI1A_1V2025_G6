@@ -146,32 +146,33 @@ class MQTTClient:
                 },
                 "light": {
                     "value": shared.light_level,
-                    "min": shared.thresholds["humidity_min"],
-                    "max": shared.thresholds["humidity_max"],
+                    "min": shared.thresholds["light_min"],
+                    "max": shared.thresholds["light_max"],
                     "status": "normal",
                     "unit": "%",
                     "timestamp": timestamp
                 },
+
                 "pressure": {
                     "value": shared.pressure,
-                    "min": shared.thresholds["light_min"],
-                    "max": 20,
+                    "min": shared.thresholds["Presure_min"],
+                    "max": shared.thresholds["Presure_max"],
                     "status": "normal",
                     "unit": "hPa",
                     "timestamp": timestamp
                 },
                 "air_quality": {
                     "value": shared.air_quality,
-                    "min": 20,
-                    "max": shared.thresholds["air_quality_max"],
+                    "min": shared.thresholds["air_quality_max"],
+                    "max": shared.thresholds["air_quality_min"],
                     "status": "normal",
                     "unit": "ppm",
                     "timestamp": timestamp
                 },
                 "distance": {
                     "value": shared.distance,
-                    "min": 0,
-                    "max": shared.thresholds["presence_distance"],
+                    "min": shared.thresholds["presence_distance_min"],
+                    "max": shared.thresholds["presence_distance_max"],
                     "status": "normal",
                     "unit": "cm",
                     "timestamp": timestamp
