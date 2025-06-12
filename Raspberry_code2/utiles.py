@@ -8,6 +8,7 @@ def Generar_historicos_temperatura(valor,hora,fecha):
         "valor":valor,
     }
     shared.HTemperatura["history"].append(nuevo_dato)
+    print("Dato de humedad agregado al histórico:", nuevo_dato)
 
 def Generar_historicos_humedad(valor,hora,fecha):
     if(len(shared.HHumedad["history"]) >= 20):
@@ -18,6 +19,7 @@ def Generar_historicos_humedad(valor,hora,fecha):
         "valor":valor,
     }
     shared.HHumedad["history"].append(nuevo_dato)
+
 
 def Generar_historicos_presion(valor,hora,fecha):
     if(len(shared.HPresion["history"]) >= 20):
