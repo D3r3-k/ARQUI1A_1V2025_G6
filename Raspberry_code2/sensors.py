@@ -117,16 +117,37 @@ class Sensors:
 
         except Exception as e:
             print(f"Error leyendo presión BMP280: {e}")
+            
     def read_air_quality(self):
         try:
-            # Leer 2 veces por requerimientos del PCF8591
+            # Leer 2 veces por requisitos del PCF8591
             self.bus.write_byte(self.pcf8591_address, 0x40)  # Canal A0
             self.bus.read_byte(self.pcf8591_address)  # Dummy read
             value = self.bus.read_byte(self.pcf8591_address)  # Valor real (0–255)
-            voltage = (value / 255.0) * 3.3
-            shared.air_quality = round((voltage / 3.3) * 500, 2)
+            
+            Vout = (value / 255.0) * 3.3  # Voltaje real en V
+            Vcc = 5.0  # Voltaje de alimentación
+            RL = 10000  # 10kΩ
+
+            # Calcular Rs (resistencia del sensor)
+            Rs = RL * (Vcc / Vout - 1)
+
+            # Calibración: Rs en aire limpio. Debes obtenerlo tú y reemplazarlo aquí
+            R0 = 10000  # Ejemplo: debes calibrarlo manualmente en aire limpio
+
+            # Relación Rs/R0
+            ratio = Rs / R0
+
+            # Estimación de ppm (puedes cambiar a y b según el gas que te interese)
+            a = 116.6020682
+            b = 2.769034857
+            ppm = a * (ratio ** -b)
+
+            shared.air_quality = round(ppm, 2)
+
         except Exception as e:
             print(f"Error leyendo MQ135 desde PCF8591: {e}")
+
 
     def read_sensors(self):
         self.read_dht11()

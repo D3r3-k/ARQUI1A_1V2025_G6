@@ -202,7 +202,7 @@ class MQTTClient:
             for sensor, data in sensor_data.items():
                 topic = self.topics[sensor]
                 payload = json.dumps(data)
-                self.client.publish(topic, payload, retain=True)  # <--- retain=True aquí
+                self.client.publish(topic, payload, retain=False)  # <--- retain=True aquí
 
             # Publish alerts
             alerts_payload = json.dumps({
