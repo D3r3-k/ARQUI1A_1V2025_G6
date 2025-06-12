@@ -50,7 +50,7 @@ class GlobalState:
             'humidity_min': 30.0,       # %
             'light_min': 1.6,            # % (too dark)
             'light_max': 10,            # % (too lifht)
-            'air_quality_max': 141,     # Air quality index
+            'air_quality_max': 150,     # Air quality index
             'air_quality_min': 135,     # Air quality index
             'presence_distance_min': 2.0,  # cm (presence detected)
             'presence_distance_max': 100,  # cm (presence detected)
