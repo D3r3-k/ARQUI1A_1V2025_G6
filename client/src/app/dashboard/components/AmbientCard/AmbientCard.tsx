@@ -6,6 +6,7 @@ import {
   Droplets,
   Gauge,
   Lightbulb,
+  LucideIcon,
   Thermometer,
   User,
   Wind,
@@ -87,14 +88,14 @@ export default function AmbientCard({ id, color, title }: AmbientCardProps) {
     bgBar: "bg-gray-500",
   };
 
-  const IconType: any = {
+  const IconType: LucideIcon = {
     temperatura: Thermometer,
     humedad: Droplets,
     luz: Lightbulb,
     calidad_aire: Gauge,
     presion: Wind,
     distancia: User,
-  }[id];
+  }[id] || Lightbulb;
 
   const safeData = {
     status: data?.status ?? "inactive",
