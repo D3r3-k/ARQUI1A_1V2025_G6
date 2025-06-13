@@ -19,6 +19,17 @@ class GlobalState:
         self.pressure = 0.0
         self.air_quality = 0
         
+        self.modo_control = True
+
+        self.actuadores= {
+            'red_led': True,      # Temperature alert
+            'yellow_led': True,   # Humidity alert  
+            'green_led': True,    # Light alert
+            'blue_led': True,     # Air quality alert
+            'motor_fan': True,    # Cooling fan
+            'buzzer': True        # Audio alert          
+        }
+
         # System messages
         self.local_error_message = ""
         

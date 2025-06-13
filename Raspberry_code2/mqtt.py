@@ -74,15 +74,18 @@ class MQTTClient:
         """Process control commands from dashboard"""
         try:
             cmd_type = command.get("type")
-            device = command.get("device")
+            device = command.get("actuador")
             action = command.get("action")  # "on" or "off"
             
-            if cmd_type == "actuator_control":
-                # Update shared status for actuator control
-                # This will be picked up by the actuators class
-                if device in shared.actuator_status:
-                    shared.remote_commands[device] = action
-                    logging.info(f"Remote command: {device} -> {action}")
+            if cmd_type == "manual_control":
+                shared.modo_control = False
+                if device in shared.actuadores:
+                    shared.actuadores[device] = action
+            elif cmd_type == "auto_control":
+                shared.modo_control = True 
+                
+
+
                     
         except Exception as e:
             logging.error(f"Error handling control command: {e}")

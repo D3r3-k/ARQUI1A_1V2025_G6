@@ -11,10 +11,10 @@ class Actuators:
         self.green_led = LED(10)
         self.blue_led = LED(9)
 
-        # Declaración del motor con puente H
-        # self.motor_in1 = DigitalOutputDevice(5)     # IN1
-        # self.motor_in2 = DigitalOutputDevice(6)     # IN2
-        # self.motor_enable = PWMOutputDevice(13)     # EN (PWM)
+        #Declaración del motor con puente H
+        self.motor_in1 = DigitalOutputDevice(5)     # IN1
+        self.motor_in2 = DigitalOutputDevice(6)     # IN2
+        self.motor_enable = PWMOutputDevice(13)     # EN (PWM)
 
         # Buzzer
         self.buzzer = PWMOutputDevice(21)   
@@ -31,9 +31,9 @@ class Actuators:
         self.yellow_led.off()
         self.green_led.on()
         self.blue_led.off()
-        # self.motor_enable.off()
-        # self.motor_in1.off()
-        # self.motor_in2.off()
+        self.motor_enable.off()
+        self.motor_in1.off()
+        self.motor_in2.off()
         self.buzzer.off()
 
         for key in shared.actuator_status:
@@ -47,26 +47,26 @@ class Actuators:
         shared.actuator_status[led_name] = state
 
 
-    # def control_motor(self, state):
-    #     if state:
-    #         self.motor_in1.on()
-    #         self.motor_in2.off()  # dirección fija
-    #         self.motor_enable.value = 1.0  # 100% velocidad
-    #         shared.actuator_status['motor_fan'] = True
+    def control_motor(self, state):
+        if state:
+            self.motor_in1.on()
+            self.motor_in2.off()  # dirección fija
+            self.motor_enable.value = 1.0  # 100% velocidad
+            shared.actuator_status['motor_fan'] = True
 
-    #     else: 
-    #         self.auto = threading.Timer(
-    #             5,self._auto_off_motor
-    #         )
-    #         self.auto['motor'].start()
+        else: 
+            self.auto = threading.Timer(
+                5,self._auto_off_motor
+            )
+            self.auto['motor'].start()
 
-    # def _auto_off_motor(self):
-    #     self.motor_enable.off()
-    #     self.motor_in1.off()
-    #     self.motor_in2.off()
-    #     self.control_led(self.red_led, 'red_led', False)
-    #     shared.actuator_status['motor_fan'] = False
-    #     print("Motor apagado automáticamente")
+    def _auto_off_motor(self):
+        self.motor_enable.off()
+        self.motor_n1.off()
+        self.motor_in2.off()
+        self.control_led(self.red_led, 'red_led', False)
+        shared.actuator_status['motor_fan'] = False
+        print("Motor apagado automáticamente")
 
     def control_buzzer(self, state):
         if state:
@@ -91,6 +91,7 @@ class Actuators:
     
     def control_led_yellow(self,state):
         if state: 
+            self.yellow_led.on()
             print("Led amarillo encendido")
         else: 
             time = threading.Timer(5, self._auto_off_led_yellow) 
@@ -100,29 +101,37 @@ class Actuators:
         self.control_led(self.yellow_led, 'yellow_led', False)
 
     def check_alerts_and_control(self):
-        # if shared.temperature > shared.thresholds['temperature_max'] or shared.temperature < shared.thresholds['temperature_min']:
-        #     if not shared.alert_status['temperature']:
-        #         print(f"  Alerta de temperatura: {shared.temperature}°C")
-        #         shared.alert_status['temperature'] = True
-        #         shared.local_error_message = "Temperatura Critica!"
-        #     self.control_led(self.red_led, 'red_led', True)
-        #     self.control_motor(True)  
-        # else:
-        #     if shared.alert_status['temperature']:
-        #         print(f"  Temperatura normalizada: {shared.temperature}°C")
-        #         shared.alert_status['temperature'] = False
+        if shared.temperature > shared.thresholds['temperature_max'] or shared.temperature < shared.thresholds['temperature_min']:
+            if not shared.alert_status['temperature']:
+                print(f"  Alerta de temperatura: {shared.temperature}°C")
+                shared.alert_status['temperature'] = True
+                shared.local_error_message = "Temperatura Critica!"
+            self.control_led(self.red_led, 'red_led', True)
+            self.control_motor(True)  
+        else:
+            if shared.alert_status['temperature']:
+                print(f"  Temperatura normalizada: {shared.temperature}°C")
+                shared.alert_status['temperature'] = False
             
-        #         self.control_motor(False)  
+                self.control_motor(False)  
 
         if shared.humidity > shared.thresholds['humidity_max'] or shared.humidity < shared.thresholds['humidity_min']:
             if not shared.alert_status['humidity']:
                 print(f"  Alerta de humedad: {shared.humidity}%")
-                self.control_led(self.yellow_led, 'yellow_led', True)
+                activar = shared.modo_control or shared.actuadores["yellow_led"]
+                self.control_led(self.yellow_led, 'yellow_led', activar)
                 shared.alert_status['humidity'] = True
-                shared.local_error_message = "Humedad Critica!"
+ 
+            shared.local_error_message = "Humedad Critica!"
         else:
             shared.alert_status['humidity'] = False
-            self.control_led_yellow( False)
+            # activar = shared.modo_control or shared.actuadores["yellow_led"]
+            # self.control_led_yellow( shared.modo_control or shared.actuadores["yellow_led"] )                                 
+            if (not(shared.modo_control)): #mnual
+                self.control_led_yellow( shared.modo_control or shared.actuadores["yellow_led"] )
+            else: #automatico
+                self.control_led_yellow(False)
+
 
         if shared.light_level < shared.thresholds['light_min']:
             if not shared.alert_status['light']:
@@ -156,6 +165,8 @@ class Actuators:
                 shared.alert_status['presence'] = True
         else:
             shared.alert_status['presence'] = False
+
+
 
     def cleanup(self):
         for timer in self.auto_off_timers.values():
