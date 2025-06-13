@@ -133,6 +133,10 @@ class MQTTClient:
                 if modo is not None:
 
                     shared.modo_control = bool(modo)
+                    if bool(modo):
+                        for item in shared.actuadores:
+                            shared.actuadores[item] = True
+                    shared.modo_automatico = bool(modo)
 
                     modo_txt = "AUTOMÁTICO" if modo else "MANUAL"
 

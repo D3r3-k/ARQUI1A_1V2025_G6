@@ -47,22 +47,25 @@ class Actuators:
         shared.actuator_status[led_name] = state
 
 
-    def control_motor(self, state):
-        if state:
+    def control_motor(self, state_global, state_control):
+        if (state_global and state_control):
             print("MOTOR ENCENDIDO")
-            print(shared.actuadores["motor_fan"])
             self.motor_in1.on()
             self.motor_in2.off()  # dirección fija
             self.motor_enable.value = 1.0  # 100% velocidad
             shared.actuator_status['motor_fan'] = True
-
+        
+        if (state_global == False and state_control == True):
+            print("MOTOR ENCENDIDO")
+            self.motor_in1.on()
+            self.motor_in2.off()  # dirección fija
+            self.motor_enable.value = 1.0  # 100% velocidad
+            shared.actuator_status['motor_fan'] = True
         else: 
             self.motor_in1.on()
             self.motor_in2.off()  # dirección fija
             self.motor_enable.value = 1.0  # 100% velocidad
-            self.auto = threading.Timer(
-                5,self._auto_off_motor
-            )
+            self.auto = threading.Timer(5,self._auto_off_motor)
             self.auto.start()
 
     def _auto_off_motor(self):
@@ -110,11 +113,11 @@ class Actuators:
             print(f"  Alerta de temperatura: {shared.temperature}°C")
             shared.alert_status['temperature'] = True
             shared.local_error_message = "Temperatura Critica!"
-            activar = shared.modo_control or shared.actuadores["red_led"]
-            activar2 = shared.modo_control or shared.actuadores["motor_fan"]
+            activar = shared.actuadores["red_led"]
+            activar2 = shared.actuadores["motor_fan"]
             self.control_led(self.red_led, 'red_led', activar)
             #self.control_motor(True)  
-            self.control_motor(activar2)
+            self.control_motor(shared.modo_control, activar2)
         else:
             shared.alert_status['temperature'] = False
             print(f"  Temperatura normalizada: {shared.temperature}°C")
