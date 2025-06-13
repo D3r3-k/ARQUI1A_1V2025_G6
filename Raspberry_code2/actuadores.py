@@ -12,9 +12,9 @@ class Actuators:
         self.blue_led = LED(9)
 
         # Declaración del motor con puente H
-        self.motor_in1 = DigitalOutputDevice(5)     # IN1
-        self.motor_in2 = DigitalOutputDevice(6)     # IN2
-        self.motor_enable = PWMOutputDevice(13)     # EN (PWM)
+        # self.motor_in1 = DigitalOutputDevice(5)     # IN1
+        # self.motor_in2 = DigitalOutputDevice(6)     # IN2
+        # self.motor_enable = PWMOutputDevice(13)     # EN (PWM)
 
         # Buzzer
         self.buzzer = PWMOutputDevice(21)   
@@ -47,26 +47,26 @@ class Actuators:
         shared.actuator_status[led_name] = state
 
 
-    def control_motor(self, state):
-        if state:
-            self.motor_in1.on()
-            self.motor_in2.off()  # dirección fija
-            self.motor_enable.value = 1.0  # 100% velocidad
-            shared.actuator_status['motor_fan'] = True
+    # def control_motor(self, state):
+    #     if state:
+    #         self.motor_in1.on()
+    #         self.motor_in2.off()  # dirección fija
+    #         self.motor_enable.value = 1.0  # 100% velocidad
+    #         shared.actuator_status['motor_fan'] = True
 
-        else: 
-            self.auto = threading.Timer(
-                5,self._auto_off_motor
-            )
-            self.auto['motor'].start()
+    #     else: 
+    #         self.auto = threading.Timer(
+    #             5,self._auto_off_motor
+    #         )
+    #         self.auto['motor'].start()
 
-    def _auto_off_motor(self):
-        self.motor_enable.off()
-        self.motor_in1.off()
-        self.motor_in2.off()
-        self.control_led(self.red_led, 'red_led', False)
-        shared.actuator_status['motor_fan'] = False
-        print("Motor apagado automáticamente")
+    # def _auto_off_motor(self):
+    #     self.motor_enable.off()
+    #     self.motor_in1.off()
+    #     self.motor_in2.off()
+    #     self.control_led(self.red_led, 'red_led', False)
+    #     shared.actuator_status['motor_fan'] = False
+    #     print("Motor apagado automáticamente")
 
     def control_buzzer(self, state):
         if state:
