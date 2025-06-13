@@ -78,6 +78,7 @@ class MQTTClient:
             action = command.get("action")  # "on" or "off"
             
             if cmd_type == "manual_control":
+                print("MENSAJE RECIBIDO DEL FRONT")
                 shared.modo_control = False
                 if device in shared.actuadores:
                     shared.actuadores[device] = action
