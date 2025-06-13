@@ -128,7 +128,7 @@ class Actuators:
         else:
             shared.alert_status['light'] = False
 
-        if shared.air_quality > shared.thresholds['air_quality_max']:
+        if shared.air_quality < shared.thresholds['air_quality_min']:
             if not shared.alert_status['air_quality']:
                 print(f"  Alerta de calidad del aire: {shared.air_quality}")
                 self.control_led(self.blue_led, 'blue_led', True)
