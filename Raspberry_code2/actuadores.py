@@ -93,7 +93,7 @@ class Actuators:
         if state: 
             print("Led amarillo encendido")
         else: 
-            time = threading.Timer(5, self._auto_off_led) 
+            time = threading.Timer(5, self._auto_off_led_yellow) 
             time.start()
 
     def _auto_off_led_yellow(self):
