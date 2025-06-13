@@ -31,9 +31,9 @@ class Actuators:
         self.yellow_led.off()
         self.green_led.off()
         self.blue_led.off()
-        self.motor_enable.off()
-        self.motor_in1.off()
-        self.motor_in2.off()
+        # self.motor_enable.off()
+        # self.motor_in1.off()
+        # self.motor_in2.off()
         self.buzzer.off()
 
         for key in shared.actuator_status:
