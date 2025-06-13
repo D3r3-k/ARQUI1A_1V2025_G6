@@ -13,7 +13,7 @@ import ControlCard from "./components/ControlCard/ControlCard";
 import { useMqtt } from "@/hooks/useMqtt";
 import { TopicModoControl } from "@/types/TypesMqtt";
 
-const topic = `GRUPOG6/control/rasp02/modo`;
+const topic = `${process.env.NEXT_PUBLIC_TOPICS_LINK}/modo`;
 
 export default function ControlPage() {
   // Hook's
