@@ -55,7 +55,7 @@ class GlobalState:
         
         # Alert thresholds (configurable)
         self.thresholds = {
-            'temperature_max':  fdxzsx,    # °C
+            'temperature_max':  25,    # °C
             'temperature_min': 15.0,    # °C
             'humidity_max': 90.0,       # %
             'humidity_min': 30.0,       # %
