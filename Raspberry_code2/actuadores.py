@@ -29,7 +29,7 @@ class Actuators:
     def turn_off_all(self):
         self.red_led.off()
         self.yellow_led.off()
-        self.green_led.off()
+        self.green_led.on()
         self.blue_led.off()
         # self.motor_enable.off()
         # self.motor_in1.off()
@@ -70,8 +70,8 @@ class Actuators:
 
     def control_buzzer(self, state):
         if state:
-            self.buzzer.frequency = 2000  # 2kHz es común para buzzers pasivos
-            self.buzzer.value = 0.5       # ciclo de trabajo del 50%
+            self.buzzer.frequency = 2000  
+            self.buzzer.value = 0.5       
         else: 
 
             timer = threading.Timer(5, self._auto_off_buzzer)
@@ -82,6 +82,22 @@ class Actuators:
         shared.actuator_status['buzzer'] = False
         self.control_led(self.blue_led, 'blue_led', False)
         print("Buzzer apagado automáticamente")
+
+    def control_iluminacion(self,state):
+        if state: 
+            print("Iluminacion del Invernadero")
+        else: 
+            print("Iluminacion Apagada")
+    
+    def control_led_yellow(self,state):
+        if state: 
+            print("Led amarillo encendido")
+        else: 
+            time = threading.Timer(5, self._auto_off_led) 
+            time.start()
+
+    def _auto_off_led_yellow(self):
+        self.control_led(self.yellow_led, 'yellow_led', False)
 
     def check_alerts_and_control(self):
         # if shared.temperature > shared.thresholds['temperature_max'] or shared.temperature < shared.thresholds['temperature_min']:
@@ -106,15 +122,18 @@ class Actuators:
                 shared.local_error_message = "Humedad Critica!"
         else:
             shared.alert_status['humidity'] = False
+            self.control_led_yellow( False)
 
         if shared.light_level < shared.thresholds['light_min']:
             if not shared.alert_status['light']:
                 print(f" Alerta por baja luz: {shared.light_level}%")
-                self.control_led(self.green_led, 'green_led', True)
+                self.control_led(self.green_led, 'green_led', False)
+                self.control_iluminacion(True); 
                 shared.alert_status['light'] = True
                 shared.local_error_message = "Iluminacion Baja!"
         else:
             shared.alert_status['light'] = False
+            self.control_iluminacion(False); 
 
         if shared.air_quality < shared.thresholds['air_quality_min']:
             if not shared.alert_status['air_quality']:
@@ -130,7 +149,7 @@ class Actuators:
                 self.control_buzzer(False)  
 
 
-        if shared.thresholds['presence_distance_min'] <= shared.distance <= shared.thresholds['presence_distance_max']:
+        if shared.thresholds['presence_distance_min'] <= shared.thresholds['presence_distance_max']:
 
             if not shared.alert_status['presence']:
                 print(f" Presencia detectada: {shared.distance}cm")
