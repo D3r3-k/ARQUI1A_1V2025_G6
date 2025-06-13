@@ -73,12 +73,12 @@ class MQTTClient:
     def _handle_control_command(self, command):
         try:
             cmd_type = command.get("type")
-            device = command.get("actuador")
+            device = command.get("actuador","")
             action = command.get("action")  # True o False (booleano)
 
             if cmd_type == "manual_control":
                 shared.modo_control = False
-                if device in shared.actuadores:
+                if device and device in shared.actuadores:
                     shared.actuadores[device] = bool(action)
                     logging.info(f"Manual: {device} -> {action}")
             elif cmd_type == "auto_control":
@@ -87,11 +87,6 @@ class MQTTClient:
         except Exception as e:
             logging.error(f"Error handling control command: {e}")
                     
-
-
-                    
-        except Exception as e:
-            logging.error(f"Error handling control command: {e}")
     
     def _on_disconnect(self, client, userdata, rc):
         """Callback when MQTT client disconnects"""
