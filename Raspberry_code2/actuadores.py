@@ -80,21 +80,19 @@ class Actuators:
         shared.actuator_status['motor_fan'] = False
         print("Motor apagado automáticamente")
 
-    def control_buzzer(self, state, duration=2.0):
+    def control_buzzer(self, state):
         if state:
             self.buzzer.frequency = 2000  # 2kHz es común para buzzers pasivos
             self.buzzer.value = 0.5       # ciclo de trabajo del 50%
+        else: 
 
-            shared.actuator_status['buzzer'] = True
-            timer = threading.Timer(duration, self._auto_off_buzzer)
+            timer = threading.Timer(5, self._auto_off_buzzer)
             timer.start()
-        else:
-            self.buzzer.off()
-            shared.actuator_status['buzzer'] = False
 
     def _auto_off_buzzer(self):
         self.buzzer.off()
         shared.actuator_status['buzzer'] = False
+        self.control_led(self.blue_led, 'blue_led', False)
         print("Buzzer apagado automáticamente")
 
     def check_alerts_and_control(self):
@@ -110,7 +108,7 @@ class Actuators:
                 print(f"  Temperatura normalizada: {shared.temperature}°C")
                 shared.alert_status['temperature'] = False
             
-            self.control_motor(False)  
+                self.control_motor(False)  
 
         if shared.humidity > shared.thresholds['humidity_max'] or shared.humidity < shared.thresholds['humidity_min']:
             if not shared.alert_status['humidity']:
@@ -134,11 +132,15 @@ class Actuators:
             if not shared.alert_status['air_quality']:
                 print(f"  Alerta de calidad del aire: {shared.air_quality}")
                 self.control_led(self.blue_led, 'blue_led', True)
-                self.control_buzzer(True, 3.0)
+                self.control_buzzer(True)
                 shared.alert_status['air_quality'] = True
                 shared.local_error_message = "Mala Calidad de Aire!"
         else:
-            shared.alert_status['air_quality'] = False
+            if shared.alert_status['air_quality']: 
+                print(f"  Calidad de Aire normalizada: {shared.temperature}")
+                shared.alert_status['air_quality'] = False
+                self.control_buzzer(False)  
+
 
         if shared.thresholds['presence_distance_min'] <= shared.distance <= shared.thresholds['presence_distance_max']:
 
