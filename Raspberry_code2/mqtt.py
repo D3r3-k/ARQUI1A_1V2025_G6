@@ -78,6 +78,11 @@ class MQTTClient:
             logging.info(f"Recibido control: type={cmd_type}, device={device}, action={action}")
 
             if cmd_type == "manual_control":
+                if device and device in shared.actuadores:
+                    shared.actuadores[device] = bool(action)
+                    logging.info(f"Manual: {device} cambiado a {action}")
+                else:
+                    logging.info("Manual control recibido, sin actuador específico (solo cambia modo_control)")
                 shared.modo_control = False
                 logging.info("Cambiando a modo manual")
                 if device and device in shared.actuadores:
