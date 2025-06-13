@@ -20,7 +20,13 @@ class GlobalState:
         self.air_quality = 0
         
         self.modo_control = True
-
+        # Controlar actuadores
+        self.estado_red_led = True
+        self.estado_yellow_led = True
+        self.estado_green_led = True
+        self.estado_blue_led = True
+        self.estado_motor_fan = True
+        self.estado_buzzer = True
         self.actuadores= {
             'red_led': True,      # Temperature alert
             'yellow_led': True,   # Humidity alert  

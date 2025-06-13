@@ -136,20 +136,20 @@ class Actuators:
             print(f"  Alerta de temperatura: {shared.temperature}°C")
             shared.alert_status["temperature"] = True
             shared.local_error_message = "Temperatura Critica!"
-            activar = shared.modo_control or shared.actuadores["red_led"]
-            self.control_led_Red(shared.modo_control, activar)
-            activar2 = shared.modo_control or shared.actuadores["motor_fan"]
-            self.control_motor(shared.modo_control, activar2)
+            if shared.estado_motor_fan:
+                return
+            shared.estado_motor_fan = True
+            self.control_led_Red(shared.modo_control, shared.actuadores["red_led"])
+            self.control_motor(shared.modo_control, shared.actuadores["motor_fan"])
         else:
             shared.alert_status["temperature"] = False
             print(f"  Temperatura normalizada: {shared.temperature}°C")
             if not (shared.modo_control):
-                activar = shared.modo_control or shared.actuadores["red_led"]
-                activar2 = shared.modo_control or shared.actuadores["motor_fan"]
-                self.control_motor(shared.modo_control, activar2)
-                self.control_led_Red(shared.modo_control, activar)
+                self.control_motor(shared.modo_control, shared.actuadores["motor_fan"])
+                self.control_led_Red(shared.modo_control, shared.actuadores["red_led"])
             else:
                 self.control_motor(True, False)
+                shared.estado_motor_fan = False
 
         if (
             shared.humidity > shared.thresholds["humidity_max"]
