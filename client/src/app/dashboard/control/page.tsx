@@ -1,12 +1,19 @@
 "use client";
 
-import { AudioLines, Fan, Lightbulb, Monitor, RefreshCw, ToggleLeft } from "lucide-react";
+import {
+  AudioLines,
+  Fan,
+  Lightbulb,
+  Monitor,
+  RefreshCw,
+  ToggleLeft,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import ControlCard from "./components/ControlCard/ControlCard";
 import { useMqtt } from "@/hooks/useMqtt";
-import { TopicControl } from "@/types/TypesMqtt";
+import { TopicModoControl } from "@/types/TypesMqtt";
 
-const topic = `${process.env.NEXT_PUBLIC_TOPICS_LINK}/comandos`;
+const topic = `GRUPOG6/control/rasp02/modo`;
 
 export default function ControlPage() {
   // Hook's
@@ -20,24 +27,28 @@ export default function ControlPage() {
     if (storedMode) {
       setIsAutoMode(JSON.parse(storedMode));
     }
-    return () => { }
-  }, [])
+    return () => {};
+  }, []);
 
   // Handler's
   const handleAutoModeToggle = () => {
     if (isAutoMode) return;
     setIsAutoMode(true);
     localStorage.setItem("actuadoresModo", JSON.stringify(true));
-    const newControlData: TopicControl = { type: 'auto_control', actuador: '', action: true };
+    const newControlData: TopicModoControl = {
+      modo: true,
+    };
     publish(topic, JSON.stringify(newControlData));
-  }
+  };
   const handleManualModeToggle = () => {
     if (!isAutoMode) return;
     setIsAutoMode(false);
     localStorage.setItem("actuadoresModo", JSON.stringify(false));
-    const newControlData: TopicControl = { type: 'manual_control', actuador: '', action: true };
+    const newControlData: TopicModoControl = {
+      modo: false,
+    };
     publish(topic, JSON.stringify(newControlData));
-  }
+  };
   // Render's
   return (
     <main className="flex-1 p-4 lg:p-6">
@@ -49,17 +60,18 @@ export default function ControlPage() {
               <h2 className="text-xl font-semibold">Control de Actuadores</h2>
               <p className="text-gray-600 dark:text-gray-400 mt-1">
                 {isAutoMode
-                  ? 'Modo automático: Los actuadores funcionan según las reglas programadas'
-                  : 'Modo manual: Controle directamente cada actuador'}
+                  ? "Modo automático: Los actuadores funcionan según las reglas programadas"
+                  : "Modo manual: Controle directamente cada actuador"}
               </p>
             </div>
             <div className="flex space-x-3">
               <button
                 onClick={handleAutoModeToggle}
                 className={`flex items-center space-x-2 px-4 py-2 rounded-lg border transition-colors duration-300 cursor-pointer
-                  ${isAutoMode
-                    ? 'bg-green-600 hover:bg-green-700 text-white border-green-600'
-                    : 'bg-gray-50 hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600'
+                  ${
+                    isAutoMode
+                      ? "bg-green-600 hover:bg-green-700 text-white border-green-600"
+                      : "bg-gray-50 hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600"
                   }`}
               >
                 <RefreshCw size={16} />
@@ -68,9 +80,10 @@ export default function ControlPage() {
               <button
                 onClick={handleManualModeToggle}
                 className={`flex items-center space-x-2 px-4 py-2 rounded-lg border transition-colors duration-300 cursor-pointer
-                  ${!isAutoMode
-                    ? 'bg-amber-600 hover:bg-amber-700 text-white border-amber-600'
-                    : 'bg-gray-50 hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600'
+                  ${
+                    !isAutoMode
+                      ? "bg-amber-600 hover:bg-amber-700 text-white border-amber-600"
+                      : "bg-gray-50 hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600"
                   }`}
               >
                 <ToggleLeft size={16} />
@@ -119,62 +132,62 @@ export default function ControlPage() {
           <h3 className="text-lg font-semibold mb-4">Sensores</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <ControlCard
-              id="fan-1"
-              icon={Fan}
-              title="Ventilador Principal"
-              description="Regula temperatura del ambiente"
-              initialState={true}
-              color="white"
-              disabled={isAutoMode}
-            />
-            <ControlCard
-              id="fan-2"
-              icon={Fan}
-              title="Ventilador Principal"
-              description="Regula temperatura del ambiente"
-              initialState={true}
-              color="white"
-              disabled={isAutoMode}
-            />
-            <ControlCard
-              id="led-1"
+              id="red_led"
               icon={Lightbulb}
-              title="Luces LED"
-              description="Iluminación principal del sistema"
+              title="LED Rojo"
+              description="Indica estado de alerta"
+              initialState={true}
+              color="red"
+              disabled={isAutoMode}
+            />
+            <ControlCard
+              id="yellow_led"
+              icon={Lightbulb}
+              title="LED Amarillo"
+              description="Indica estado de advertencia"
               initialState={true}
               color="yellow"
               disabled={isAutoMode}
             />
             <ControlCard
-              id="buzzer-1"
-              icon={AudioLines}
-              title="Buzzer"
-              description="Alarma sonora del sistema"
+              id="green_led"
+              icon={Lightbulb}
+              title="LED Verde"
+              description="Indica estado normal"
               initialState={true}
-              color="slate"
+              color="green"
               disabled={isAutoMode}
             />
             <ControlCard
-              id="lcd-1"
-              icon={Monitor}
-              title="Pantalla LCD"
-              description="Pantalla de información"
+              id="blue_led"
+              icon={Lightbulb}
+              title="LED Azul"
+              description="Indica estado de información"
+              initialState={true}
+              color="blue"
+              disabled={isAutoMode}
+            />
+            <ControlCard
+              id="motor_fan"
+              icon={Fan}
+              title="Ventilador"
+              description="Controla la velocidad del ventilador"
               initialState={true}
               color="cyan"
               disabled={isAutoMode}
             />
             <ControlCard
-              id="led-indicator-1"
-              icon={Lightbulb}
-              title="LEDs Indicadoras"
-              description="Indicadores de estado"
+              id="buzzer"
+              icon={AudioLines}
+              title="Buzzer"
+              description="Emite sonidos de alerta"
               initialState={true}
-              color="green"
+              color="purple"
               disabled={isAutoMode}
             />
           </div>
         </div>
       </div>
     </main>
-  )
+  );
 }

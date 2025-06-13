@@ -30,8 +30,10 @@ export type TopicHistoryStack = {
 };
 
 // CONTROL TOPICS
+export type TopicModoControl = {
+  modo: boolean;
+};
 export type TopicControl = {
-  type: "auto_control" | "manual_control";
   actuador: string;
   action: boolean;
 };
