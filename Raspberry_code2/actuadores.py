@@ -49,6 +49,7 @@ class Actuators:
 
     def control_motor(self, state):
         if state:
+            print("MOTOR ENCENDIDO")
             self.motor_in1.on()
             self.motor_in2.off()  # dirección fija
             self.motor_enable.value = 1.0  # 100% velocidad
