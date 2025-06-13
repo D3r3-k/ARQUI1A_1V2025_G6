@@ -1,6 +1,7 @@
 from gpiozero import LED, DigitalOutputDevice, PWMOutputDevice, Buzzer
 from globals import shared
-import threading 
+import threading
+
 
 class Actuators:
 
@@ -11,20 +12,20 @@ class Actuators:
         self.green_led = LED(10)
         self.blue_led = LED(9)
 
-        #Declaración del motor con puente H
-        self.motor_in1 = DigitalOutputDevice(5)     # IN1
-        self.motor_in2 = DigitalOutputDevice(6)     # IN2
-        self.motor_enable = PWMOutputDevice(13)     # EN (PWM)
+        # Declaración del motor con puente H
+        self.motor_in1 = DigitalOutputDevice(5)  # IN1
+        self.motor_in2 = DigitalOutputDevice(6)  # IN2
+        self.motor_enable = PWMOutputDevice(13)  # EN (PWM)
 
         # Buzzer
-        self.buzzer = PWMOutputDevice(21)   
+        self.buzzer = PWMOutputDevice(21)
 
         # Diccionario para timers automáticos
         self.auto_off_timers = {}
 
         self.turn_off_all()
         print("Actuadores inicializados Correctamente")
-        self.normal_off_timers = {}; 
+        self.normal_off_timers = {}
 
     def turn_off_all(self):
         self.red_led.off()
@@ -46,138 +47,145 @@ class Actuators:
             led_obj.off()
         shared.actuator_status[led_name] = state
 
-
     def control_motor(self, state_global, state_control):
-        if (state_global and state_control):
-            print("MOTOR ENCENDIDO")
+        if state_global and state_control:
+            print("MOTOR ENCENDIDO AUTOMATICO")
             self.motor_in1.on()
             self.motor_in2.off()  # dirección fija
             self.motor_enable.value = 1.0  # 100% velocidad
-            shared.actuator_status['motor_fan'] = True
-        
-        if (state_global == False and state_control == True):
-            print("MOTOR ENCENDIDO")
+            shared.actuator_status["motor_fan"] = True
+
+        if state_global == False and state_control == True:
+            print("MOTOR ENCENDIDO MANUAL")
             self.motor_in1.on()
             self.motor_in2.off()  # dirección fija
             self.motor_enable.value = 1.0  # 100% velocidad
-            shared.actuator_status['motor_fan'] = True
+            shared.actuator_status["motor_fan"] = True
         else:
-            self.auto = threading.Timer(5,self._auto_off_motor)
+            print("MOTOR APAGADO: modo: ", state_global, " control: ", state_control)
+            self.auto = threading.Timer(5, self._auto_off_motor)
             self.auto.start()
 
     def _auto_off_motor(self):
         self.motor_enable.off()
         self.motor_in1.off()
         self.motor_in2.off()
-        self.control_led(self.red_led, 'red_led', False)
-        shared.actuator_status['motor_fan'] = False
+        self.control_led(self.red_led, "red_led", False)
+        shared.actuator_status["motor_fan"] = False
         print("Motor apagado automáticamente")
 
     def control_buzzer(self, state):
         if state:
-            self.buzzer.frequency = 2000  
-            self.buzzer.value = 0.5       
-        else: 
+            self.buzzer.frequency = 2000
+            self.buzzer.value = 0.5
+        else:
 
             timer = threading.Timer(5, self._auto_off_buzzer)
             timer.start()
 
     def _auto_off_buzzer(self):
         self.buzzer.off()
-        shared.actuator_status['buzzer'] = False
-        self.control_led(self.blue_led, 'blue_led', False)
+        shared.actuator_status["buzzer"] = False
+        self.control_led(self.blue_led, "blue_led", False)
         print("Buzzer apagado automáticamente")
 
-    def control_iluminacion(self,state):
-        if state: 
+    def control_iluminacion(self, state):
+        if state:
             print("Encender Iluminacion")
-        else: 
+        else:
             print("Iluminacion Apagada")
-    
-    def control_led_yellow(self,state):
-        if state: 
+
+    def control_led_yellow(self, state):
+        if state:
             self.yellow_led.on()
             print("Led amarillo encendido")
-        else: 
-            time = threading.Timer(5, self._auto_off_led_yellow) 
+        else:
+            time = threading.Timer(5, self._auto_off_led_yellow)
             time.start()
 
     def _auto_off_led_yellow(self):
-        self.control_led(self.yellow_led, 'yellow_led', False)
+        self.control_led(self.yellow_led, "yellow_led", False)
 
     def check_alerts_and_control(self):
-        if shared.temperature > shared.thresholds['temperature_max'] or shared.temperature < shared.thresholds['temperature_min']:
+        if (
+            shared.temperature > shared.thresholds["temperature_max"]
+            or shared.temperature < shared.thresholds["temperature_min"]
+        ):
             print(f"  Alerta de temperatura: {shared.temperature}°C")
-            shared.alert_status['temperature'] = True
+            shared.alert_status["temperature"] = True
             shared.local_error_message = "Temperatura Critica!"
-            activar = shared.actuadores["red_led"]
-            activar2 = shared.actuadores["motor_fan"]
-            self.control_led(self.red_led, 'red_led', activar)
-            #self.control_motor(True)  
+            activar = shared.modo_control or shared.actuadores["red_led"]
+            self.control_led(self.red_led, "red_led", activar)
+            # self.control_motor(True)
+            activar2 = shared.modo_control or shared.actuadores["motor_fan"]
             self.control_motor(shared.modo_control, activar2)
         else:
-            shared.alert_status['temperature'] = False
+            shared.alert_status["temperature"] = False
             print(f"  Temperatura normalizada: {shared.temperature}°C")
-            if (not(shared.modo_control)):
-                activar = shared.actuadores["motor_fan"]
-                self.control_motor(shared.modo_control, activar)  
-               # self.control_led(self.red_led, 'red_led', activar)
-            else: 
-                self.control_motor(False, False)  
-                #self.control_led(self.red_led, 'red_led', False)
+            if not (shared.modo_control):
+                activar = shared.modo_control or shared.actuadores["motor_fan"]
+                self.control_motor(shared.modo_control, activar)
+            # self.control_led(self.red_led, 'red_led', activar)
+            else:
+                self.control_motor(False, False)
+                # self.control_led(self.red_led, 'red_led', False)
 
-        if shared.humidity > shared.thresholds['humidity_max'] or shared.humidity < shared.thresholds['humidity_min']:
-            if not shared.alert_status['humidity']:
+        if (
+            shared.humidity > shared.thresholds["humidity_max"]
+            or shared.humidity < shared.thresholds["humidity_min"]
+        ):
+            if not shared.alert_status["humidity"]:
                 print(f"  Alerta de humedad: {shared.humidity}%")
                 activar = shared.modo_control or shared.actuadores["yellow_led"]
-                self.control_led(self.yellow_led, 'yellow_led', activar)
-                shared.alert_status['humidity'] = True
- 
+                self.control_led(self.yellow_led, "yellow_led", activar)
+                shared.alert_status["humidity"] = True
+
             shared.local_error_message = "Humedad Critica!"
         else:
-            shared.alert_status['humidity'] = False
+            shared.alert_status["humidity"] = False
             # activar = shared.modo_control or shared.actuadores["yellow_led"]
-            # self.control_led_yellow( shared.modo_control or shared.actuadores["yellow_led"] )                                 
-            if (not(shared.modo_control)): #mnual
-                self.control_led_yellow( shared.modo_control or shared.actuadores["yellow_led"] )
-            else: #automatico
+            # self.control_led_yellow( shared.modo_control or shared.actuadores["yellow_led"] )
+            if not (shared.modo_control):  # mnual
+                self.control_led_yellow(
+                    shared.modo_control or shared.actuadores["yellow_led"]
+                )
+            else:  # automatico
                 self.control_led_yellow(False)
 
-
-        if shared.light_level < shared.thresholds['light_min']:
-            if not shared.alert_status['light']:
+        if shared.light_level < shared.thresholds["light_min"]:
+            if not shared.alert_status["light"]:
                 print(f" Alerta por baja luz: {shared.light_level}%")
-                self.control_led(self.green_led, 'green_led', False)
-                self.control_iluminacion(True); 
-                shared.alert_status['light'] = True
+                self.control_led(self.green_led, "green_led", False)
+                self.control_iluminacion(True)
+                shared.alert_status["light"] = True
                 shared.local_error_message = "Iluminacion Baja!"
         else:
-            shared.alert_status['light'] = False
-            self.control_iluminacion(False); 
+            shared.alert_status["light"] = False
+            self.control_iluminacion(False)
 
-        if shared.air_quality < shared.thresholds['air_quality_min']:
-            if not shared.alert_status['air_quality']:
+        if shared.air_quality < shared.thresholds["air_quality_min"]:
+            if not shared.alert_status["air_quality"]:
                 print(f"  Alerta de calidad del aire: {shared.air_quality}")
-                self.control_led(self.blue_led, 'blue_led', True)
+                self.control_led(self.blue_led, "blue_led", True)
                 self.control_buzzer(True)
-                shared.alert_status['air_quality'] = True
+                shared.alert_status["air_quality"] = True
                 shared.local_error_message = "Mala Calidad de Aire!"
         else:
-            if shared.alert_status['air_quality']: 
+            if shared.alert_status["air_quality"]:
                 print(f"  Calidad de Aire normalizada: {shared.temperature}")
-                shared.alert_status['air_quality'] = False
-                self.control_buzzer(False)  
+                shared.alert_status["air_quality"] = False
+                self.control_buzzer(False)
 
+        if (
+            shared.thresholds["presence_distance_min"]
+            <= shared.thresholds["presence_distance_max"]
+        ):
 
-        if shared.thresholds['presence_distance_min'] <= shared.thresholds['presence_distance_max']:
-
-            if not shared.alert_status['presence']:
+            if not shared.alert_status["presence"]:
                 print(f" Presencia detectada: {shared.distance}cm")
-                shared.alert_status['presence'] = True
+                shared.alert_status["presence"] = True
         else:
-            shared.alert_status['presence'] = False
-
-
+            shared.alert_status["presence"] = False
 
     def cleanup(self):
         for timer in self.auto_off_timers.values():
