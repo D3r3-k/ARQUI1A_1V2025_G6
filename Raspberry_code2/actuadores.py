@@ -136,10 +136,8 @@ class Actuators:
             print(f"  Alerta de temperatura: {shared.temperature}°C")
             shared.alert_status["temperature"] = True
             shared.local_error_message = "Temperatura Critica!"
-            if not shared.estado_motor_fan:
-                shared.estado_motor_fan = True
-                self.control_led_Red(shared.modo_control, shared.actuadores["red_led"])
-                self.control_motor(shared.modo_control, shared.actuadores["motor_fan"])
+            self.control_led_Red(shared.modo_control, shared.actuadores["red_led"])
+            self.control_motor(shared.modo_control, shared.actuadores["motor_fan"])
         else:
             shared.alert_status["temperature"] = False
             print(f"  Temperatura normalizada: {shared.temperature}°C")
