@@ -85,7 +85,7 @@ class Actuators:
 
     def control_iluminacion(self,state):
         if state: 
-            print("Iluminacion del Invernadero")
+            print("Encender Iluminacion")
         else: 
             print("Iluminacion Apagada")
     

@@ -79,7 +79,7 @@ class Sensors:
                 lux = 18.0 * (1.0 / Vout) ** 2.2
 
             shared.light_level = round(lux, 2)
-            print(f"ADC value: {value} | Vout: {Vout:.2f} V | Lux: {lux:.2f}")
+            #print(f"ADC value: {value} | Vout: {Vout:.2f} V | Lux: {lux:.2f}")
 
         except Exception as e:
             print(f"Error leyendo luz en luxes: {e}")
