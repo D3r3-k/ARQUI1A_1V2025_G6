@@ -12,6 +12,9 @@ class Actuators:
         self.green_led = LED(10)
         self.blue_led = LED(9)
 
+        # Iluminacion del vivero
+        self.iluminacion = LED(20)
+
         # Declaración del motor con puente H
         self.motor_in1 = DigitalOutputDevice(5)  # IN1
         self.motor_in2 = DigitalOutputDevice(6)  # IN2
@@ -23,6 +26,8 @@ class Actuators:
         # Diccionario para timers automáticos
         self.auto_off_timers = {}
 
+        
+
         self.turn_off_all()
         print("Actuadores inicializados Correctamente")
         self.normal_off_timers = {}
@@ -30,12 +35,13 @@ class Actuators:
     def turn_off_all(self):
         self.red_led.off()
         self.yellow_led.off()
-        self.green_led.on()
+        self.green_led.off()
         self.blue_led.off()
         self.motor_enable.off()
         self.motor_in1.off()
         self.motor_in2.off()
         self.buzzer.off()
+        self.iluminacion.off()
 
         for key in shared.actuator_status:
             shared.actuator_status[key] = False
@@ -111,8 +117,10 @@ class Actuators:
     def control_iluminacion(self, state):
         if state:
             print("Encender Iluminacion")
+            self.iluminacion.on()
         else:
             print("Iluminacion Apagada")
+            self.iluminacion.off()
 
 ############################## Actuadores de Humedad #########################################
     def control_led_yellow(self, state):
@@ -173,7 +181,7 @@ class Actuators:
         if shared.light_level < shared.thresholds["light_min"]:
             if not shared.alert_status["light"]:
                 print(f" Alerta por baja luz: {shared.light_level}%")
-                self.control_led(self.green_led, "green_led", False)
+                self.control_led(self.green_led, "green_led", True)
                 self.control_iluminacion(True)
                 shared.alert_status["light"] = True
                 shared.local_error_message = "Iluminacion Baja!"
