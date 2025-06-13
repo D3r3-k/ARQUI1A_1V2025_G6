@@ -73,17 +73,22 @@ class MQTTClient:
     def _handle_control_command(self, command):
         try:
             cmd_type = command.get("type")
-            device = command.get("actuador","")
-            action = command.get("action")  # True o False (booleano)
+            device = command.get("actuador", "")
+            action = command.get("action")
+            logging.info(f"Recibido control: type={cmd_type}, device={device}, action={action}")
 
             if cmd_type == "manual_control":
                 shared.modo_control = False
+                logging.info("Cambiando a modo manual")
                 if device and device in shared.actuadores:
                     shared.actuadores[device] = bool(action)
                     logging.info(f"Manual: {device} -> {action}")
+                else:
+                    logging.info("Manual control recibido, sin actuador específico (solo cambia modo_control)")
             elif cmd_type == "auto_control":
                 shared.modo_control = True
                 logging.info("Cambiando a modo automático")
+
         except Exception as e:
             logging.error(f"Error handling control command: {e}")
                     
