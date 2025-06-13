@@ -71,20 +71,22 @@ class MQTTClient:
             logging.error(f"Error processing MQTT message: {e}")
     
     def _handle_control_command(self, command):
-        """Process control commands from dashboard"""
         try:
             cmd_type = command.get("type")
             device = command.get("actuador")
-            action = command.get("action")  # "on" or "off"
-            
+            action = command.get("action")  # True o False (booleano)
+
             if cmd_type == "manual_control":
-                print("MENSAJE RECIBIDO DEL FRONT")
                 shared.modo_control = False
                 if device in shared.actuadores:
-                    shared.actuadores[device] = action
+                    shared.actuadores[device] = bool(action)
+                    logging.info(f"Manual: {device} -> {action}")
             elif cmd_type == "auto_control":
-                shared.modo_control = True 
-                
+                shared.modo_control = True
+                logging.info("Cambiando a modo automático")
+        except Exception as e:
+            logging.error(f"Error handling control command: {e}")
+                    
 
 
                     
