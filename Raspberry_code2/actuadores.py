@@ -84,19 +84,19 @@ class Actuators:
         print("Buzzer apagado automáticamente")
 
     def check_alerts_and_control(self):
-        if shared.temperature > shared.thresholds['temperature_max'] or shared.temperature < shared.thresholds['temperature_min']:
-            if not shared.alert_status['temperature']:
-                print(f"  Alerta de temperatura: {shared.temperature}°C")
-                shared.alert_status['temperature'] = True
-                shared.local_error_message = "Temperatura Critica!"
-            self.control_led(self.red_led, 'red_led', True)
-            self.control_motor(True)  
-        else:
-            if shared.alert_status['temperature']:
-                print(f"  Temperatura normalizada: {shared.temperature}°C")
-                shared.alert_status['temperature'] = False
+        # if shared.temperature > shared.thresholds['temperature_max'] or shared.temperature < shared.thresholds['temperature_min']:
+        #     if not shared.alert_status['temperature']:
+        #         print(f"  Alerta de temperatura: {shared.temperature}°C")
+        #         shared.alert_status['temperature'] = True
+        #         shared.local_error_message = "Temperatura Critica!"
+        #     self.control_led(self.red_led, 'red_led', True)
+        #     self.control_motor(True)  
+        # else:
+        #     if shared.alert_status['temperature']:
+        #         print(f"  Temperatura normalizada: {shared.temperature}°C")
+        #         shared.alert_status['temperature'] = False
             
-                self.control_motor(False)  
+        #         self.control_motor(False)  
 
         if shared.humidity > shared.thresholds['humidity_max'] or shared.humidity < shared.thresholds['humidity_min']:
             if not shared.alert_status['humidity']:
