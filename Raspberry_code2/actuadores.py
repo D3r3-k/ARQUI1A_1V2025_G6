@@ -1,6 +1,6 @@
 from gpiozero import LED, DigitalOutputDevice, PWMOutputDevice, Buzzer
 from globals import shared
-import threading
+import threading 
 
 class Actuators:
 
@@ -58,7 +58,7 @@ class Actuators:
             self.auto = threading.Timer(
                 5,self._auto_off_motor
             )
-            self.auto['motor'].start()
+            self.auto.start()
 
     def _auto_off_motor(self):
         self.motor_enable.off()
