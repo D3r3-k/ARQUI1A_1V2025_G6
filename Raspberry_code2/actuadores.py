@@ -69,7 +69,7 @@ class Actuators:
             if 'motor' in self.auto_off_timers:
                 self.auto_off_timers['motor'].cancel()
             self.auto_off_timers['motor'] = threading.Timer(
-                5.0, self._auto_off_motor
+                -1, self._auto_off_motor
             )
             self.auto_off_timers['motor'].start()
         else:
@@ -99,12 +99,6 @@ class Actuators:
         shared.actuator_status['buzzer'] = False
         print("Buzzer apagado automáticamente")
 
-    def _turn_off_temperature_alert(self):
-        self.control_led(self.red_led, 'red_led', False)
-        self.control_motor(False)
-        print("Actuadores de temperatura apagados tras normalización")
-
-
     def check_alerts_and_control(self):
         if shared.temperature > shared.thresholds['temperature_max'] or shared.temperature < shared.thresholds['temperature_min']:
             if not shared.alert_status['temperature']:
@@ -114,25 +108,8 @@ class Actuators:
                 shared.local_error_message = "Temperatura Critica!"
                 if shared.temperature > shared.thresholds['temperature_max']:
                     self.control_motor(True)
-
-            # Si está en estado crítico no hay que iniciar timers de apagado
-            if 'temperature' in self.normal_off_timers:
-                self.normal_off_timers['temperature'].cancel()
-
         else:
-            if shared.alert_status['temperature']:
-                # Solo si antes estaba en alerta, programo apagar tras 5s
-                if 'temperature' in self.normal_off_timers:
-                    self.normal_off_timers['temperature'].cancel()
-
-                self.normal_off_timers['temperature'] = threading.Timer(
-                    5.0, self._turn_off_temperature_alert
-                )
-                self.normal_off_timers['temperature'].start()
-
-                shared.alert_status['temperature'] = False
-
-
+            shared.alert_status['temperature'] = False
 
         if shared.humidity > shared.thresholds['humidity_max'] or shared.humidity < shared.thresholds['humidity_min']:
             if not shared.alert_status['humidity']:
