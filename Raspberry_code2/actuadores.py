@@ -61,10 +61,7 @@ class Actuators:
             self.motor_in2.off()  # dirección fija
             self.motor_enable.value = 1.0  # 100% velocidad
             shared.actuator_status['motor_fan'] = True
-        else: 
-            self.motor_in1.on()
-            self.motor_in2.off()  # dirección fija
-            self.motor_enable.value = 1.0  # 100% velocidad
+        else:
             self.auto = threading.Timer(5,self._auto_off_motor)
             self.auto.start()
 
