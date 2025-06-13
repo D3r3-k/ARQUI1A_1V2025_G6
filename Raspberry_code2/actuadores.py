@@ -110,7 +110,7 @@ class Actuators:
                 activar = shared.modo_control or shared.actuadores["red_led"]
                 self.control_led(self.red_led, 'red_led', activar)
                 #self.control_motor(True)  
-                self.control_motor(activar)
+                self.control_motor(True)
         else:
             shared.alert_status['temperature'] = False
             print(f"  Temperatura normalizada: {shared.temperature}°C")
