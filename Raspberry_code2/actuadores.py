@@ -46,18 +46,6 @@ class Actuators:
             led_obj.off()
         shared.actuator_status[led_name] = state
 
-        if state:
-            if led_name in self.auto_off_timers:
-                self.auto_off_timers[led_name].cancel()
-            self.auto_off_timers[led_name] = threading.Timer(
-                5.0, self._auto_off_led, [led_obj, led_name]
-            )
-            self.auto_off_timers[led_name].start()
-
-    def _auto_off_led(self, led_obj, led_name):
-        led_obj.off()
-        shared.actuator_status[led_name] = False
-        print(f"{led_name} apagado automáticamente")
 
     def control_motor(self, state):
         if state:
