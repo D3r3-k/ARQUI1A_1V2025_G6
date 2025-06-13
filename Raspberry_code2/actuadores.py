@@ -62,7 +62,7 @@ class Actuators:
 
     def _auto_off_motor(self):
         self.motor_enable.off()
-        self.motor_n1.off()
+        self.motor_in1.off()
         self.motor_in2.off()
         self.control_led(self.red_led, 'red_led', False)
         shared.actuator_status['motor_fan'] = False
