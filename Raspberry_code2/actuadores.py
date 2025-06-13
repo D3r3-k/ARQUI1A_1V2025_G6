@@ -66,14 +66,11 @@ class Actuators:
             self.motor_enable.value = 1.0  # 100% velocidad
             shared.actuator_status['motor_fan'] = True
 
-            if 'motor' in self.auto_off_timers:
-                self.auto_off_timers['motor'].cancel()
-            self.auto_off_timers['motor'] = threading.Timer(
-                -1, self._auto_off_motor
+        else: 
+            self.auto = threading.Timer(
+                5,self._auto_off_motor
             )
-            self.auto_off_timers['motor'].start()
-        else:
-            self._auto_off_motor()
+            self.auto['motor'].start()
 
     def _auto_off_motor(self):
         self.motor_enable.off()
@@ -103,13 +100,16 @@ class Actuators:
         if shared.temperature > shared.thresholds['temperature_max'] or shared.temperature < shared.thresholds['temperature_min']:
             if not shared.alert_status['temperature']:
                 print(f"  Alerta de temperatura: {shared.temperature}°C")
-                self.control_led(self.red_led, 'red_led', True)
                 shared.alert_status['temperature'] = True
                 shared.local_error_message = "Temperatura Critica!"
-                if shared.temperature > shared.thresholds['temperature_max']:
-                    self.control_motor(True)
+            self.control_led(self.red_led, 'red_led', True)
+            self.control_motor(True)  
         else:
-            shared.alert_status['temperature'] = False
+            if shared.alert_status['temperature']:
+                print(f"  Temperatura normalizada: {shared.temperature}°C")
+                shared.alert_status['temperature'] = False
+            self.control_led(self.red_led, 'red_led', False)
+            self.control_motor(False)  
 
         if shared.humidity > shared.thresholds['humidity_max'] or shared.humidity < shared.thresholds['humidity_min']:
             if not shared.alert_status['humidity']:
