@@ -25,7 +25,7 @@ interface ControlCardProps {
   disabled: boolean;
 }
 
-const topic = `GRUPOG6/control/rasp02/comandos`;
+const topic = `${process.env.NEXT_PUBLIC_TOPICS_LINK}/comandos`;
 const STORAGE_KEY = "controlConfig";
 
 export default function ControlCard({
