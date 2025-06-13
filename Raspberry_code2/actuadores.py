@@ -149,7 +149,7 @@ class Actuators:
                 self.control_motor(shared.modo_control, activar2)
                 self.control_led_Red(shared.modo_control, activar)
             else:
-                self.control_motor(False, False)
+                self.control_motor(True, False)
 
         if (
             shared.humidity > shared.thresholds["humidity_max"]
