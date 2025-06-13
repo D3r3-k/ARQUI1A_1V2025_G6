@@ -56,7 +56,7 @@ class Actuators:
             self.motor_enable.value = 1.0  # 100% velocidad
             shared.actuator_status["motor_fan"] = True
 
-        if state_global == False and state_control == True:
+        elif state_global == False and state_control == True:
             print("MOTOR ENCENDIDO MANUAL")
             self.motor_in1.on()
             self.motor_in2.off()  # dirección fija
