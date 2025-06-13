@@ -103,19 +103,19 @@ class Actuators:
 
     def check_alerts_and_control(self):
         if shared.temperature > shared.thresholds['temperature_max'] or shared.temperature < shared.thresholds['temperature_min']:
-            if not shared.alert_status['temperature']:
-                print(f"  Alerta de temperatura: {shared.temperature}°C")
-                shared.alert_status['temperature'] = True
-                shared.local_error_message = "Temperatura Critica!"
-                activar = shared.modo_control or shared.actuadores["red_led"]
-                self.control_led(self.red_led, 'red_led', activar)
-                #self.control_motor(True)  
-                self.control_motor(True)
+            print(f"  Alerta de temperatura: {shared.temperature}°C")
+            shared.alert_status['temperature'] = True
+            shared.local_error_message = "Temperatura Critica!"
+            activar = shared.modo_control or shared.actuadores["red_led"]
+            activar2 = shared.modo_control or shared.actuadores["motor_fan"]
+            self.control_led(self.red_led, 'red_led', activar)
+            #self.control_motor(True)  
+            self.control_motor(activar2)
         else:
             shared.alert_status['temperature'] = False
             print(f"  Temperatura normalizada: {shared.temperature}°C")
             if (not(shared.modo_control)):
-                activar = shared.modo_control or shared.actuadores["red_led"]
+                activar = shared.modo_control or shared.actuadores["motor_fan"]
                 self.control_motor(activar)  
                # self.control_led(self.red_led, 'red_led', activar)
             else: 
