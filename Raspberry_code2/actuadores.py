@@ -76,6 +76,7 @@ class Actuators:
         self.motor_enable.off()
         self.motor_in1.off()
         self.motor_in2.off()
+        self.control_led(self.red_led, 'red_led', False)
         shared.actuator_status['motor_fan'] = False
         print("Motor apagado automáticamente")
 
@@ -108,7 +109,7 @@ class Actuators:
             if shared.alert_status['temperature']:
                 print(f"  Temperatura normalizada: {shared.temperature}°C")
                 shared.alert_status['temperature'] = False
-            self.control_led(self.red_led, 'red_led', False)
+            
             self.control_motor(False)  
 
         if shared.humidity > shared.thresholds['humidity_max'] or shared.humidity < shared.thresholds['humidity_min']:
