@@ -24,26 +24,26 @@ class Sensors:
         self.ldr = DigitalInputDevice(18)
 
         # BMP280 
-        self.BMP_280 = 0x76
-        calib = self.bus.read_i2c_block_data(self.BMP_280, 0x88, 24)
-        self.dig_T1 = calib[1] << 8 | calib[0]
-        self.dig_T2 = self.to_signed(calib[3] << 8 | calib[2], 16)
-        self.dig_T3 = self.to_signed(calib[5] << 8 | calib[4], 16)
-        self.dig_P1 = calib[7] << 8 | calib[6]
-        self.dig_P2 = self.to_signed(calib[9] << 8 | calib[8], 16)
-        self.dig_P3 = self.to_signed(calib[11] << 8 | calib[10], 16)
-        self.dig_P4 = self.to_signed(calib[13] << 8 | calib[12], 16)
-        self.dig_P5 = self.to_signed(calib[15] << 8 | calib[14], 16)
-        self.dig_P6 = self.to_signed(calib[17] << 8 | calib[16], 16)
-        self.dig_P7 = self.to_signed(calib[19] << 8 | calib[18], 16)
-        self.dig_P8 = self.to_signed(calib[21] << 8 | calib[20], 16)
-        self.dig_P9 = self.to_signed(calib[23] << 8 | calib[22], 16)
+        # self.BMP_280 = 0x76
+        # calib = self.bus.read_i2c_block_data(self.BMP_280, 0x88, 24)
+        # self.dig_T1 = calib[1] << 8 | calib[0]
+        # self.dig_T2 = self.to_signed(calib[3] << 8 | calib[2], 16)
+        # self.dig_T3 = self.to_signed(calib[5] << 8 | calib[4], 16)
+        # self.dig_P1 = calib[7] << 8 | calib[6]
+        # self.dig_P2 = self.to_signed(calib[9] << 8 | calib[8], 16)
+        # self.dig_P3 = self.to_signed(calib[11] << 8 | calib[10], 16)
+        # self.dig_P4 = self.to_signed(calib[13] << 8 | calib[12], 16)
+        # self.dig_P5 = self.to_signed(calib[15] << 8 | calib[14], 16)
+        # self.dig_P6 = self.to_signed(calib[17] << 8 | calib[16], 16)
+        # self.dig_P7 = self.to_signed(calib[19] << 8 | calib[18], 16)
+        # self.dig_P8 = self.to_signed(calib[21] << 8 | calib[20], 16)
+        # self.dig_P9 = self.to_signed(calib[23] << 8 | calib[22], 16)
 
-        self.bus.write_byte_data(self.BMP_280, 0xF4, 0x3F)
-        self.bus.write_byte_data(self.BMP_280, 0xF5, 0x14)
+        # self.bus.write_byte_data(self.BMP_280, 0xF4, 0x3F)
+        # self.bus.write_byte_data(self.BMP_280, 0xF5, 0x14)
         
     
-        print("Sensores inicializados correctamente")
+        # print("Sensores inicializados correctamente")
 
     def to_signed(self, val, bits):
         if val & (1 << (bits - 1)):
