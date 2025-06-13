@@ -47,6 +47,7 @@ class Actuators:
             led_obj.off()
         shared.actuator_status[led_name] = state
 
+######################### Actuadores de Temperatura ##########################
     def control_motor(self, state_global, state_control):
         if state_global and state_control:
             print("MOTOR ENCENDIDO AUTOMATICO")
@@ -62,7 +63,7 @@ class Actuators:
             self.motor_enable.value = 1.0  # 100% velocidad
             shared.actuator_status["motor_fan"] = True
         else:
-            print("MOTOR APAGADO: modo: ", state_global, " control: ", state_control)
+            #print("MOTOR APAGADO: modo: ", state_global, " control: ", state_control)
             self.auto = threading.Timer(5, self._auto_off_motor)
             self.auto.start()
 
@@ -70,9 +71,26 @@ class Actuators:
         self.motor_enable.off()
         self.motor_in1.off()
         self.motor_in2.off()
-        self.control_led(self.red_led, "red_led", False)
         shared.actuator_status["motor_fan"] = False
-        print("Motor apagado automáticamente")
+        print("Motor apagado")
+
+
+    def control_led_Red(self,state_global, state_control):
+        if(state_global and state_control): 
+            self.red_led.on()
+            print("Led Rojo encendido automaticamente")           
+        elif(state_global == False and state_control == True): 
+            self.red_led.on()
+            print("Led Rojo encendido manualmente")
+        else: 
+            time = threading.Timer(5, self._auto_off_led_red)
+            time.start()
+    
+    def _auto_off_led_red(self):
+        self.control_led(self.red_led, "red_led", False)
+        print("Led roja Apagada")
+    
+################################ Actuadores de calidad del aire ################################
 
     def control_buzzer(self, state):
         if state:
@@ -89,12 +107,14 @@ class Actuators:
         self.control_led(self.blue_led, "blue_led", False)
         print("Buzzer apagado automáticamente")
 
+############################ Actuadores de Iluminacion ##############################################
     def control_iluminacion(self, state):
         if state:
             print("Encender Iluminacion")
         else:
             print("Iluminacion Apagada")
 
+############################## Actuadores de Humedad #########################################
     def control_led_yellow(self, state):
         if state:
             self.yellow_led.on()
@@ -106,7 +126,9 @@ class Actuators:
     def _auto_off_led_yellow(self):
         self.control_led(self.yellow_led, "yellow_led", False)
 
+################################# checkeo de actuadores y estados ##########################################
     def check_alerts_and_control(self):
+        
         if (
             shared.temperature > shared.thresholds["temperature_max"]
             or shared.temperature < shared.thresholds["temperature_min"]
@@ -115,20 +137,19 @@ class Actuators:
             shared.alert_status["temperature"] = True
             shared.local_error_message = "Temperatura Critica!"
             activar = shared.modo_control or shared.actuadores["red_led"]
-            self.control_led(self.red_led, "red_led", activar)
-            # self.control_motor(True)
+            self.control_led_Red(shared.modo_control, activar)
             activar2 = shared.modo_control or shared.actuadores["motor_fan"]
             self.control_motor(shared.modo_control, activar2)
         else:
             shared.alert_status["temperature"] = False
             print(f"  Temperatura normalizada: {shared.temperature}°C")
             if not (shared.modo_control):
-                activar = shared.modo_control or shared.actuadores["motor_fan"]
-                self.control_motor(shared.modo_control, activar)
-            # self.control_led(self.red_led, 'red_led', activar)
+                activar = shared.modo_control or shared.actuadores["red_led"]
+                activar2 = shared.modo_control or shared.actuadores["motor_fan"]
+                self.control_motor(shared.modo_control, activar2)
+                self.control_led_Red(shared.modo_control, activar)
             else:
                 self.control_motor(False, False)
-                # self.control_led(self.red_led, 'red_led', False)
 
         if (
             shared.humidity > shared.thresholds["humidity_max"]

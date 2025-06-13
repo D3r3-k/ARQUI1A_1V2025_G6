@@ -1,31 +1,18 @@
 import json
-
 import time
-
 import logging
-
 import paho.mqtt.client as mqtt
-
 from globals import shared
 
 
 class MQTTClient:
-    """
 
-    MQTT Client para sistema SIEPA
-
-    Publica datos de sensores y suscribe a comandos de control y modo
-
-    """
 
     def __init__(self, broker_host, broker_port, group_6):
 
         self.broker_host = broker_host
-
         self.broker_port = broker_port
-
         self.group_number = group_6
-
         self.client_id = f"siepa_rasp_{group_6}"
 
         # Definición de topics según requerimiento
@@ -40,22 +27,16 @@ class MQTTClient:
             "alerts": f"GRUPO{group_6}/sensores/rasp02/alertas",
             "actuators_status": f"GRUPO{group_6}/sensores/rasp02/actuadores",
             # Topics de control:
-            "control_comandos": f"GRUPO{group_6}/control/rasp02/comandos",
-            "control_modo": f"GRUPO{group_6}/control/rasp02/modo",
+            "control_comandos": f"GRUPO{group_6}/sensores/rasp02/comandos",
+            "control_modo": f"GRUPO{group_6}/sensores/rasp02/modo",
         }
 
         self.client = mqtt.Client(client_id=self.client_id)
-
         self.client.on_connect = self._on_connect
-
         self.client.on_message = self._on_message
-
         self.client.on_disconnect = self._on_disconnect
-
         self.connected = False
-
         self.last_publish_time = 0
-
         self.publish_interval = 2  # segundos
 
         logging.info(f"MQTT Client inicializado - Grupo: {group_6}")
@@ -63,9 +44,7 @@ class MQTTClient:
     def _on_connect(self, client, userdata, flags, rc):
 
         if rc == 0:
-
             self.connected = True
-
             logging.info(
                 f"Conectado a MQTT broker en {self.broker_host}:{self.broker_port}"
             )
@@ -73,116 +52,69 @@ class MQTTClient:
             # Suscribirse a los dos topics de control
 
             client.subscribe(self.topics["control_comandos"])
-
             client.subscribe(self.topics["control_modo"])
-
             logging.info(f"Suscrito a: {self.topics['control_comandos']}")
-
             logging.info(f"Suscrito a: {self.topics['control_modo']}")
 
         else:
-
             logging.error(f"Fallo en conexión a broker MQTT. Código de retorno: {rc}")
 
     def _on_message(self, client, userdata, msg):
-
         try:
-
             topic = msg.topic
-
             payload = json.loads(msg.payload.decode())
-
             logging.info(f"Mensaje recibido en {topic}: {payload}")
-
             if topic == self.topics["control_modo"]:
                 # Espera {"modo": true/false}
                 modo = payload.get("modo")
-                logging.info(f"Tipo: {type(modo) } - Valor: {modo}")
-
                 if modo is not None:
                     shared.modo_control = bool(modo)
                     if bool(modo):
                         for item in shared.actuadores:
                             shared.actuadores[item] = True
                     shared.modo_automatico = bool(modo)
-
                     modo_txt = "AUTOMÁTICO" if modo else "MANUAL"
-
                     logging.info(f"Modo de control cambiado a: {modo_txt}")
+                else:
+                    shared.modo_control = True
 
             elif topic == self.topics["control_comandos"]:
-
                 # Espera {"action": true/false, "actuador": "motor_fan"}
-
                 actuador = payload.get("actuador")
-
                 action = payload.get("action")
-
                 if actuador and actuador in shared.actuadores and action is not None:
-
                     shared.actuadores[actuador] = bool(action)
-
                     estado_txt = "ENCENDIDO" if action else "APAGADO"
-
                     logging.info(f"Actuador '{actuador}' cambiado a: {estado_txt}")
-
                 else:
-
                     logging.warning(
                         "Comando recibido sin actuador válido o acción no definida."
                     )
 
         except Exception as e:
-
             logging.error(f"Error procesando mensaje MQTT: {e}")
-
     def _on_disconnect(self, client, userdata, rc):
-
         self.connected = False
-
         logging.warning(f"Desconectado del broker MQTT. Código de retorno: {rc}")
-
     def connect(self):
-
         try:
-
             self.client.connect(self.broker_host, self.broker_port, 60)
-
             self.client.loop_start()
-
             logging.info("Conexión MQTT iniciada")
-
         except Exception as e:
-
             logging.error(f"Error al conectar con el broker MQTT: {e}")
-
     def disconnect(self):
-
         if self.connected:
-
             self.client.loop_stop()
-
             self.client.disconnect()
-
             logging.info("Desconectado del broker MQTT")
-
     def publish_sensor_data(self):
-        """
-
-        Publica todos los datos de sensores en sus respectivos topics
-
-        """
-
+  
         if not self.connected:
-
             return
-
         current_time = time.time()
-
         timestamp = int(current_time * 1000)
-
         try:
-
             sensor_data = {
                 "temperature": {
                     "value": shared.temperature,
@@ -235,17 +167,11 @@ class MQTTClient:
             }
 
             # Publicar todos los sensores
-
             for sensor, data in sensor_data.items():
-
                 topic = self.topics[sensor]
-
                 payload = json.dumps(data)
-
                 self.client.publish(topic, payload, retain=False)
-
             # Publicar alertas
-
             alerts_payload = json.dumps(
                 {"alerts": shared.alert_status, "timestamp": timestamp}
             )
