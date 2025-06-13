@@ -122,11 +122,11 @@ class Actuators:
             shared.alert_status['temperature'] = False
             print(f"  Temperatura normalizada: {shared.temperature}°C")
             if (not(shared.modo_control)):
-                activar = shared.modo_control or shared.actuadores["motor_fan"]
-                self.control_motor(activar)  
+                activar = shared.actuadores["motor_fan"]
+                self.control_motor(shared.modo_control, activar)  
                # self.control_led(self.red_led, 'red_led', activar)
             else: 
-                self.control_motor(False)  
+                self.control_motor(False, False)  
                 #self.control_led(self.red_led, 'red_led', False)
 
         if shared.humidity > shared.thresholds['humidity_max'] or shared.humidity < shared.thresholds['humidity_min']:
