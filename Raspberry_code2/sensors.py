@@ -151,7 +151,7 @@ class Sensors:
 
 
     def read_sensors(self):
-        self.read_dht11()
+       # self.read_dht11()
         self.read_ultrasonic()
         self.read_light_sensor()
         self.read_pressure_sensor()
