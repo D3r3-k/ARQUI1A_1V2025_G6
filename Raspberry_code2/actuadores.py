@@ -102,19 +102,22 @@ class Actuators:
         if (state_global and state_control):
             self.buzzer.frequency = 2000
             self.buzzer.value = 0.5
+            print("Buzzer aencendido manualmente")  
         elif(state_global == False and state_control == True): 
             self.buzzer.frequency = 2000
-            self.buzzer.value = 0.5        
+            self.buzzer.value = 0.5    
+            print("Buzzer aencendido manualmente")    
         else:
 
             timer = threading.Timer(5, self._auto_off_buzzer)
             timer.start()
+           
 
     def _auto_off_buzzer(self):
         self.buzzer.off()
         shared.actuator_status["buzzer"] = False
         self.control_led(self.blue_led, "blue_led", False)
-        print("Buzzer apagado automáticamente")
+        print("Buzzer apagado")
 
     def control_led_blue(self, state_global, state_control ):
         if (state_global and state_control):
@@ -230,12 +233,12 @@ class Actuators:
 
         ######################################### calidad de Aire ##################################
         if shared.air_quality < shared.thresholds["air_quality_min"]:
-            if not shared.alert_status["air_quality"]:
-                print(f"  Alerta de calidad del aire: {shared.air_quality}")
-                self.control_led_blue(shared.modo_control,shared.actuadores["blue_led"])
-                self.control_buzzer(shared.modo_control,shared.actuadores["buzzer"])
-                shared.alert_status["air_quality"] = True
-                shared.local_error_message = "Mala Calidad de Aire!"
+
+            print(f"  Alerta de calidad del aire: {shared.air_quality}")
+            self.control_led_blue(shared.modo_control,shared.actuadores["blue_led"])
+            self.control_buzzer(shared.modo_control,shared.actuadores["buzzer"])
+            shared.alert_status["air_quality"] = True
+            shared.local_error_message = "Mala Calidad de Aire!"
         else:
             if  not (shared.modo_control):
                 print(f"  Calidad de Aire normalizada: {shared.temperature}")
