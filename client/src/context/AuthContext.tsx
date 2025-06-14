@@ -12,6 +12,7 @@ interface AuthContextType {
     isAuthenticated: boolean;
     login: (username: string, password: string) => Promise<void>;
     logout: () => void;
+    userData: { id: number; name: string; email: string } | null;
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -20,6 +21,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     // Hook's
     // State's
     const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+    const [userData, setUserData] = useState<{ id: number; name: string; email: string } | null>(null);
 
     // Effect's
     useEffect(() => {
@@ -36,6 +38,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const login = async (username: string, password: string) => {
         if (username === userAdmin.username && password === userAdmin.password) {
             setIsAuthenticated(true);
+            setUserData({
+                id: 1,
+                name: "Administrador",
+                email: userAdmin.username
+            });
             localStorage.setItem("authSesion", 'true');
             document.cookie = "auth=true; path=/;";
             redirect("/dashboard");
@@ -51,7 +58,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
     // Render's
     return (
-        <AuthContext.Provider value={{ isAuthenticated, login, logout }}>
+        <AuthContext.Provider value={{ isAuthenticated, login, logout, userData }}>
             {children}
         </AuthContext.Provider>
     );

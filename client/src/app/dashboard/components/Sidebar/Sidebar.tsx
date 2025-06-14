@@ -2,7 +2,8 @@
 
 import { useAuth } from "@/hooks/useAuth";
 import { useIsMobile } from "@/hooks/useMobile";
-import { BarChart2, Bell, ChevronRight, LayoutDashboard, LogOut, Moon, Settings, Sun } from "lucide-react";
+import { useMqtt } from "@/hooks/useMqtt";
+import { AlertOctagon, BarChart2, ChevronRight, LayoutDashboard, LogOut, Moon, Settings, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 import Image from "next/image";
 import Link from "next/link";
@@ -13,6 +14,7 @@ export default function Sidebar() {
   // Hook's
   const { theme, setTheme } = useTheme();
   const { logout } = useAuth();
+  const { alertCount } = useMqtt();
   const isMobile = useIsMobile();
   const path = usePathname();
 
@@ -110,12 +112,12 @@ export default function Sidebar() {
         </div>
         <div className="mt-auto border-t border-gray-200 dark:border-zinc-800 bg-white dark:bg-gray-900 p-4">
           <span className="flex items-center gap-2 text-sm font-medium text-gray-800 dark:text-gray-200">
-            <Bell size={16} />
+            <AlertOctagon size={16} />
             Alertas
           </span>
           <div className="mt-2 flex flex-col gap-1">
             <span className="text-xs text-gray-500 dark:text-gray-400">
-              Tienes 2 alertas pendientes
+              {alertCount > 0 ? `Tienes ${alertCount} alerta${alertCount > 1 ? "s" : ""}` : "No hay alertas activas"}
             </span>
           </div>
         </div>

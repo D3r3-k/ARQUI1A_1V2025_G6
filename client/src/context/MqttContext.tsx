@@ -7,8 +7,17 @@ import {
 } from "@/types/TypesMqtt";
 import mqtt, { MqttClient } from "mqtt";
 import { createContext, ReactNode, useEffect, useRef, useState } from "react";
+import { toast } from "react-toastify";
 
 type TopicName = string;
+
+type AlertItem = {
+  sensor: AlertKey;
+  mensaje: string;
+  fulldate: string;
+};
+
+
 
 interface MqttContextType {
   isConnected: boolean;
@@ -16,6 +25,8 @@ interface MqttContextType {
   infoTopics: Record<TopicName, TopicAmbient | undefined>;
   stackTopics: Record<TopicName, TopicHistoryStack | undefined>;
   publish: (topic: string, message: string) => void;
+  activeAlerts: AlertItem[];
+  alertCount: number; // nuevo
 }
 
 export const MqttContext = createContext<MqttContextType | undefined>(undefined);
@@ -33,6 +44,16 @@ const INFO_TOPICS = [
   `${process.env.NEXT_PUBLIC_TOPICS_LINK}/info`,
   `${process.env.NEXT_PUBLIC_TOPICS_LINK}/alertas`,
 ];
+const alertTopic = `${process.env.NEXT_PUBLIC_TOPICS_LINK}/alertas`;
+
+type AlertKey = "temperature" | "humidity" | "light" | "air_quality" | "presence";
+const messageAlerts: Record<AlertKey, string> = {
+  temperature: "Temperatura fuera del rango óptimo para el vivero de plantas.",
+  humidity: "Humedad inadecuada detectada en el vivero.",
+  light: "Niveles de iluminación no adecuados para el crecimiento de las plantas.",
+  air_quality: "Calidad del aire comprometida en el vivero.",
+  presence: "Se ha detectado presencia no autorizada en el vivero.",
+};
 
 const STACK_STORAGE_KEY = "mqttStackTopics";
 const INFO_STORAGE_KEY = "mqttInfoTopics";
@@ -59,6 +80,14 @@ export const MqttProvider = ({ children }: { children: ReactNode }) => {
   });
   const [ambientTopics, setAmbientTopics] = useState<Record<TopicName, TopicAmbient>>({});
   const [isConnected, setIsConnected] = useState(false);
+  const [activeAlerts, setActiveAlerts] = useState<AlertItem[]>([]);
+  const formatTimestamp = (ts: number | string): string => {
+    const date = new Date(Number(ts));
+    const time = date.toLocaleTimeString("es-ES");
+    const day = date.toLocaleDateString("es-ES");
+    return `${time} ${day}`;
+  };
+
 
   // Guarda stacks en localStorage al cambiar
   useEffect(() => {
@@ -130,6 +159,79 @@ export const MqttProvider = ({ children }: { children: ReactNode }) => {
     };
   }, []);
 
+
+  useEffect(() => {
+    const client = clientRef.current;
+    if (!client) return;
+
+    let prevAlertStates: Record<AlertKey, boolean> = {
+      air_quality: false,
+      humidity: false,
+      light: false,
+      presence: false,
+      temperature: false,
+    };
+
+    const handleAlertMessage = (topic: string, message: Buffer) => {
+      if (topic === alertTopic) {
+        const alertData = JSON.parse(message.toString());
+
+        let anyNewAlert = false;
+
+        Object.entries(alertData.alerts).forEach(([key, value]) => {
+          if (
+            (["temperature", "humidity", "light", "air_quality", "presence"] as string[]).includes(key)
+          ) {
+            const sensor = key as AlertKey;
+            const mensaje = messageAlerts[sensor];
+
+            // Si es false, eliminar la alerta de la pila
+            if (!value) {
+              setActiveAlerts((prev) =>
+                prev.filter((alert) => alert.sensor !== sensor)
+              );
+            } else {
+              // Si la alerta aún no está activa, agregarla
+              setActiveAlerts((prev) => {
+                const exists = prev.some((a) => a.sensor === sensor);
+                if (exists) return prev;
+                const fulldate = formatTimestamp(Date.now());
+                const newAlert: AlertItem = { sensor, mensaje, fulldate };
+                return [...prev, newAlert];
+              });
+            }
+
+            // Solo marcar como nueva alerta si antes era false y ahora true
+            if (!prevAlertStates[sensor] && value) {
+              anyNewAlert = true;
+            }
+          }
+        });
+
+        prevAlertStates = { ...alertData.alerts };
+
+        if (anyNewAlert) {
+          toast.info("Nueva alerta", {
+            position: "top-right",
+            autoClose: 3000,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+          });
+        }
+      }
+    };
+
+    client.subscribe(alertTopic);
+    client.on("message", handleAlertMessage);
+
+    return () => {
+      client.unsubscribe(alertTopic);
+      client.off("message", handleAlertMessage);
+    };
+  }, []);
+
+
   const publish = (topic: string, message: string) => {
     if (clientRef.current && isConnected) {
       clientRef.current.publish(topic, message, (err) => {
@@ -146,6 +248,8 @@ export const MqttProvider = ({ children }: { children: ReactNode }) => {
         infoTopics,
         stackTopics,
         publish,
+        activeAlerts, // nuevo
+        alertCount: activeAlerts.length, // nuevo
       }}
     >
       {children}
