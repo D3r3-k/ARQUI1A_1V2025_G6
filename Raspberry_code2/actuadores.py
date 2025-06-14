@@ -146,14 +146,14 @@ class Actuators:
     def control_led_gren(self, state_global, state_control ):
         if (state_global and state_control):
             self.green_led.on()
-            print("Led verde automaticamnte")
+            print("Led verde encendida automaticamnte")
         elif(state_global == False and state_control == True): 
             self.green_led.on()
-            print("Led verde Manuel")
+            print("Led verde Manual")
         else:
             time = threading.Timer(5, self._auto_off_led_green)
             time.start()
-            print("Led verde apagadol")
+            print("Led verde apagado")
 
     def _auto_off_led_green(self):
         self.control_led(self.green_led, "green_led", False)
@@ -164,11 +164,11 @@ class Actuators:
             print("Led amarillo encendido automaticamnte")
         elif(state_global == False and state_control == True): 
             self.yellow_led.on()
-            print("Led amarillo Manuel")
+            print("Led amarillo Manual")
         else:
             time = threading.Timer(5, self._auto_off_led_yellow)
             time.start()
-            print("Led amarillo apagadol")
+            print("Led amarillo apagado")
 
     def _auto_off_led_yellow(self):
         self.control_led(self.yellow_led, "yellow_led", False)
@@ -216,12 +216,12 @@ class Actuators:
         ######################################### Luz ##################################
 
         if shared.light_level < shared.thresholds["light_min"]:
-            if not shared.alert_status["light"]:
-                print(f" Alerta por baja luz: {shared.light_level}%")
-                self.control_led_gren(shared.modo_control,shared.actuadores["green_led"])
-                self.control_iluminacion(True)
-                shared.alert_status["light"] = True
-                shared.local_error_message = "Iluminacion Baja!"
+            #if not shared.alert_status["light"]:
+            print(f" Alerta por baja luz: {shared.light_level}%")
+            self.control_led_gren(shared.modo_control,shared.actuadores["green_led"])
+            self.control_iluminacion(True)
+            shared.alert_status["light"] = True
+            shared.local_error_message = "Iluminacion Baja!"
         else:
             shared.alert_status["light"] = False
             if not (shared.modo_control): 

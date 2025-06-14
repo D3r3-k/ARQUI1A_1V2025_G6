@@ -18,17 +18,17 @@ class MQTTClient:
         # Definición de topics según requerimiento
 
         self.topics = {
-            "temperature": f"GRUPO{group_6}/sensores/rasp02/temperatura",
-            "humidity": f"GRUPO{group_6}/sensores/rasp02/humedad",
-            "light": f"GRUPO{group_6}/sensores/rasp02/luz",
-            "pressure": f"GRUPO{group_6}/sensores/rasp02/presion",
-            "air_quality": f"GRUPO{group_6}/sensores/rasp02/calidad_aire",
-            "distance": f"GRUPO{group_6}/sensores/rasp02/distancia",
-            "alerts": f"GRUPO{group_6}/sensores/rasp02/alertas",
-            "actuators_status": f"GRUPO{group_6}/sensores/rasp02/actuadores",
+            "temperature": f"GRUPO{group_6}/sensores/rasp03/temperatura",
+            "humidity": f"GRUPO{group_6}/sensores/rasp03/humedad",
+            "light": f"GRUPO{group_6}/sensores/rasp03/luz",
+            "pressure": f"GRUPO{group_6}/sensores/rasp03/presion",
+            "air_quality": f"GRUPO{group_6}/sensores/rasp03/calidad_aire",
+            "distance": f"GRUPO{group_6}/sensores/rasp03/distancia",
+            "alerts": f"GRUPO{group_6}/sensores/rasp03/alertas",
+            "actuators_status": f"GRUPO{group_6}/sensores/rasp03/actuadores",
             # Topics de control:
-            "control_comandos": f"GRUPO{group_6}/sensores/rasp02/comandos",
-            "control_modo": f"GRUPO{group_6}/sensores/rasp02/modo",
+            "control_comandos": f"GRUPO{group_6}/sensores/rasp03/comandos",
+            "control_modo": f"GRUPO{group_6}/sensores/rasp03/modo",
         }
 
         self.client = mqtt.Client(client_id=self.client_id)
