@@ -175,40 +175,24 @@ class MQTTClient:
             alerts_payload = json.dumps(
                 {"alerts": shared.alert_status, "timestamp": timestamp}
             )
-
             self.client.publish(self.topics["alerts"], alerts_payload, retain=True)
 
             # Publicar estado de actuadores
-
             actuators_payload = json.dumps(
                 {"actuators": shared.actuator_status, "timestamp": timestamp}
             )
-
             self.client.publish(
                 self.topics["actuators_status"], actuators_payload, retain=True
             )
-
             self.last_publish_time = current_time
-
             logging.debug("Datos de sensores publicados a MQTT")
-
         except Exception as e:
-
             logging.error(f"Error publicando datos de sensores: {e}")
 
     def publish_alert(self, alert_type, message, value):
-        """
-
-        Publica una alerta específica
-
-        """
-
         if not self.connected:
-
             return
-
         try:
-
             alert_payload = {
                 "type": alert_type,
                 "message": message,
@@ -216,15 +200,10 @@ class MQTTClient:
                 "timestamp": int(time.time() * 1000),
                 "severity": "critical",
             }
-
             self.client.publish(self.topics["alerts"], json.dumps(alert_payload))
-
             logging.info(f"Alerta publicada: {alert_type} - {message}")
-
         except Exception as e:
-
             logging.error(f"Error publicando alerta: {e}")
-
     def is_connected(self):
 
         return self.connected

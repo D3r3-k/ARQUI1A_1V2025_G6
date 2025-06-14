@@ -98,10 +98,13 @@ class Actuators:
     
 ################################ Actuadores de calidad del aire ################################
 
-    def control_buzzer(self, state):
-        if state:
+    def control_buzzer(self, state_global, state_control):
+        if (state_global and state_control):
             self.buzzer.frequency = 2000
             self.buzzer.value = 0.5
+        elif(state_global == False and state_control == True): 
+            self.buzzer.frequency = 2000
+            self.buzzer.value = 0.5        
         else:
 
             timer = threading.Timer(5, self._auto_off_buzzer)
@@ -113,6 +116,21 @@ class Actuators:
         self.control_led(self.blue_led, "blue_led", False)
         print("Buzzer apagado automáticamente")
 
+    def control_led_blue(self, state_global, state_control ):
+        if (state_global and state_control):
+            self.blue_led.on()
+            print("Led azul automaticamnte")
+        elif(state_global == False and state_control == True): 
+            self.blue_led.on()
+            print("Led azul Manuel")
+        else:
+            time = threading.Timer(5, self._auto_off_led_blue)
+            time.start()
+            print("Led azul apagadol")
+
+    def _auto_off_led_blue(self):
+        self.control_led(self.blue_led, "blue_led", False)
+
 ############################ Actuadores de Iluminacion ##############################################
     def control_iluminacion(self, state):
         if state:
@@ -121,22 +139,41 @@ class Actuators:
         else:
             print("Iluminacion Apagada")
             self.iluminacion.off()
+        
+    def control_led_gren(self, state_global, state_control ):
+        if (state_global and state_control):
+            self.green_led.on()
+            print("Led verde automaticamnte")
+        elif(state_global == False and state_control == True): 
+            self.green_led.on()
+            print("Led verde Manuel")
+        else:
+            time = threading.Timer(5, self._auto_off_led_green)
+            time.start()
+            print("Led verde apagadol")
 
+    def _auto_off_led_green(self):
+        self.control_led(self.green_led, "green_led", False)
 ############################## Actuadores de Humedad #########################################
-    def control_led_yellow(self, state):
-        if state:
+    def control_led_yellow(self, state_global, state_control ):
+        if (state_global and state_control):
             self.yellow_led.on()
-            print("Led amarillo encendido")
+            print("Led amarillo encendido automaticamnte")
+        elif(state_global == False and state_control == True): 
+            self.yellow_led.on()
+            print("Led amarillo Manuel")
         else:
             time = threading.Timer(5, self._auto_off_led_yellow)
             time.start()
+            print("Led amarillo apagadol")
 
     def _auto_off_led_yellow(self):
         self.control_led(self.yellow_led, "yellow_led", False)
 
 ################################# checkeo de actuadores y estados ##########################################
     def check_alerts_and_control(self):
-        
+    
+    ######################################### Temperatura ##################################
         if (
             shared.temperature > shared.thresholds["temperature_max"]
             or shared.temperature < shared.thresholds["temperature_min"]
@@ -148,60 +185,69 @@ class Actuators:
             self.control_motor(shared.modo_control, shared.actuadores["motor_fan"])
         else:
             shared.alert_status["temperature"] = False
-            print(f"  Temperatura normalizada: {shared.temperature}°C")
             if not (shared.modo_control):
                 self.control_motor(shared.modo_control, shared.actuadores["motor_fan"])
                 self.control_led_Red(shared.modo_control, shared.actuadores["red_led"])
             else:
                 self.control_motor(True, False)
                 shared.estado_motor_fan = False
+                self.control_led_Red(True, False)
 
+    ######################################### Humedad ##################################
         if (
             shared.humidity > shared.thresholds["humidity_max"]
             or shared.humidity < shared.thresholds["humidity_min"]
         ):
             if not shared.alert_status["humidity"]:
                 print(f"  Alerta de humedad: {shared.humidity}%")
-                activar = shared.modo_control or shared.actuadores["yellow_led"]
-                self.control_led(self.yellow_led, "yellow_led", activar)
+                self.control_led_yellow(shared.modo_control,shared.actuadores["yellow_led"])
                 shared.alert_status["humidity"] = True
-
-            shared.local_error_message = "Humedad Critica!"
+                shared.local_error_message = "Humedad Critica!"
         else:
             shared.alert_status["humidity"] = False
-            # activar = shared.modo_control or shared.actuadores["yellow_led"]
-            # self.control_led_yellow( shared.modo_control or shared.actuadores["yellow_led"] )
-            if not (shared.modo_control):  # mnual
-                self.control_led_yellow(
-                    shared.modo_control or shared.actuadores["yellow_led"]
-                )
-            else:  # automatico
-                self.control_led_yellow(False)
+            if not (shared.modo_control):  
+                self.control_led_yellow(shared.modo_control,shared.actuadores["yellow_led"])
+            else:  
+                self.control_led_yellow(True,False)
+
+        ######################################### Luz ##################################
 
         if shared.light_level < shared.thresholds["light_min"]:
             if not shared.alert_status["light"]:
                 print(f" Alerta por baja luz: {shared.light_level}%")
-                self.control_led(self.green_led, "green_led", True)
+                self.control_led_gren(shared.modo_control,shared.actuadores["green_led"])
                 self.control_iluminacion(True)
                 shared.alert_status["light"] = True
                 shared.local_error_message = "Iluminacion Baja!"
         else:
             shared.alert_status["light"] = False
-            self.control_iluminacion(False)
+            if not (shared.modo_control): 
+                self.control_led_gren(shared.modo_control,shared.actuadores["green_led"])
+                self.control_iluminacion(True)   
+            else:  
+                self.control_led_gren(True, False)
+                self.control_iluminacion(False)
 
+        ######################################### calidad de Aire ##################################
         if shared.air_quality < shared.thresholds["air_quality_min"]:
             if not shared.alert_status["air_quality"]:
                 print(f"  Alerta de calidad del aire: {shared.air_quality}")
-                self.control_led(self.blue_led, "blue_led", True)
-                self.control_buzzer(True)
+                self.control_led_blue(shared.modo_control,shared.actuadores["blue_led"])
+                self.control_buzzer(shared.modo_control,shared.actuadores["buzzer"])
                 shared.alert_status["air_quality"] = True
                 shared.local_error_message = "Mala Calidad de Aire!"
         else:
-            if shared.alert_status["air_quality"]:
+            if  not (shared.modo_control):
                 print(f"  Calidad de Aire normalizada: {shared.temperature}")
                 shared.alert_status["air_quality"] = False
-                self.control_buzzer(False)
+                self.control_buzzer(shared.modo_control,shared.actuadores["buzzer"])
+                self.control_led_blue(shared.modo_control,shared.actuadores["blue_led"])
+            else:
+                self.control_buzzer(True,False)
+                self.control_led_blue(True,False)
 
+
+        ######################################### Distancia ##################################
         if (
             shared.thresholds["presence_distance_min"]
             <= shared.thresholds["presence_distance_max"]
