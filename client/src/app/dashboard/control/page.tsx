@@ -4,7 +4,6 @@ import {
   AudioLines,
   Fan,
   Lightbulb,
-  Monitor,
   RefreshCw,
   ToggleLeft,
 } from "lucide-react";
