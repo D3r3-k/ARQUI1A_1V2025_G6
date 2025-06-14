@@ -251,16 +251,13 @@ class Actuators:
 
 
         ######################################### Distancia ##################################
-        if (
-            shared.thresholds["presence_distance_min"]
-            <= shared.thresholds["presence_distance_max"]
-        ):
-
-            if not shared.alert_status["presence"]:
-                print(f" Presencia detectada: {shared.distance}cm")
-                shared.alert_status["presence"] = True
-        else:
-            shared.alert_status["presence"] = False
+        # if (
+        #     shared.distance <= shared.thresholds["presence_distance_min"]):
+        #     if not shared.alert_status["presence"]:
+        #         print(f" Presencia detectada: {shared.distance}cm")
+        #         shared.alert_status["presence"] = True
+        # else:
+        #     shared.alert_status["presence"] = False
 
     def cleanup(self):
         for timer in self.auto_off_timers.values():
