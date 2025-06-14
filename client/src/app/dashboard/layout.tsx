@@ -3,6 +3,7 @@ import { ThemeProvider } from "next-themes";
 import Sidebar from "./components/Sidebar/Sidebar";
 import NavBar from "./components/NavBar/NavBar";
 import { MqttProvider } from "@/context/MqttContext";
+import { ToastContainer } from "react-toastify";
 
 export const metadata: Metadata = {
     title: "Dashboard - Módulo de Administración de SIEPA",
@@ -23,6 +24,7 @@ export default function DashboardLayout({
                         <NavBar />
                         {children}
                     </div>
+                    <ToastContainer newestOnTop stacked/>
                 </MqttProvider>
             </ThemeProvider>
         </main>
