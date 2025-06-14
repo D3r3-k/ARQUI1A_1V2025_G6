@@ -54,3 +54,7 @@
 - Usar control de versiones y documentación técnica clara dentro del repositorio.
 
 > **Importante:** Todo el trabajo debe estar subido en el repositorio con el nombre correcto y el auxiliar agregado como colaborador.
+>
+> -Commit de Verificación:
+
+2025-06-14-00:17
