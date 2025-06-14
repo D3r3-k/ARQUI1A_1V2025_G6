@@ -64,7 +64,7 @@ const sensorTopicMap: Record<SensorType, { topic: string; label: string; unit: s
   calidad_aire: {
     topic: `${process.env.NEXT_PUBLIC_TOPICS_LINK}/calidad_aire`,
     label: "Calidad del aire",
-    unit: "AQI",
+    unit: "PPM",
     icon: Wind,
     color: {
       border: "border-purple-500 dark:border-purple-700",
