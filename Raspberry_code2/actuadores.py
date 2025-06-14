@@ -232,7 +232,7 @@ class Actuators:
                 self.control_iluminacion(False)
 
         ######################################### calidad de Aire ##################################
-        if shared.air_quality < shared.thresholds["air_quality_min"]:
+        if shared.air_quality > shared.thresholds["air_quality_max"]:
             print(f"  Alerta de calidad del aire: {shared.air_quality}")
             self.control_led_blue(shared.modo_control,shared.actuadores["blue_led"])
             self.control_buzzer(shared.modo_control,shared.actuadores["buzzer"])
