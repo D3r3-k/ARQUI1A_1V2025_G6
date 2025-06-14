@@ -24,7 +24,15 @@ class Display:
 
     def display_air_quality(self):
         self.lcd.clear()
-        self.lcd.write_string(f"AIR:  {shared.air_quality:.1f}")
+        self.lcd.write_string(f"AIR:  {shared.air_quality:.1f}ppm")
+
+    def display_light(self):
+        self.lcd.clear()
+        self.lcd.write_string(f"LUZ:  {shared.light_level:.1f} lux")
+
+    def display_Pressure(self):
+        self.lcd.clear()
+        self.lcd.write_string(f"Pre:  {shared.pressure:.1f} hpa")
 
     def display_message(self, message):
         self.lcd.clear()
@@ -55,7 +63,9 @@ class Display:
         display_functions = [
             self.display_temp,
             self.display_humidity,
-            self.display_air_quality
+            self.display_air_quality,
+            self.display_light,
+            self.display_Pressure,
         ]
 
         # Mostrar el dato correspondiente
