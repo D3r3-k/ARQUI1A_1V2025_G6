@@ -134,7 +134,7 @@ class Sensors:
             Rs = RL * (Vcc / Vout - 1)
 
             # Calibración: Rs en aire limpio. Debes obtenerlo tú y reemplazarlo aquí
-            R0 = 8311.07281344248  # Ejemplo: debes calibrarlo manualmente en aire limpio
+            R0 = 8311.072813442  
 
             # Relación Rs/R0
             ratio = Rs / R0
