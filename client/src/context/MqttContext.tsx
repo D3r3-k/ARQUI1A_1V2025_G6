@@ -17,8 +17,6 @@ type AlertItem = {
   fulldate: string;
 };
 
-
-
 interface MqttContextType {
   isConnected: boolean;
   ambientTopics: Record<TopicName, TopicAmbient | undefined>;
@@ -26,7 +24,7 @@ interface MqttContextType {
   stackTopics: Record<TopicName, TopicHistoryStack | undefined>;
   publish: (topic: string, message: string) => void;
   activeAlerts: AlertItem[];
-  alertCount: number; // nuevo
+  alertCount: number;
 }
 
 export const MqttContext = createContext<MqttContextType | undefined>(undefined);
@@ -38,12 +36,14 @@ const STACKEABLE_TOPICS = [
   `${process.env.NEXT_PUBLIC_TOPICS_LINK}/calidad_aire`,
   `${process.env.NEXT_PUBLIC_TOPICS_LINK}/presion`,
 ];
+
 const INFO_TOPICS = [
   ...STACKEABLE_TOPICS,
   `${process.env.NEXT_PUBLIC_TOPICS_LINK}/distancia`,
   `${process.env.NEXT_PUBLIC_TOPICS_LINK}/info`,
   `${process.env.NEXT_PUBLIC_TOPICS_LINK}/alertas`,
 ];
+
 const alertTopic = `${process.env.NEXT_PUBLIC_TOPICS_LINK}/alertas`;
 
 type AlertKey = "temperature" | "humidity" | "light" | "air_quality" | "presence";
@@ -61,7 +61,6 @@ const INFO_STORAGE_KEY = "mqttInfoTopics";
 export const MqttProvider = ({ children }: { children: ReactNode }) => {
   const clientRef = useRef<MqttClient | null>(null);
 
-  // Carga inicial desde localStorage
   const [stackTopics, setStackTopics] = useState<Record<TopicName, TopicHistoryStack>>(() => {
     try {
       const saved = localStorage.getItem(STACK_STORAGE_KEY);
@@ -70,6 +69,7 @@ export const MqttProvider = ({ children }: { children: ReactNode }) => {
       return {};
     }
   });
+
   const [infoTopics, setInfoTopics] = useState<Record<TopicName, TopicAmbient>>(() => {
     try {
       const saved = localStorage.getItem(INFO_STORAGE_KEY);
@@ -78,9 +78,11 @@ export const MqttProvider = ({ children }: { children: ReactNode }) => {
       return {};
     }
   });
+
   const [ambientTopics, setAmbientTopics] = useState<Record<TopicName, TopicAmbient>>({});
   const [isConnected, setIsConnected] = useState(false);
   const [activeAlerts, setActiveAlerts] = useState<AlertItem[]>([]);
+
   const formatTimestamp = (ts: number | string): string => {
     const date = new Date(Number(ts));
     const time = date.toLocaleTimeString("es-ES");
@@ -88,8 +90,6 @@ export const MqttProvider = ({ children }: { children: ReactNode }) => {
     return `${time} ${day}`;
   };
 
-
-  // Guarda stacks en localStorage al cambiar
   useEffect(() => {
     try {
       localStorage.setItem(STACK_STORAGE_KEY, JSON.stringify(stackTopics));
@@ -97,7 +97,7 @@ export const MqttProvider = ({ children }: { children: ReactNode }) => {
       console.warn("Error guardando stacks MQTT en localStorage", e);
     }
   }, [stackTopics]);
-  // Guarda informativos si lo deseas:
+
   useEffect(() => {
     try {
       localStorage.setItem(INFO_STORAGE_KEY, JSON.stringify(infoTopics));
@@ -106,7 +106,7 @@ export const MqttProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [infoTopics]);
 
-  // Inicializa y suscribe al conectar
+  // Conexión inicial y suscripción
   useEffect(() => {
     const client = mqtt.connect(process.env.NEXT_PUBLIC_MQTT_BROKER_URL || "mqtt://localhost:1883");
     clientRef.current = client;
@@ -124,13 +124,12 @@ export const MqttProvider = ({ children }: { children: ReactNode }) => {
     client.on("message", (topic, message) => {
       try {
         const msg: TopicAmbient = JSON.parse(message.toString());
-        // Actualiza info (último dato recibido)
+
         setInfoTopics((prev) => ({
           ...prev,
           [topic]: msg,
         }));
 
-        // Si es stackeable, actualiza la pila de históricos
         if (STACKEABLE_TOPICS.includes(topic)) {
           setStackTopics((prev) => {
             const prevArr = prev[topic]?.history ?? [];
@@ -145,6 +144,7 @@ export const MqttProvider = ({ children }: { children: ReactNode }) => {
             };
           });
         }
+
         setAmbientTopics((prev) => ({
           ...prev,
           [topic]: msg,
@@ -155,10 +155,11 @@ export const MqttProvider = ({ children }: { children: ReactNode }) => {
     });
 
     return () => {
-      client.end(true)
+      if (client.connected || !client.disconnecting) {
+        client.end(true);
+      }
     };
   }, []);
-
 
   useEffect(() => {
     const client = clientRef.current;
@@ -175,23 +176,18 @@ export const MqttProvider = ({ children }: { children: ReactNode }) => {
     const handleAlertMessage = (topic: string, message: Buffer) => {
       if (topic === alertTopic) {
         const alertData = JSON.parse(message.toString());
-
         let anyNewAlert = false;
 
         Object.entries(alertData.alerts).forEach(([key, value]) => {
-          if (
-            (["temperature", "humidity", "light", "air_quality", "presence"] as string[]).includes(key)
-          ) {
+          if ((["temperature", "humidity", "light", "air_quality", "presence"] as string[]).includes(key)) {
             const sensor = key as AlertKey;
             const mensaje = messageAlerts[sensor];
 
-            // Si es false, eliminar la alerta de la pila
             if (!value) {
               setActiveAlerts((prev) =>
                 prev.filter((alert) => alert.sensor !== sensor)
               );
             } else {
-              // Si la alerta aún no está activa, agregarla
               setActiveAlerts((prev) => {
                 const exists = prev.some((a) => a.sensor === sensor);
                 if (exists) return prev;
@@ -201,7 +197,6 @@ export const MqttProvider = ({ children }: { children: ReactNode }) => {
               });
             }
 
-            // Solo marcar como nueva alerta si antes era false y ahora true
             if (!prevAlertStates[sensor] && value) {
               anyNewAlert = true;
             }
@@ -226,11 +221,16 @@ export const MqttProvider = ({ children }: { children: ReactNode }) => {
     client.on("message", handleAlertMessage);
 
     return () => {
-      client.unsubscribe(alertTopic);
+      if (client.connected && !client.disconnecting) {
+        client.unsubscribe(alertTopic, (err) => {
+          if (err) {
+            console.warn("Error durante unsubscribe:", err);
+          }
+        });
+      }
       client.off("message", handleAlertMessage);
     };
   }, []);
-
 
   const publish = (topic: string, message: string) => {
     if (clientRef.current && isConnected) {
@@ -248,8 +248,8 @@ export const MqttProvider = ({ children }: { children: ReactNode }) => {
         infoTopics,
         stackTopics,
         publish,
-        activeAlerts, // nuevo
-        alertCount: activeAlerts.length, // nuevo
+        activeAlerts,
+        alertCount: activeAlerts.length,
       }}
     >
       {children}
