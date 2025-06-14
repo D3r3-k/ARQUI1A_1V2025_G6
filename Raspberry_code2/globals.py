@@ -59,7 +59,7 @@ class GlobalState:
             'temperature_min': 15.0,    # °C
             'humidity_max': 90.0,       # %
             'humidity_min': 30.0,       # %
-            'light_min': 1.6,            # % (too dark)
+            'light_min': 1,            # % (too dark)
             'light_max': 10,            # % (too lifht)
             'air_quality_max':160,     # Air quality index
             'air_quality_min': 135,     # Air quality index
