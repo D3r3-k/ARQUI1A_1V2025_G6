@@ -116,7 +116,7 @@ class Actuators:
     def _auto_off_buzzer(self):
         self.buzzer.off()
         shared.actuator_status["buzzer"] = False
-        self.control_led(self.blue_led, "blue_led", False)
+        #elf.control_led(self.blue_led, "blue_led", False)
         print("Buzzer apagado")
 
     def control_led_blue(self, state_global, state_control ):
@@ -226,21 +226,21 @@ class Actuators:
             shared.alert_status["light"] = False
             if not (shared.modo_control): 
                 self.control_led_gren(shared.modo_control,shared.actuadores["green_led"])
-                self.control_iluminacion(True)   
+                #self.control_iluminacion(True)   
             else:  
                 self.control_led_gren(True, False)
                 self.control_iluminacion(False)
 
         ######################################### calidad de Aire ##################################
         if shared.air_quality < shared.thresholds["air_quality_min"]:
-
             print(f"  Alerta de calidad del aire: {shared.air_quality}")
             self.control_led_blue(shared.modo_control,shared.actuadores["blue_led"])
             self.control_buzzer(shared.modo_control,shared.actuadores["buzzer"])
             shared.alert_status["air_quality"] = True
             shared.local_error_message = "Mala Calidad de Aire!"
         else:
-            if  not (shared.modo_control):
+            shared.alert_status["air_quality"] = False
+            if not (shared.modo_control):
                 print(f"  Calidad de Aire normalizada: {shared.temperature}")
                 shared.alert_status["air_quality"] = False
                 self.control_buzzer(shared.modo_control,shared.actuadores["buzzer"])
