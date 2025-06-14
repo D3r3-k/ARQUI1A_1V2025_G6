@@ -134,7 +134,7 @@ class Sensors:
             Rs = RL * (Vcc / Vout - 1)
 
             # Calibración: Rs en aire limpio. Debes obtenerlo tú y reemplazarlo aquí
-            R0 = 10000  # Ejemplo: debes calibrarlo manualmente en aire limpio
+            R0 = 8311.07281344248  # Ejemplo: debes calibrarlo manualmente en aire limpio
 
             # Relación Rs/R0
             ratio = Rs / R0
@@ -149,6 +149,9 @@ class Sensors:
         except Exception as e:
             print(f"Error leyendo MQ135 desde PCF8591: {e}")
 
+        
+    
+
 
     def read_sensors(self):
         self.read_dht11()
@@ -156,6 +159,8 @@ class Sensors:
         self.read_light_sensor()
         self.read_pressure_sensor()
         self.read_air_quality()
+
+    
 
     def print_data(self):
         print(f"Temp: {shared.temperature:.1f}°C | "
