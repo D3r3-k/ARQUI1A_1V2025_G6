@@ -142,7 +142,7 @@ class Sensors:
             # Estimación de ppm (puedes cambiar a y b según el gas que te interese)
             a = 116.6020682
             b = 2.769034857
-            ppm = a * (ratio ** -b)
+            ppm = a * (ratio ** b)
 
             shared.air_quality = int(ppm)
 
