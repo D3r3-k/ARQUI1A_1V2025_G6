@@ -21,7 +21,7 @@ class SIEPA:
     def __init__(self, mqtt_broker='broker.emqx.io', mqtt_port=1883, group_number="G6"):
         self.running = True
         self.intervals = {
-            "principal": 2.0,  # ← ahora cada 2 segundos imprimimos los datos
+            "principal": 2.0,  
             "mqtt": 5,
         }
 
@@ -127,10 +127,6 @@ class SIEPA:
                 self.display.display_message("SIEPA Stopped")
         except Exception as e:
             logging.error(f"Error during cleanup: {e}")
-
-
-
-
 
 
 if __name__ == "__main__":
