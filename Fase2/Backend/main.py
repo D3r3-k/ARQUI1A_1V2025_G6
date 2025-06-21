@@ -7,6 +7,7 @@ from sensors import Sensors
 from display import Display
 from actuadores import Actuators
 from mqtt import MQTTClient
+from mongodb import consultar_lecturas
 
 
 # Configurar logging
@@ -26,6 +27,11 @@ class SIEPA:
         }
 
         try:
+            print('conslta mongo')
+            respuesta =  consultar_lecturas()
+            for r in respuesta:
+                print(r)
+            print('*************************************************************')
             self.sensors = Sensors()
             self.display = Display()
             self.actuators = Actuators()

@@ -55,6 +55,7 @@ def insertar_alerta(sensor_de, hora_fecha, valor):
 ##-------------------funciones para consultar datos en MongoDB Atlas-------------------##
 def consultar_lecturas(cantidad=10):
     cursor = db.lecturas_sensores.find().sort("hora_fecha", -1).limit(cantidad)
+    print('LLamada correcta')
     return list(cursor)
 
 def consultar_estadisticas(cantidad=10):
