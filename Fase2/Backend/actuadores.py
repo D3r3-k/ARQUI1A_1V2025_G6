@@ -99,7 +99,7 @@ class Actuators:
             print("Led Roja encendida manualmente")
         else: 
             if not(state_global):
-                self.red_led.on() 
+                self.control_led(self.red_led, "red_led", False)
                 print("Led Roja Apagada manualmente")    
             else: 
                 time = threading.Timer(5, self._auto_off_led_red)
