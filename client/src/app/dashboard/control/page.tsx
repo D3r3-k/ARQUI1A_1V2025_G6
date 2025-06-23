@@ -1,10 +1,15 @@
 "use client";
 
 import {
+  AlertTriangle,
   AudioLines,
+  Calendar,
+  ChartSpline,
+  Droplets,
   Fan,
   Lightbulb,
   RefreshCw,
+  SunSnow,
   ToggleLeft,
 } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -91,45 +96,62 @@ export default function ControlPage() {
             </div>
           </div>
         </div>
-        {/* Calendar/Schedule (Preview)
+        {/* Calendar/Schedule (Preview) */}
         <div className="p-5 bg-white dark:bg-gray-900 flex flex-col space-y-4">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold">Programación</h3>
-            <button className="flex items-center space-x-2 px-3 py-1 text-sm rounded-md bg-gray-900/10 text-gray-600 dark:bg-gray-800 dark:text-gray-300 hover:bg-gray-900/20 dark:hover:bg-gray-700 transition-colors cursor-pointer">
-              <Calendar size={16} />
-              <span>Ver Calendario</span>
-            </button>
+            <h3 className="text-lg font-semibold">Visualizacion LCD</h3>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="flex items-center space-x-3 rounded-md p-3 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
-                <div className="rounded-md p-2 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300">
-                  {i === 1 && <Lightbulb size={16} />}
-                  {i === 2 && <Fan size={16} />}
-                  {i === 3 && <Droplets size={16} />}
+              <div
+                key={i}
+                className={`flex items-center space-x-3 rounded-md p-3 border cursor-pointer ${
+                  i === 1
+                    ? "border-cyan-600 bg-cyan-600/20 dark:bg-cyan-600/30"
+                    : "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900"
+                }`}
+              >
+                <div
+                  className={`rounded-md p-2 ${
+                    i === 1
+                      ? "bg-cyan-600/40 dark:bg-cyan-600/30 text-white"
+                      : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300"
+                  }`}
+                >
+                  {i === 1 && <SunSnow size={16} />}
+                  {i === 2 && <ChartSpline size={16} />}
+                  {i === 3 && <AlertTriangle size={16} />}
                 </div>
                 <div className="flex-grow">
                   <div className="text-sm font-medium">
-                    {i === 1 && 'Iluminación'}
-                    {i === 2 && 'Ventilación'}
-                    {i === 3 && 'Sistema de Riego'}
+                    {i === 1 && "Tiempo real"}
+                    {i === 2 && "Predicciones"}
+                    {i === 3 && "Alertas"}
                   </div>
                   <div className="text-xs text-gray-500 dark:text-gray-400">
-                    {i === 1 && 'Activa: 06:00 - 18:00, Lun-Dom'}
-                    {i === 2 && 'Activa cuando Temp > 28°C'}
-                    {i === 3 && 'Activa: 08:00 y 18:00, Lun-Vie'}
+                    {i === 1 && "Mostrar datos en tiempo real"}
+                    {i === 2 && "Mostrar datos de predicciones"}
+                    {i === 3 && "Mostrar datos de alertas"}
                   </div>
                 </div>
               </div>
             ))}
           </div>
         </div>
-           */}
         {/* Actuators Control Cards */}
         <div className="flex flex-col p-5">
           <h3 className="text-lg font-semibold mb-4">Sensores</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <ControlCard
+              id="Iluminacion"
+              icon={Lightbulb}
+              title="Iluminacion"
+              description="Indica la iluminacion"
+              initialState={true}
+              color="white"
+              disabled={isAutoMode}
+            />
             <ControlCard
               id="red_led"
               icon={Lightbulb}
