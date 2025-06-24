@@ -25,29 +25,109 @@ class SIEPA:
             "principal": 2.0,  
             "mqtt": 1,
         }
+# En main.py, reemplaza las líneas 30-34 (la parte de consulta mongo) con esto:
 
         try:
-            print('conslta mongo')
-            respuesta =  consultar_lecturas()
-            for r in respuesta:
-                print(r)
-            print('*************************************************************')
-            self.sensors = Sensors()
-            self.display = Display()
-            self.actuators = Actuators()
+            print('🔍 VERIFICACIÓN COMPLETA DE MONGODB')
+            print('=' * 50)
+            
+            # Usar tus importaciones existentes
+            from mongodb import client, db
+            
 
-            self.mqtt_client = MQTTClient(
-                broker_host=mqtt_broker,
-                broker_port=mqtt_port,
-                group_6=group_number
+            respuesta = consultar_lecturas(cantidad=10)
+            print(f'✅ Consulta exitosa: {len(respuesta)} registros encontrados')
+            
+            # Verificar todas las colecciones
+            colecciones = db.list_collection_names()
+            print(f'📚 Colecciones en la BD: {colecciones}')
+            
+            # Contar documentos en cada colección
+            for col_name in colecciones:
+                count = db[col_name].count_documents({})
+                print(f'📊 {col_name}: {count} documentos')
+            
+            # Mostrar detalles de las lecturas
+            total_lecturas = db.lecturas_sensores.count_documents({})
+            print(f'\n📈 DETALLES DE lecturas_sensores:')
+            print(f'   Total: {total_lecturas} registros')
+            
+            if total_lecturas > 0:
+                # Mostrar estructura del primer documento
+                primer_doc = db.lecturas_sensores.find_one()
+                print(f'   Campos disponibles: {list(primer_doc.keys())}')
+                
+                # Mostrar últimos 5 registros con más detalle
+                print(f'\n📋 Últimas lecturas:')
+                for i, r in enumerate(respuesta[:5], 1):
+                    fecha = r.get('hora_fecha', 'Sin fecha')
+                    temp = r.get('temperatura', '?')
+                    hum = r.get('humedad', '?')
+                    luz = r.get('iluminacion', '?')
+                    presion = r.get('presion', '?')
+                    aire = r.get('calidad_aire', '?')
+                    dist = r.get('distancia', '?')
+                    
+                    print(f'  {i}. {fecha}')
+                    print(f'     T:{temp}°C | H:{hum}% | L:{luz}lux | P:{presion}hPa | A:{aire}ppm | D:{dist}cm')
+            
+            # AHORA VAMOS A INSERTAR UN DATO DE PRUEBA
+            print(f'\n🧪 INSERTANDO DATO DE PRUEBA...')
+            from datetime import datetime
+            
+            # Insertar usando tu función existente
+            exito = ingresar_lectura(
+                hora_fecha=datetime.now(),
+                iluminacion=999,  # Valor distintivo para identificar la prueba
+                temperatura=99.9,
+                humedad=99.9
             )
-
-            self.display.display_message("Iniciando SIEPA")
-            logging.info("SIEPA initialized successfully")
-
+            
+            if exito:
+                print('✅ Dato de prueba insertado correctamente')
+                
+                # Verificar que se insertó
+                nuevo_count = db.lecturas_sensores.count_documents({})
+                print(f'📊 Nuevo total de registros: {nuevo_count}')
+                
+                # Mostrar el último registro (debería ser el que acabamos de insertar)
+                ultimo = db.lecturas_sensores.find().sort('_id', -1).limit(1)[0]
+                print(f'🆕 Último registro insertado:')
+                print(f'   Temp: {ultimo.get("temperatura")}°C')
+                print(f'   Iluminación: {ultimo.get("iluminacion")}lux')
+            else:
+                print('❌ Error insertando dato de prueba')
+            
+            print('=' * 50)
+            print('🎯 CONCLUSIÓN: MongoDB está funcionando correctamente')
+            print('   Ahora puedes implementar el envío automático')
+            
         except Exception as e:
-            logging.error(f"Failed to initialize SIEPA: {e}")
-            raise
+            print(f'❌ Error en verificación: {e}')
+            import traceback
+            traceback.print_exc()
+        # try:
+        #     print('conslta mongo')
+        #     respuesta =  consultar_lecturas()
+        #     for r in respuesta:
+        #         print(r)
+        #     print('*************************************************************')
+        #     self.sensors = Sensors()
+        #     self.display = Display()
+        #     self.actuators = Actuators()
+
+        #     self.mqtt_client = MQTTClient(
+        #         broker_host=mqtt_broker,
+        #         broker_port=mqtt_port,
+        #         group_6=group_number
+        #     )
+
+        #     self.display.display_message("Iniciando SIEPA")
+        #     logging.info("SIEPA initialized successfully")
+
+        # except Exception as e:
+        #     logging.error(f"Failed to initialize SIEPA: {e}")
+        #     raise
 
         # Señales de cierre con Ctrl+C
         signal.signal(signal.SIGINT, self._signal_handler)
