@@ -13,25 +13,32 @@ db = client["principal"]  # Cambia el nombre si quieres
 
 ##-------------------funciones para insertar datos en MongoDB Atlas-------------------##
 
-def ingresar_lectura(hora_fecha, iluminacion, temperatura, humedad):
+def ingresar_lectura(hora_fecha, iluminacion, temperatura, humedad, presion,calidad_aire,distancia):
     lectura = {
         "hora_fecha": hora_fecha,
         "iluminacion": iluminacion,
         "temperatura": temperatura,
-        "humedad": humedad
+        "humedad": humedad,
+        "presion": presion,
+        "calidad_aire": calidad_aire,
+        "distancia": distancia
     }
     db.lecturas_sensores.insert_one(lectura)
-    print("📥 Lectura insertada exitosamente en MongoDB Atlas")
+    print(" Lectura insertada exitosamente en MongoDB Atlas")
 
-def insertar_estadisticas(sensor_de, hora_fecha, media, varianza):
+def insertar_estadisticas(sensor_de, hora_fecha, media, mediana ,moda , MinMax , desviacion ,varianza,):
     estadisticas = {
         "hora_fecha": hora_fecha,
         "sensor_de": sensor_de,
         "media": media,
+        "mediana": mediana,
+        "moda": moda,
+        "Minimo / maximo ": MinMax,
+        "Desviacion Estandar" : desviacion, 
         "varianza": varianza
     }
     db.estadisticas_resultados.insert_one(estadisticas)
-    print("📥 Estadísticas insertadas exitosamente en MongoDB Atlas")
+    print(" Estadísticas insertadas exitosamente en MongoDB Atlas")
 
 def insertar_prediccion(sensor_de, hora_fecha, mediaMovil, suavizado):
     prediccion = {
@@ -41,7 +48,7 @@ def insertar_prediccion(sensor_de, hora_fecha, mediaMovil, suavizado):
         "suavizado": suavizado
     }
     db.predicciones.insert_one(prediccion)
-    print("📥 Predicción insertada exitosamente en MongoDB Atlas")
+    print(" Predicción insertada exitosamente en MongoDB Atlas")
 
 def insertar_alerta(sensor_de, hora_fecha, valor):
     alerta = {
@@ -50,7 +57,7 @@ def insertar_alerta(sensor_de, hora_fecha, valor):
         "valor": valor
     }
     db.alertas.insert_one(alerta)
-    print("📥 Alerta insertada exitosamente en MongoDB Atlas")
+    print(" Alerta insertada exitosamente en MongoDB Atlas")
 
 ##-------------------funciones para consultar datos en MongoDB Atlas-------------------##
 def consultar_lecturas(cantidad=10):

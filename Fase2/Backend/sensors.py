@@ -5,6 +5,7 @@ import busio
 import smbus2 as smbus
 from gpiozero import DistanceSensor, DigitalInputDevice
 from globals import shared
+import mongodb
 
 class Sensors:
     def __init__(self):
@@ -24,26 +25,26 @@ class Sensors:
         self.ldr = DigitalInputDevice(18)
 
         # BMP280 
-        # self.BMP_280 = 0x76
-        # calib = self.bus.read_i2c_block_data(self.BMP_280, 0x88, 24)
-        # self.dig_T1 = calib[1] << 8 | calib[0]
-        # self.dig_T2 = self.to_signed(calib[3] << 8 | calib[2], 16)
-        # self.dig_T3 = self.to_signed(calib[5] << 8 | calib[4], 16)
-        # self.dig_P1 = calib[7] << 8 | calib[6]
-        # self.dig_P2 = self.to_signed(calib[9] << 8 | calib[8], 16)
-        # self.dig_P3 = self.to_signed(calib[11] << 8 | calib[10], 16)
-        # self.dig_P4 = self.to_signed(calib[13] << 8 | calib[12], 16)
-        # self.dig_P5 = self.to_signed(calib[15] << 8 | calib[14], 16)
-        # self.dig_P6 = self.to_signed(calib[17] << 8 | calib[16], 16)
-        # self.dig_P7 = self.to_signed(calib[19] << 8 | calib[18], 16)
-        # self.dig_P8 = self.to_signed(calib[21] << 8 | calib[20], 16)
-        # self.dig_P9 = self.to_signed(calib[23] << 8 | calib[22], 16)
+        self.BMP_280 = 0x76
+        calib = self.bus.read_i2c_block_data(self.BMP_280, 0x88, 24)
+        self.dig_T1 = calib[1] << 8 | calib[0]
+        self.dig_T2 = self.to_signed(calib[3] << 8 | calib[2], 16)
+        self.dig_T3 = self.to_signed(calib[5] << 8 | calib[4], 16)
+        self.dig_P1 = calib[7] << 8 | calib[6]
+        self.dig_P2 = self.to_signed(calib[9] << 8 | calib[8], 16)
+        self.dig_P3 = self.to_signed(calib[11] << 8 | calib[10], 16)
+        self.dig_P4 = self.to_signed(calib[13] << 8 | calib[12], 16)
+        self.dig_P5 = self.to_signed(calib[15] << 8 | calib[14], 16)
+        self.dig_P6 = self.to_signed(calib[17] << 8 | calib[16], 16)
+        self.dig_P7 = self.to_signed(calib[19] << 8 | calib[18], 16)
+        self.dig_P8 = self.to_signed(calib[21] << 8 | calib[20], 16)
+        self.dig_P9 = self.to_signed(calib[23] << 8 | calib[22], 16)
 
-        # self.bus.write_byte_data(self.BMP_280, 0xF4, 0x3F)
-        # self.bus.write_byte_data(self.BMP_280, 0xF5, 0x14)
+        self.bus.write_byte_data(self.BMP_280, 0xF4, 0x3F)
+        self.bus.write_byte_data(self.BMP_280, 0xF5, 0x14)
         
     
-        #print("Sensores inicializados correctamente")
+        print("Sensores inicializados correctamente")
 
     def to_signed(self, val, bits):
         if val & (1 << (bits - 1)):
@@ -85,39 +86,39 @@ class Sensors:
             print(f"Error leyendo luz en luxes: {e}")
 
 
-    # def read_pressure_sensor(self):
-    #     try:
-    #         data = self.bus.read_i2c_block_data(self.BMP_280, 0xF7, 6)
-    #         adc_p = (data[0] << 12) | (data[1] << 4) | (data[2] >> 4)
-    #         adc_t = (data[3] << 12) | (data[4] << 4) | (data[5] >> 4)
+    def read_pressure_sensor(self):
+        try:
+            data = self.bus.read_i2c_block_data(self.BMP_280, 0xF7, 6)
+            adc_p = (data[0] << 12) | (data[1] << 4) | (data[2] >> 4)
+            adc_t = (data[3] << 12) | (data[4] << 4) | (data[5] >> 4)
 
-    #         var1 = (((adc_t >> 3) - (self.dig_T1 << 1)) * self.dig_T2) >> 11
-    #         var2 = (((((adc_t >> 4) - self.dig_T1) * ((adc_t >> 4) - self.dig_T1)) >> 12) * self.dig_T3) >> 14
-    #         t_fine = var1 + var2
-    #         temp = (t_fine * 5 + 128) >> 8
-    #         shared.bmp_temp = round(temp / 100.0, 2)
+            var1 = (((adc_t >> 3) - (self.dig_T1 << 1)) * self.dig_T2) >> 11
+            var2 = (((((adc_t >> 4) - self.dig_T1) * ((adc_t >> 4) - self.dig_T1)) >> 12) * self.dig_T3) >> 14
+            t_fine = var1 + var2
+            temp = (t_fine * 5 + 128) >> 8
+            shared.bmp_temp = round(temp / 100.0, 2)
 
-    #         var1 = t_fine - 128000
-    #         var2 = var1 * var1 * self.dig_P6
-    #         var2 += ((var1 * self.dig_P5) << 17)
-    #         var2 += (self.dig_P4 << 35)
-    #         var1 = ((var1 * var1 * self.dig_P3) >> 8) + ((var1 * self.dig_P2) << 12)
-    #         var1 = (((1 << 47) + var1) * self.dig_P1) >> 33
+            var1 = t_fine - 128000
+            var2 = var1 * var1 * self.dig_P6
+            var2 += ((var1 * self.dig_P5) << 17)
+            var2 += (self.dig_P4 << 35)
+            var1 = ((var1 * var1 * self.dig_P3) >> 8) + ((var1 * self.dig_P2) << 12)
+            var1 = (((1 << 47) + var1) * self.dig_P1) >> 33
 
-    #         if var1 == 0:
-    #             return
+            if var1 == 0:
+                return
 
-    #         p = 1048576 - adc_p
-    #         p = ((p << 31) - var2) * 3125 // var1
-    #         var1 = (self.dig_P9 * (p >> 13) * (p >> 13)) >> 25
-    #         var2 = (self.dig_P8 * p) >> 19
-    #         p = ((p + var1 + var2) >> 8) + (self.dig_P7 << 4)
+            p = 1048576 - adc_p
+            p = ((p << 31) - var2) * 3125 // var1
+            var1 = (self.dig_P9 * (p >> 13) * (p >> 13)) >> 25
+            var2 = (self.dig_P8 * p) >> 19
+            p = ((p + var1 + var2) >> 8) + (self.dig_P7 << 4)
 
-    #         shared.pressure = int(p / 25600.0)
+            shared.pressure = int(p / 25600.0)
     
 
-    #     except Exception as e:
-    #         print(f"Error leyendo presión BMP280: {e}")
+        except Exception as e:
+            print(f"Error leyendo presión BMP280: {e}")
 
     def read_air_quality(self):
         try:
@@ -158,6 +159,16 @@ class Sensors:
         self.read_air_quality()
 
     def print_data(self):
+        mongodb.ingresar_lectura(
+            datetime.now().strftime("%Y-%m-%d %H:%M:%S"),       
+            shared.light_level,
+            shared.temperature, 
+            shared.humidity,
+            shared.pressure,
+            shared.air_quality,
+            shared.distance
+        )
+        
         print(f"Temp: {shared.temperature:.1f}°C | "
             f"Humidity: {shared.humidity:.1f}% | "
             f"Distance: {shared.distance:.1f}cm | "

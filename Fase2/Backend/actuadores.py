@@ -55,7 +55,7 @@ class Actuators:
 
 ######################### Actuadores de Temperatura ##########################
     def control_motor(self, state_global, state_control):
-        print("ESTADO MOTOR: modo: ", state_global, " control: ", state_control)
+       # print("ESTADO MOTOR: modo: ", state_global, " control: ", state_control)
         if state_global and state_control:
             print("Motor Encendido Automaticamente")
             self.motor_in1.on()
@@ -90,7 +90,7 @@ class Actuators:
 
 
     def control_led_Red(self,state_global, state_control):
-        print("ESTADO RED_LED: modo: ", state_global, " control: ", state_control)
+       # print("ESTADO RED_LED: modo: ", state_global, " control: ", state_control)
         if(state_global and state_control): 
             self.red_led.on()
             print("Led Roja encendida automaticamente")           
@@ -112,7 +112,7 @@ class Actuators:
 ################################ Actuadores de calidad del aire ################################
 
     def control_buzzer(self, state_global, state_control):
-        print("ESTADO BUZZER: modo: ", state_global, " control: ", state_control)
+        #print("ESTADO BUZZER: modo: ", state_global, " control: ", state_control)
         if (state_global and state_control):
             self.buzzer.frequency = 2000
             self.buzzer.value = 0.5
@@ -136,7 +136,7 @@ class Actuators:
         print("Buzzer apagado Automaticamente")
 
     def control_led_blue(self, state_global, state_control ):
-        print("ESTADO LED_BLUE: modo: ", state_global, " control: ", state_control)
+       # print("ESTADO LED_BLUE: modo: ", state_global, " control: ", state_control)
         if (state_global and state_control):
             self.blue_led.on()
             print("Led azul encedndida Automaticamente")
@@ -158,7 +158,7 @@ class Actuators:
 
 ############################ Actuadores de Iluminacion ##############################################
     def control_iluminacion(self, state_global, state_control):
-        print("ESTADO ILUMINACION: modo: ", state_global, " control: ", state_control)
+        #print("ESTADO ILUMINACION: modo: ", state_global, " control: ", state_control)
         if (state_global and state_control):    
             self.iluminacion.on()
             print("Encender Iluminacion Automaticamente")
@@ -178,7 +178,7 @@ class Actuators:
         print("Iluminacion Apagada Automaticamente")
         
     def control_led_gren(self, state_global, state_control ):
-        print("ESTADO LED_GREEN: modo: ", state_global, " control: ", state_control)
+        #print("ESTADO LED_GREEN: modo: ", state_global, " control: ", state_control)
         if (state_global and state_control):
             self.green_led.on()
             print("Led verde encendida automaticamente")
@@ -198,7 +198,7 @@ class Actuators:
         print("Led verde apagado automaticamente")
 ############################## Actuadores de Humedad #########################################
     def control_led_yellow(self, state_global, state_control ):
-        print("ESTADO LED_YELLOW: modo: ", state_global, " control: ", state_control)
+        #print("ESTADO LED_YELLOW: modo: ", state_global, " control: ", state_control)
         if (state_global and state_control):
             self.yellow_led.on()
             print("Led amarillo encendido Automaticamente")
