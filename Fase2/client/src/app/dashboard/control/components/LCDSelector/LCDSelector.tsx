@@ -6,30 +6,32 @@ import { useMqtt } from "@/hooks/useMqtt";
 
 const options = [
     {
-        id: "sensors",
+        id: "sensores",
         title: "Tiempo real",
         description: "Mostrar datos en tiempo real",
         icon: <SunSnow size={16} />,
     },
     {
-        id: "predictions",
+        id: "predicciones",
         title: "Predicciones",
         description: "Mostrar datos de predicciones",
         icon: <ChartSpline size={16} />,
     },
     {
-        id: "alerts",
+        id: "alertas",
         title: "Alertas",
         description: "Mostrar datos de alertas",
         icon: <AlertTriangle size={16} />,
     },
 ];
 
+const topic = `${process.env.NEXT_PUBLIC_TOPICS_LINK}/pantalla`;
+
 export default function LCDSelector() {
     // Hooks
     const { publish } = useMqtt();
     // States
-    const [selected, setSelected] = useState<string>("sensors");
+    const [selected, setSelected] = useState<"sensores" | "predicciones" | "alertas">("sensores");
     // Effects
     // Cargar estado inicial desde localStorage (si existe)
     useEffect(() => {
@@ -44,9 +46,9 @@ export default function LCDSelector() {
     }, [selected]);
 
     // Handlers
-    const handleToggle = (id: string) => {
+    const handleToggle = (id: "sensores" | "predicciones" | "alertas") => {
         setSelected(id);
-        publish("dashboard/lcd/selected", JSON.stringify({ selected: id }));
+        publish(topic, JSON.stringify({ selected: id }));
     };
     // Functions
     // Renders
@@ -64,7 +66,7 @@ export default function LCDSelector() {
                     return (
                         <button
                             key={option.id}
-                            onClick={() => handleToggle(option.id)}
+                            onClick={() => handleToggle(option.id as "sensores" | "predicciones" | "alertas")}
                             className={`flex items-center space-x-3 rounded-md p-3 border cursor-pointer transition-all ${isActive
                                 ? "border-cyan-600 bg-cyan-600/20 dark:bg-cyan-600/30"
                                 : "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900"
