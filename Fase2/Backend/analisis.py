@@ -11,9 +11,9 @@ class AnalysisManager:
     
     def __init__(self):
         # Configuración de paths y archivos
-        self.temp_dir = "/tmp/siepa_analysis"
-        self.arm64_stats_executable = "./arm64_stats"  # Path a tu ejecutable ARM64 de estadísticas
-        self.arm64_pred_executable = "./arm64_predictions"  # Path a tu ejecutable ARM64 de predicciones
+        self.temp_dir = "./G6arm/analysis_files" 
+        self.arm64_stats_executable = "./G6arm/build/main"  # Path de estadísticas
+        self.arm64_pred_executable = "./G6arm/build/main"  # Path de predicciones
         
         # Crear directorio temporal si no existe
         os.makedirs(self.temp_dir, exist_ok=True)
