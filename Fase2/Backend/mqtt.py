@@ -5,6 +5,7 @@ import paho.mqtt.client as mqtt
 from globals import shared
 
 
+
 class MQTTClient:
 
 
@@ -29,6 +30,9 @@ class MQTTClient:
             # Topics de control:
             "control_comandos": f"GRUPO{group_6}/sensores/rasp03/comandos",
             "control_modo": f"GRUPO{group_6}/sensores/rasp03/modo",
+            "control_estadistica": f"GRUPO{group_6}/sensores/rasp03/estadistica",
+            "control_predicciones": f"GRUPO{group_6}/sensores/rasp03/predicciones",
+            
         }
 
         self.client = mqtt.Client(client_id=self.client_id)
@@ -53,6 +57,8 @@ class MQTTClient:
 
             client.subscribe(self.topics["control_comandos"])
             client.subscribe(self.topics["control_modo"])
+            client.subscribe(self.topics["control_estadistica"])  # ← Agregar
+            client.subscribe(self.topics["control_predicciones"])  # ← Agregar
             logging.info(f"Suscrito a: {self.topics['control_comandos']}")
             logging.info(f"Suscrito a: {self.topics['control_modo']}")
 
@@ -86,10 +92,33 @@ class MQTTClient:
                     shared.actuadores[actuador] = bool(action)
                     estado_txt = "ENCENDIDO" if action else "APAGADO"
                     logging.info(f"Actuador '{actuador}' cambiado a: {estado_txt}")
+
+            elif topic == self.topics["control_estadistica"]:
+                sensor = payload.get("sensor")
+                if sensor:
+                    # Importar y usar analysis_manager aquí
+                    from analisis import AnalysisManager
+                    analysis_manager = AnalysisManager()
+                    analysis_manager.process_statistics_request(sensor)
+                    logging.info(f"Solicitud de estadísticas procesada para: {sensor}")
                 else:
-                    logging.warning(
-                        "Comando recibido sin actuador válido o acción no definida."
-                    )
+                    logging.warning("Comando de estadística sin sensor especificado")
+
+            elif topic == self.topics["control_predicciones"]:
+                sensor = payload.get("sensor")
+                if sensor:
+                    # Importar y usar analysis_manager aquí
+                    from analisis import AnalysisManager
+                    analysis_manager = AnalysisManager()
+                    analysis_manager.process_prediction_request(sensor)
+                    logging.info(f"Solicitud de predicciones procesada para: {sensor}")
+                else:
+                    logging.warning("Comando de predicción sin sensor especificado")
+
+            else:
+                logging.warning(
+                "Comando recibido sin actuador válido o acción no definida."
+                )
 
         except Exception as e:
             logging.error(f"Error procesando mensaje MQTT: {e}")
