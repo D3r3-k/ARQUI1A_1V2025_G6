@@ -37,6 +37,9 @@ class AnalysisManager:
         logging.info("AnalysisManager inicializado correctamente")
 
     def process_statistics_request(self, sensor_name):
+        """
+        Procesa una solicitud de cálculo estadístico para un sensor específico
+        """
         try:
             # Normalizar nombre del sensor
             normalized_sensor = self.sensor_mapping.get(sensor_name.lower())
@@ -57,29 +60,38 @@ class AnalysisManager:
             if not input_file:
                 return False
 
-            # 3. Ejecutar código ARM64 para estadísticas
-            output_file = f"{self.temp_dir}/stats_output_{normalized_sensor}.txt"
-            success = self._execute_arm64_stats(input_file, output_file)
+            # 3. TESTING: Solo mostrar que se creó el archivo, no ejecutar ARM64
+            logging.info(f"✓ Archivo de entrada creado exitosamente: {input_file}")
+            logging.info(f"✓ Datos obtenidos de MongoDB: {len(data)} valores")
+            logging.info(f"✓ Primeros 5 valores: {data[:5] if len(data) >= 5 else data}")
             
-            if success:
-                # 4. Procesar resultados
-                results = self._parse_statistics_results(output_file, normalized_sensor)
-                if results:
-                    # 5. Guardar resultados en MongoDB
-                    self._save_statistics_to_mongo(results, normalized_sensor)
-                    # 6. Actualizar estado global
-                    self._update_shared_statistics(results, normalized_sensor)
-                    logging.info(f"Estadísticas calculadas exitosamente para {normalized_sensor}")
-                    return True
+            # COMENTADO PARA TESTING - Descomentar cuando tengas ARM64
+            # output_file = f"{self.temp_dir}/stats_output_{normalized_sensor}.txt"
+            # success = self._execute_arm64_stats(input_file, output_file)
             
-            return False
+            # SIMULACIÓN DE ÉXITO PARA TESTING
+            shared.local_error_message = f"Test Stats {normalized_sensor} - File OK"
+            logging.info(f"TESTING: Estadísticas simuladas para {normalized_sensor}")
+            return True
+            
+            # COMENTADO PARA TESTING:
+            # if success:
+            #     results = self._parse_statistics_results(output_file, normalized_sensor)
+            #     if results:
+            #         self._save_statistics_to_mongo(results, normalized_sensor)
+            #         self._update_shared_statistics(results, normalized_sensor)
+            #         logging.info(f"Estadísticas calculadas exitosamente para {normalized_sensor}")
+            #         return True
+            # return False
             
         except Exception as e:
             logging.error(f"Error procesando estadísticas para {sensor_name}: {e}")
             return False
         finally:
-            # Limpieza de archivos temporales
-            self._cleanup_temp_files([input_file, output_file])
+            # COMENTADO PARA TESTING - No borrar archivos para poder revisarlos
+            # self._cleanup_temp_files([input_file, output_file])
+            logging.info(f"TESTING: Archivo temporal conservado en: {input_file}")
+            pass
 
     def process_prediction_request(self, sensor_name):
         """
@@ -105,29 +117,38 @@ class AnalysisManager:
             if not input_file:
                 return False
 
-            # 3. Ejecutar código ARM64 para predicciones
-            output_file = f"{self.temp_dir}/pred_output_{normalized_sensor}.txt"
-            success = self._execute_arm64_predictions(input_file, output_file)
+            # 3. TESTING: Solo mostrar que se creó el archivo, no ejecutar ARM64
+            logging.info(f"✓ Archivo de entrada creado exitosamente: {input_file}")
+            logging.info(f"✓ Datos obtenidos de MongoDB: {len(data)} valores")
+            logging.info(f"✓ Primeros 5 valores: {data[:5] if len(data) >= 5 else data}")
             
-            if success:
-                # 4. Procesar resultados
-                results = self._parse_prediction_results(output_file, normalized_sensor)
-                if results:
-                    # 5. Guardar resultados en MongoDB
-                    self._save_predictions_to_mongo(results, normalized_sensor)
-                    # 6. Actualizar estado global
-                    self._update_shared_predictions(results, normalized_sensor)
-                    logging.info(f"Predicciones calculadas exitosamente para {normalized_sensor}")
-                    return True
+            # COMENTADO PARA TESTING - Descomentar cuando tengas ARM64
+            # output_file = f"{self.temp_dir}/pred_output_{normalized_sensor}.txt"
+            # success = self._execute_arm64_predictions(input_file, output_file)
             
-            return False
+            # SIMULACIÓN DE ÉXITO PARA TESTING
+            shared.local_error_message = f"Test Pred {normalized_sensor} - File OK"
+            logging.info(f"TESTING: Predicciones simuladas para {normalized_sensor}")
+            return True
+            
+            # COMENTADO PARA TESTING:
+            # if success:
+            #     results = self._parse_prediction_results(output_file, normalized_sensor)
+            #     if results:
+            #         self._save_predictions_to_mongo(results, normalized_sensor)
+            #         self._update_shared_predictions(results, normalized_sensor)
+            #         logging.info(f"Predicciones calculadas exitosamente para {normalized_sensor}")
+            #         return True
+            # return False
             
         except Exception as e:
             logging.error(f"Error procesando predicciones para {sensor_name}: {e}")
             return False
         finally:
-            # Limpieza de archivos temporales
-            self._cleanup_temp_files([input_file, output_file])
+            # COMENTADO PARA TESTING - No borrar archivos para poder revisarlos
+            # self._cleanup_temp_files([input_file, output_file])
+            logging.info(f"TESTING: Archivo temporal conservado en: {input_file}")
+            pass
 
     def _get_sensor_data(self, sensor_name, count=30):
         """
