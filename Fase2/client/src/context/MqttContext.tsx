@@ -253,17 +253,29 @@ export const MqttProvider = ({ children }: { children: ReactNode }) => {
     const client = clientRef.current;
     if (!client) return;
 
-    client.subscribe(resultadosCalculosTopic);
-    client.on("message", (topic, message) => {
-      try {
-        const results: CalculationResults = JSON.parse(message.toString());
-        setCalculateRes(results);
-      } catch (e) {
-        console.error("Error al parsear resultados de cálculos:", e);
+    const handleCalculationMessage = (topic: string, message: Buffer) => {
+      if (topic === resultadosCalculosTopic) {
+        try {
+          const result: CalculationResults = JSON.parse(message.toString());
+          setCalculateRes(result);
+        } catch (e) {
+          console.error("Error parseando resultados de cálculos", e);
+        }
       }
-    });
+    };
+
+    client.subscribe(resultadosCalculosTopic);
+    client.on("message", handleCalculationMessage);
+
     return () => {
-      client.unsubscribe(resultadosCalculosTopic);
+      if (client.connected && !client.disconnecting) {
+        client.unsubscribe(resultadosCalculosTopic, (err) => {
+          if (err) {
+            console.warn("Error durante unsubscribe:", err);
+          }
+        });
+      }
+      client.off("message", handleCalculationMessage);
     };
   }, []);
 

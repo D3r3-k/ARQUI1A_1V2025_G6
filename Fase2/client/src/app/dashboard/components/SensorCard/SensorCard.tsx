@@ -52,7 +52,7 @@ export default function SensorCard({
     const topic = `${process.env.NEXT_PUBLIC_TOPICS_LINK}/estadistica`;
     const handleClick = () => {
         publish(topic, JSON.stringify({ sensor: id }));
-        toast.info(`Solicitando estadísticas para el sensor: ${name}`, {
+        toast.info(`Solicitando resultados del sensor: ${name}`, {
             position: "top-right",
         });
     }

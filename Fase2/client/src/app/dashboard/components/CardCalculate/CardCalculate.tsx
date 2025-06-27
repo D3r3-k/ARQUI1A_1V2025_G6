@@ -2,6 +2,7 @@
 
 import { useMqtt } from "@/hooks/useMqtt";
 import { Calculator, Sigma, BarChart2, ArrowDown, ArrowUp, TrendingUp, Divide, Repeat, ListChecks } from "lucide-react";
+import { useEffect } from "react";
 
 const options = [
   { title: "Media", icon: Sigma, color: "blue", desc: "Promedio aritmético de los valores", type: "estadistica" },
@@ -27,6 +28,9 @@ export default function CardCalculate({ id, title }: CardCalculateProps) {
   const { calculateRes } = useMqtt();
   // State's
   // Effect's
+  useEffect(() => {
+    console.log(calculateRes)
+  }, [calculateRes]);
   // Handler's
   // Render's  
   const Icon = option.icon;
