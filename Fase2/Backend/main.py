@@ -27,11 +27,11 @@ class SIEPA:
         }
 
         try:
-            print('conslta mongo')
-            respuesta =  consultar_lecturas()
-            for r in respuesta:
-                print(r)
-            print('*************************************************************')
+            # print('conslta mongo')
+            # respuesta =  consultar_lecturas()
+            # for r in respuesta:
+            #     print(r)
+            # print('*************************************************************')
             self.sensors = Sensors()
             self.display = Display()
             self.actuators = Actuators()
