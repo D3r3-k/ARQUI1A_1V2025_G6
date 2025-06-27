@@ -28,6 +28,7 @@ class MQTTClient:
             "alerts": f"GRUPO{group_6}/sensores/rasp03/alertas",
             "actuators_status": f"GRUPO{group_6}/sensores/rasp03/actuadores",
             "Envio_estadisticas": f"GRUPO{group_6}/sensores/rasp03/resultados_calculos",
+            #"Envio_status": f"GRUPO{group_6}/sensores/rasp03/status",
             # Topics de control:
             "control_comandos": f"GRUPO{group_6}/sensores/rasp03/comandos",
             "control_modo": f"GRUPO{group_6}/sensores/rasp03/modo",
@@ -244,14 +245,56 @@ class MQTTClient:
             logging.error(f"Error publicando datos de sensores: {e}")
 
 
+    def publish_status(self):
+        if not self.connected:
+            logging.error(" MQTT no conectado - abortando envío de resultados")
+            return
+  
+        actuators_status = {
+            'temperature': shared.alert_status['temperature'],
+            'humidity': shared.alert_status['humidity'],
+            'light': shared.alert_status['light'],
+            'air_quality': shared.alert_status['air_quality'],
+            'presence': shared.alert_status['presence']
+        }
+        payload_json = json.dumps(actuators_status)
+
+        try:
+            topic_name = self.topics["actuators_status"]
+            logging.info(f" Topic de destino: {topic_name}")
+            # Usar QoS 1 para garantizar entrega
+            message_info = self.client.publish(
+                topic_name, 
+                payload_json, 
+                qos=1,  # ← Cambiar a QoS 1 para garantizar entrega
+                retain=True
+            )
+            
+            # Verificar si el mensaje fue aceptado
+            if hasattr(message_info, 'rc'):
+                if message_info.rc == 0:
+                    logging.info(" Mensaje aceptado por el cliente MQTT")
+                else:
+                    logging.error(f" Error en publish: código {message_info.rc}")
+            
+            # Verificar mid (message ID)
+            if hasattr(message_info, 'mid'):
+                logging.info(f" Message ID: {message_info.mid}")
+            
+        except Exception as publish_error:
+            logging.error(f" Error específico en client.publish(): {publish_error}")
+            raise
+        
+        logging.info(" publish_analysis_results() completado exitosamente")       
+        
     def publish_analysis_results(self):
         """
         Publica TODAS las variables globales de análisis (estadísticas + predicciones)
         """
-        logging.info("🚀 INICIANDO publish_analysis_results()")
+        logging.info(" INICIANDO publish_analysis_results()")
         
         if not self.connected:
-            logging.error("❌ MQTT no conectado - abortando envío de resultados")
+            logging.error(" MQTT no conectado - abortando envío de resultados")
             return
         
         try:
