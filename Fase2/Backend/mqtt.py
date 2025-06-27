@@ -260,10 +260,10 @@ class MQTTClient:
             
             # ========== DEBUG: VERIFICAR TOPIC ==========
             topic_name = self.topics["Envio_estadisticas"]
-            logging.info(f"📍 Topic de destino: {topic_name}")
+            logging.info(f" Topic de destino: {topic_name}")
             
             # ========== DEBUG: LEER VARIABLES GLOBALES ==========
-            logging.info("🔍 Leyendo variables globales...")
+            logging.info(" Leyendo variables globales...")
             
             media = getattr(shared, 'ultima_media', 0.0)
             mediana = getattr(shared, 'ultima_mediana', 0.0)
@@ -275,10 +275,10 @@ class MQTTClient:
             movil = getattr(shared, 'ultima_media_movil', 0.0)
             suavizado = getattr(shared, 'ultimo_suavizado_exponencial', 0.0)
             
-            logging.info(f"   📊 Estadísticas: media={media}, mediana={mediana}, moda={moda}")
-            logging.info(f"   📊 Min/Max: min={minimo}, max={maximo}")
-            logging.info(f"   📊 Desviación/Varianza: desv={desviacion}, var={varianza}")
-            logging.info(f"   📈 Predicciones: movil={movil}, suavizado={suavizado}")
+            logging.info(f"    Estadísticas: media={media}, mediana={mediana}, moda={moda}")
+            logging.info(f"    Min/Max: min={minimo}, max={maximo}")
+            logging.info(f"    Desviación/Varianza: desv={desviacion}, var={varianza}")
+            logging.info(f"    Predicciones: movil={movil}, suavizado={suavizado}")
             
             # Crear payload con TODAS las variables globales
             analysis_payload = {
@@ -302,11 +302,11 @@ class MQTTClient:
             
             # ========== DEBUG: VERIFICAR PAYLOAD ==========
             payload_json = json.dumps(analysis_payload)
-            logging.info(f"📦 Payload creado (tamaño: {len(payload_json)} chars)")
-            logging.info(f"📦 Payload completo: {payload_json}")
+            logging.info(f" Payload creado (tamaño: {len(payload_json)} chars)")
+            logging.info(f" Payload completo: {payload_json}")
             
             # ========== INTENTAR PUBLICAR ==========
-            logging.info(f"📤 Intentando publicar a topic: {topic_name}")
+            logging.info(f" Intentando publicar a topic: {topic_name}")
             
             try:
                 # Usar QoS 1 para garantizar entrega
@@ -320,24 +320,24 @@ class MQTTClient:
                 # Verificar si el mensaje fue aceptado
                 if hasattr(message_info, 'rc'):
                     if message_info.rc == 0:
-                        logging.info("✅ Mensaje aceptado por el cliente MQTT")
+                        logging.info(" Mensaje aceptado por el cliente MQTT")
                     else:
-                        logging.error(f"❌ Error en publish: código {message_info.rc}")
+                        logging.error(f" Error en publish: código {message_info.rc}")
                 
                 # Verificar mid (message ID)
                 if hasattr(message_info, 'mid'):
-                    logging.info(f"📨 Message ID: {message_info.mid}")
+                    logging.info(f" Message ID: {message_info.mid}")
                 
             except Exception as publish_error:
-                logging.error(f"❌ Error específico en client.publish(): {publish_error}")
+                logging.error(f" Error específico en client.publish(): {publish_error}")
                 raise
             
-            logging.info("✅ publish_analysis_results() completado exitosamente")
+            logging.info(" publish_analysis_results() completado exitosamente")
             
         except Exception as e:
-            logging.error(f"❌ Error en publish_analysis_results(): {e}")
+            logging.error(f" Error en publish_analysis_results(): {e}")
             import traceback
-            logging.error(f"📍 Traceback completo: {traceback.format_exc()}")
+            logging.error(f" Traceback completo: {traceback.format_exc()}")
             raise  # Re-lanzar para que se vea en los logs principales
 
 
