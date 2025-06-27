@@ -98,24 +98,19 @@ class MQTTClient:
             elif topic == self.topics["control_estadistica"]:
                 sensor = payload.get("sensor")
                 if sensor:
-                    # Importar y usar analysis_manager aquí
+        
                     from analisis import AnalysisManager
                     analysis_manager = AnalysisManager()
                     
-                    # EJECUTAR AMBOS: estadísticas Y predicciones
                     stats_success = analysis_manager.process_statistics_request(sensor)
-                    pred_success = analysis_manager.process_prediction_request(sensor)
                     
-                    if stats_success and pred_success:
-                        logging.info(f"Cálculos completos (estadísticas + predicciones) para: {sensor}")
-                    elif stats_success:
-                        logging.info(f"Solo estadísticas completadas para: {sensor}")
-                    elif pred_success:
-                        logging.info(f"Solo predicciones completadas para: {sensor}")
+                    if stats_success:
+                        logging.info(f"Cálculos completos para: {sensor}")
                     else:
-                        logging.error(f"Error en ambos cálculos para: {sensor}")
+                        logging.error(f"Error en cálculos para: {sensor}")
                 else:
                     logging.warning("Comando de cálculo sin sensor especificado")
+
                     
             elif topic == self.topics["control_LCD"]:
                 selected = payload.get("selected")

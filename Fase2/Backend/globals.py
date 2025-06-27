@@ -39,7 +39,7 @@ class GlobalState:
         self.ultimo_sensor_predicciones = ""  # Qué sensor se calculó
         
         self.new_analysis_results_ready = False
-        
+
         self.actuadores= {
             'red_led': True,      # Temperature alert
             'yellow_led': True,   # Humidity alert  
@@ -79,7 +79,7 @@ class GlobalState:
             'temperature_min': 15.0,        # °C
             'humidity_max': 90.0,           # %
             'humidity_min': 30.0,           # %
-            'light_min': 1.6,               # % (too dark)
+            'light_min': 2,               # % (too dark)
             'light_max': 10,                # % (too lifht)
             'air_quality_max':120,          # Air quality index
             'air_quality_min': 105,         # Air quality index
