@@ -28,7 +28,7 @@ class MQTTClient:
             "alerts": f"GRUPO{group_6}/sensores/rasp03/alertas",
             "actuators_status": f"GRUPO{group_6}/sensores/rasp03/actuadores",
             "Envio_estadisticas": f"GRUPO{group_6}/sensores/rasp03/resultados_calculos",
-            #"Envio_status": f"GRUPO{group_6}/sensores/rasp03/status",
+            "Envio_status": f"GRUPO{group_6}/sensores/rasp03/status",
             # Topics de control:
             "control_comandos": f"GRUPO{group_6}/sensores/rasp03/comandos",
             "control_modo": f"GRUPO{group_6}/sensores/rasp03/modo",
@@ -260,7 +260,7 @@ class MQTTClient:
         payload_json = json.dumps(actuators_status)
 
         try:
-            topic_name = self.topics["actuators_status"]
+            topic_name = self.topics["Envio_status"]
             logging.info(f" Topic de destino: {topic_name}")
             # Usar QoS 1 para garantizar entrega
             message_info = self.client.publish(
