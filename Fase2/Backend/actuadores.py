@@ -1,6 +1,8 @@
 from gpiozero import LED, DigitalOutputDevice, PWMOutputDevice, Buzzer
 from globals import shared
 import threading
+import mongodb
+import time
 
 
 class Actuators:
@@ -225,10 +227,13 @@ class Actuators:
             print(f"  Alerta de temperatura: {shared.temperature}°C")
             shared.alert_status["temperature"] = True
             shared.local_error_message = "Temperatura Critica!"
+            #insertar alerta a mongo
+            mongodb.insertar_alerta("Temperatura", time.strftime("%Y-%m-%d %H:%M:%S"),shared.local_error_message)
             self.control_led_Red(shared.modo_control, shared.actuadores["red_led"])
             self.control_motor(shared.modo_control, shared.actuadores["motor_fan"])
         else:
             shared.alert_status["temperature"] = False
+            
             if not (shared.modo_control):
                 self.control_motor(shared.modo_control, shared.actuadores["motor_fan"])
                 self.control_led_Red(shared.modo_control, shared.actuadores["red_led"])
@@ -244,6 +249,8 @@ class Actuators:
             self.control_led_yellow(shared.modo_control,shared.actuadores["yellow_led"])
             shared.alert_status["humidity"] = True
             shared.local_error_message = "Humedad Critica!"
+                        #insertar alerta a mongo
+            mongodb.insertar_alerta("Humedad", time.strftime("%Y-%m-%d %H:%M:%S"),shared.local_error_message)
         else:
             shared.alert_status["humidity"] = False
             if not (shared.modo_control):  
@@ -260,6 +267,7 @@ class Actuators:
             self.control_iluminacion(shared.modo_control,shared.actuadores["Iluminacion"])
             shared.alert_status["light"] = True
             shared.local_error_message = "Iluminacion Baja!"
+            mongodb.insertar_alerta("Iluminacion", time.strftime("%Y-%m-%d %H:%M:%S"),shared.local_error_message)
         else:
             # Controla de manera manual
             shared.alert_status["light"] = False
@@ -279,6 +287,7 @@ class Actuators:
             self.control_buzzer(shared.modo_control,shared.actuadores["buzzer"])
             shared.alert_status["air_quality"] = True
             shared.local_error_message = "Mala Calidad de Aire!"
+            mongodb.insertar_alerta("Aire", time.strftime("%Y-%m-%d %H:%M:%S"),shared.local_error_message)
         else:
             shared.alert_status["air_quality"] = False
             if not (shared.modo_control):
@@ -296,6 +305,8 @@ class Actuators:
              shared.distance <= shared.thresholds["presence_distance_min"]):
                 print(f" Presencia detectada: {shared.distance}cm")
                 shared.alert_status["presence"] = True
+                shared.local_error_message = "Presencia!"
+                mongodb.insertar_alerta("Presencia", time.strftime("%Y-%m-%d %H:%M:%S"),shared.local_error_message)
         else:
              shared.alert_status["presence"] = False
 
