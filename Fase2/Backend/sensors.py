@@ -155,7 +155,7 @@ class Sensors:
         self.read_dht11()
         self.read_ultrasonic()
         self.read_light_sensor()
-        #self.read_pressure_sensor()
+        self.read_pressure_sensor()
         self.read_air_quality()
 
     def print_data(self):
