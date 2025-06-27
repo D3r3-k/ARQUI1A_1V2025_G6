@@ -230,14 +230,14 @@ class MQTTClient:
             )
 
 
-            # #  Verificar si hay nuevos resultados de análisis para enviar
-            # if getattr(shared, 'new_analysis_results_ready', False):
-            #     self.publish_analysis_results()
-            #     shared.new_analysis_results_ready = False  # Reset flag
-            #     logging.info("Resultados de análisis enviados automáticamente")
-            self.publish_analysis_results()
-            logging.info("Resultados de análisis enviados automáticamente")
-            
+            #  Verificar si hay nuevos resultados de análisis para enviar
+            if getattr(shared, 'new_analysis_results_ready', False):
+                self.publish_analysis_results()
+                shared.new_analysis_results_ready = False  # Reset flag
+                logging.info("Resultados de análisis enviados automáticamente")
+            # self.publish_analysis_results()
+            # logging.info("Resultados de análisis enviados automáticamente")
+
             self.last_publish_time = current_time
             logging.debug("Datos de sensores publicados a MQTT")
         except Exception as e:
