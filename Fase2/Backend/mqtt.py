@@ -248,46 +248,97 @@ class MQTTClient:
         """
         Publica TODAS las variables globales de análisis (estadísticas + predicciones)
         """
+        logging.info("🚀 INICIANDO publish_analysis_results()")
+        
         if not self.connected:
+            logging.error("❌ MQTT no conectado - abortando envío de resultados")
             return
         
         try:
             current_time = time.time()
             timestamp = int(current_time * 1000)
             
+            # ========== DEBUG: VERIFICAR TOPIC ==========
+            topic_name = self.topics["Envio_estadisticas"]
+            logging.info(f"📍 Topic de destino: {topic_name}")
+            
+            # ========== DEBUG: LEER VARIABLES GLOBALES ==========
+            logging.info("🔍 Leyendo variables globales...")
+            
+            media = getattr(shared, 'ultima_media', 0.0)
+            mediana = getattr(shared, 'ultima_mediana', 0.0)
+            moda = getattr(shared, 'ultima_moda', 0.0)
+            minimo = getattr(shared, 'ultimo_minimo', 0.0)
+            maximo = getattr(shared, 'ultimo_maximo', 0.0)
+            desviacion = getattr(shared, 'ultima_desviacion', 0.0)
+            varianza = getattr(shared, 'ultima_varianza', 0.0)
+            movil = getattr(shared, 'ultima_media_movil', 0.0)
+            suavizado = getattr(shared, 'ultimo_suavizado_exponencial', 0.0)
+            
+            logging.info(f"   📊 Estadísticas: media={media}, mediana={mediana}, moda={moda}")
+            logging.info(f"   📊 Min/Max: min={minimo}, max={maximo}")
+            logging.info(f"   📊 Desviación/Varianza: desv={desviacion}, var={varianza}")
+            logging.info(f"   📈 Predicciones: movil={movil}, suavizado={suavizado}")
+            
             # Crear payload con TODAS las variables globales
             analysis_payload = {
                 # Estadísticas
-                "media": getattr(shared, 'ultima_media', 0.0),
-                "mediana": getattr(shared, 'ultima_mediana', 0.0),
-                "moda": getattr(shared, 'ultima_moda', 0.0),
-                "minimo": getattr(shared, 'ultimo_minimo', 0.0),
-                "maximo": getattr(shared, 'ultimo_maximo', 0.0),
-                "desviacion": getattr(shared, 'ultima_desviacion', 0.0),
-                "varianza": getattr(shared, 'ultima_varianza', 0.0),
-                #"ultimo_sensor_estadisticas": getattr(shared, 'ultimo_sensor_estadisticas', ''),
+                "media": media,
+                "mediana": mediana,
+                "moda": moda,
+                "minimo": minimo,
+                "maximo": maximo,
+                "desviacion": desviacion,
+                "varianza": varianza,
                 
                 # Predicciones
-                "movil": getattr(shared, 'ultima_media_movil', 0.0),
-                "suavizado": getattr(shared, 'ultimo_suavizado_exponencial', 0.0),
-                #"ultimo_sensor_predicciones": getattr(shared, 'ultimo_sensor_predicciones', ''),
+                "movil": movil,
+                "suavizado": suavizado,
                 
                 # Metadata
                 "timestamp": timestamp,
                 "tipo": "resultados_completos"
             }
             
-            # Publicar al topic de resultados
-            self.client.publish(
-                self.topics["Envio_estadisticas"], 
-                json.dumps(analysis_payload), 
-                retain=True  # Mantener último resultado
-            )
+            # ========== DEBUG: VERIFICAR PAYLOAD ==========
+            payload_json = json.dumps(analysis_payload)
+            logging.info(f"📦 Payload creado (tamaño: {len(payload_json)} chars)")
+            logging.info(f"📦 Payload completo: {payload_json}")
             
-            logging.info("Resultados de análisis publicados a MQTT")
+            # ========== INTENTAR PUBLICAR ==========
+            logging.info(f"📤 Intentando publicar a topic: {topic_name}")
+            
+            try:
+                # Usar QoS 1 para garantizar entrega
+                message_info = self.client.publish(
+                    topic_name, 
+                    payload_json, 
+                    qos=1,  # ← Cambiar a QoS 1 para garantizar entrega
+                    retain=True
+                )
+                
+                # Verificar si el mensaje fue aceptado
+                if hasattr(message_info, 'rc'):
+                    if message_info.rc == 0:
+                        logging.info("✅ Mensaje aceptado por el cliente MQTT")
+                    else:
+                        logging.error(f"❌ Error en publish: código {message_info.rc}")
+                
+                # Verificar mid (message ID)
+                if hasattr(message_info, 'mid'):
+                    logging.info(f"📨 Message ID: {message_info.mid}")
+                
+            except Exception as publish_error:
+                logging.error(f"❌ Error específico en client.publish(): {publish_error}")
+                raise
+            
+            logging.info("✅ publish_analysis_results() completado exitosamente")
             
         except Exception as e:
-            logging.error(f"Error publicando resultados de análisis: {e}")
+            logging.error(f"❌ Error en publish_analysis_results(): {e}")
+            import traceback
+            logging.error(f"📍 Traceback completo: {traceback.format_exc()}")
+            raise  # Re-lanzar para que se vea en los logs principales
 
 
     def publish_alert(self, alert_type, message, value):
