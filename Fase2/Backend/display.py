@@ -1,6 +1,7 @@
 from RPLCD.i2c import CharLCD
 import time
 from globals import shared
+import mongodb
 
 class Display:
 
@@ -93,6 +94,7 @@ class Display:
 
     # ============ FUNCIÓN PRINCIPAL DE MENSAJES ============
     def display_message(self, message):
+        mongodb.insertar_alerta(shared.ultimo_sensor_alertas, time.strftime("%Y-%m-%d %H:%M:%S"), message)
         self.lcd.clear()
         self.lcd.write_string(message[:16])  # primera línea
         if len(message) > 16:

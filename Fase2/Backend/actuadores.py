@@ -26,7 +26,6 @@ class Actuators:
         # Diccionario para timers automáticos
         self.auto_off_timers = {}
 
-        
 
         self.turn_off_all()
         print("Actuadores inicializados Correctamente")
