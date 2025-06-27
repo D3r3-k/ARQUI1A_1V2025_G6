@@ -20,13 +20,13 @@
 
 _start:
     ldr x1, =welcome_message   // Load address of welcome message
-    mov x2, 33                 // Length of welcome message
+    mov x2, 91                 // Length of welcome message
     bl print                    // Call print function    
 
 // Main loop of the TUI application
 while:
     ldr x1, =menu_options      // Load address of menu options
-    mov x2, 64                 // Length of menu options
+    mov x2, 272                 // Length of menu options
     bl print                    // Call print function
 
     ldr x1, =choose_option     // Load address of choose option message
@@ -330,11 +330,21 @@ set_limits:
 // Strings for the TUI application
 .section .data
 welcome_message:
-    .ascii "\nWelcome to the TUI application!\n"
+    .ascii "\n|===========================|\n"
+	.ascii "|       SIEPA TUI APP       |\n"
+	.ascii "|===========================|\n"
 menu_options:
-    .ascii "\n1. Statistics\n2. Predictions\n3. Set File\n4. Set Limits\n5. Exit\n"
+    .ascii "\n|===========================|\n"
+	.ascii "|        MENU PRINCIPAL     |\n"
+	.ascii "|===========================|\n"
+	.ascii "| 1. Cargar archivo         |\n"
+	.ascii "| 2. Cargar límites         |\n"
+	.ascii "| 3. Estadísticas           |\n"
+	.ascii "| 4. Predicciones           |\n"
+	.ascii "| 5. Salir                  |\n"
+	.ascii "|===========================|\n"
 choose_option:
-    .ascii "\nPlease choose an option: "
+    .ascii "\n[>] Escribe una opcion: "
 set_file_message:
     .ascii "\nSet the name of the file to load data from: "
 newline:
