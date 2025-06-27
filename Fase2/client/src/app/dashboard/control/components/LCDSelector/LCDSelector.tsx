@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { SunSnow, ChartSpline, AlertTriangle } from "lucide-react";
+import { SunSnow, ChartSpline, BarChart2 } from "lucide-react";
 import { useMqtt } from "@/hooks/useMqtt";
 
 const options = [
@@ -12,16 +12,16 @@ const options = [
         icon: <SunSnow size={16} />,
     },
     {
-        id: "predicciones",
-        title: "Predicciones",
-        description: "Mostrar datos de predicciones",
+        id: "estadisticas",
+        title: "Estadísticas",
+        description: "Mostrar datos estadísticos",
         icon: <ChartSpline size={16} />,
     },
     {
-        id: "alertas",
-        title: "Alertas",
-        description: "Mostrar datos de alertas",
-        icon: <AlertTriangle size={16} />,
+        id: "predicciones",
+        title: "Predicciones",
+        description: "Mostrar datos de predicciones",
+        icon: <BarChart2 size={16} />,
     },
 ];
 

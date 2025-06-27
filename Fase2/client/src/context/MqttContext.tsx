@@ -4,6 +4,7 @@ import {
   TopicAmbient,
   HistoryItem,
   TopicHistoryStack,
+  CalculationResults,
 } from "@/types/TypesMqtt";
 import mqtt, { MqttClient } from "mqtt";
 import { createContext, ReactNode, useEffect, useRef, useState } from "react";
@@ -25,6 +26,7 @@ interface MqttContextType {
   publish: (topic: string, message: string) => void;
   activeAlerts: AlertItem[];
   alertCount: number;
+  calculateRes: CalculationResults;
 }
 
 export const MqttContext = createContext<MqttContextType | undefined>(undefined);
@@ -45,6 +47,7 @@ const INFO_TOPICS = [
 ];
 
 const alertTopic = `${process.env.NEXT_PUBLIC_TOPICS_LINK}/alertas`;
+const resultadosCalculosTopic = `${process.env.NEXT_PUBLIC_TOPICS_LINK}/resultados_calculos`;
 
 type AlertKey = "temperature" | "humidity" | "light" | "air_quality" | "presence";
 const messageAlerts: Record<AlertKey, string> = {
@@ -82,6 +85,19 @@ export const MqttProvider = ({ children }: { children: ReactNode }) => {
   const [ambientTopics, setAmbientTopics] = useState<Record<TopicName, TopicAmbient>>({});
   const [isConnected, setIsConnected] = useState(false);
   const [activeAlerts, setActiveAlerts] = useState<AlertItem[]>([]);
+  const [calculateRes, setCalculateRes] = useState<CalculationResults>({
+    moda: -1,
+    media: -1,
+    mediana: -1,
+    minimo: -1,
+    maximo: -1,
+    desviacion: -1,
+    varianza: -1,
+    movil: -1,
+    suavizado: -1,
+  });
+
+
 
   const formatTimestamp = (ts: number | string): string => {
     const date = new Date(Number(ts));
@@ -232,6 +248,26 @@ export const MqttProvider = ({ children }: { children: ReactNode }) => {
     };
   }, []);
 
+  // Suscripción a resultados de cálculos
+  useEffect(() => {
+    const client = clientRef.current;
+    if (!client) return;
+
+    client.subscribe(resultadosCalculosTopic);
+    client.on("message", (topic, message) => {
+      try {
+        const results: CalculationResults = JSON.parse(message.toString());
+        setCalculateRes(results);
+      } catch (e) {
+        console.error("Error al parsear resultados de cálculos:", e);
+      }
+    });
+    return () => {
+      client.unsubscribe(resultadosCalculosTopic);
+    };
+  }, []);
+
+
   const publish = (topic: string, message: string) => {
     if (clientRef.current && isConnected) {
       clientRef.current.publish(topic, message, (err) => {
@@ -250,6 +286,7 @@ export const MqttProvider = ({ children }: { children: ReactNode }) => {
         publish,
         activeAlerts,
         alertCount: activeAlerts.length,
+        calculateRes
       }}
     >
       {children}

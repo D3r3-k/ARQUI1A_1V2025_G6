@@ -6,6 +6,7 @@ import { useMqtt } from "@/hooks/useMqtt";
 import {
   AlertOctagon,
   BarChart2,
+  Calculator,
   ChevronRight,
   LayoutDashboard,
   LogOut,
@@ -130,6 +131,14 @@ export default function Sidebar() {
             >
               <LucideTable size={16} />
               <span>Reportes</span>
+            </Link>
+            <Link
+              href="/dashboard/calculos"
+              className={`flex items-center gap-3 rounded-md px-3 py-2 transition-all bg-primary text-sm
+                ${getNavClass("/dashboard/calculos")}`}
+            >
+              <Calculator size={16} />
+              <span>Calculos</span>
             </Link>
           </nav>
         </div>
