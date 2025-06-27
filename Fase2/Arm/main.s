@@ -11,6 +11,7 @@
 .global Sub_Menu
 .global data_array_limits
 .global data_array_limits_size
+.global menuPredicciones
 
 .extern atoi
 .extern load_data
@@ -40,7 +41,7 @@ while:
     beq llamar_Estadistica
 
     cmp x0, 2                   // Compare input with 2 (predictions option)
-    //beq predictions             // If input is 2, go to predictions
+    beq llamarPrediccion             // If input is 2, go to predictions
 
     cmp x0, 3                   // Compare input with 3 (set file option)
     beq set_file
@@ -52,6 +53,10 @@ while:
     beq end
     b while
 
+
+//menu predicciones
+llamarPrediccion:
+    b menuPredicciones
 
 //llamar a funciones externas
 llamar_Estadistica:
@@ -84,6 +89,34 @@ end:
     mov x0, 0                   // Exit code
     mov x8, 93                  // syscall number for exit
     svc 0
+
+
+//////////////////////////Predicciones Menu ////////////////////////
+menuPredicciones:
+    mov x27,x30
+    ldr x1, =predictionOptions
+    mov x2, 38
+    bl print
+
+    ldr x1,=choose_option
+    mov x2, 26
+    bl print
+    ldr x1, = buffer
+    mov x2, 8
+    bl read
+    ldr x0, =buffer
+    bl atoi
+
+    cmp x0, 1
+    beq llamarSuavizado
+    
+    cmp x0, 2
+    beq llamar_Mediana
+    
+    cmp x0,3
+    beq while
+
+    b menuPredicciones
 
 ////////////////////////////Sub Menu///////////////////////////////
 
@@ -154,6 +187,13 @@ llamar_Moda:
 llamarVarianza:
     bl varianza
     b Sub_Menu
+
+
+//llamada de predicciones
+llamarSuavizado:
+
+    bl suavizadoMain
+    b menuPredicciones
 
 
 llamarFunciones:
@@ -307,6 +347,10 @@ set_limit_error_msg:
     .ascii "Límites inválidos. Intente de nuevo.\n"
 Sub_menu_options:
     .ascii "\n1. Valor Min\n2. Valor Max\n3. Media\n4. Mediana\n5. Moda\n6. Varianza\n7. Suavizado Exp\n8. Todas\n9. Regresar"
+predictionOptions:
+    .ascii "\n1. Suavizado \n2. Media M\n3. Regresar "
+
+
 
 // Buffer for user input
 .section .bss
