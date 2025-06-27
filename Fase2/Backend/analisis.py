@@ -286,7 +286,7 @@ class AnalysisManager:
             
             logging.info(f"TODAS las variables globales actualizadas para {sensor_name}")
             
-            shared.new_analysis_results_ready = True
+            #shared.new_analysis_results_ready = True
             
         except Exception as e:
             logging.error(f"Error actualizando variables globales: {e}")
