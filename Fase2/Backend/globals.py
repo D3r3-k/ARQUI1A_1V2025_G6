@@ -9,6 +9,8 @@ class GlobalState:
             cls._instance._init()
         return cls._instance
     
+    
+    
     def _init(self):    
         current_time = time.time()       # Initialize shared variables
         # Sensor readings
@@ -20,7 +22,24 @@ class GlobalState:
         self.air_quality = 0
         
         self.modo_control = True
- 
+
+
+        self.lcd_mode = "sensores"
+        self.ultima_media = 0.0
+        self.ultima_mediana = 0.0
+        self.ultima_moda = 0.0
+        self.ultimo_minimo = 0.0
+        self.ultimo_maximo = 0.0
+        self.ultima_desviacion = 0.0
+        self.ultima_varianza = 0.0
+        self.ultimo_sensor_estadisticas = ""  # Qué sensor se calculó
+        # Resultados de predicciones (últimos calculados)
+        self.ultima_media_movil = 0.0
+        self.ultimo_suavizado_exponencial = 0.0
+        self.ultimo_sensor_predicciones = ""  # Qué sensor se calculó
+        
+        self.new_analysis_results_ready = False
+        
         self.actuadores= {
             'red_led': True,      # Temperature alert
             'yellow_led': True,   # Humidity alert  

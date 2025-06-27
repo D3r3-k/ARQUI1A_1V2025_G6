@@ -27,11 +27,12 @@ class MQTTClient:
             "distance": f"GRUPO{group_6}/sensores/rasp03/distancia",
             "alerts": f"GRUPO{group_6}/sensores/rasp03/alertas",
             "actuators_status": f"GRUPO{group_6}/sensores/rasp03/actuadores",
+            "Envio_estadisticas": f"GRUPO{group_6}/sensores/rasp03/resultados_calculos",
             # Topics de control:
             "control_comandos": f"GRUPO{group_6}/sensores/rasp03/comandos",
             "control_modo": f"GRUPO{group_6}/sensores/rasp03/modo",
             "control_estadistica": f"GRUPO{group_6}/sensores/rasp03/estadistica",
-            "control_predicciones": f"GRUPO{group_6}/sensores/rasp03/predicciones",
+            "control_LCD": f"GRUPO{group_6}/sensores/rasp03/pantalla",
             
         }
 
@@ -57,8 +58,9 @@ class MQTTClient:
 
             client.subscribe(self.topics["control_comandos"])
             client.subscribe(self.topics["control_modo"])
-            client.subscribe(self.topics["control_estadistica"])  # ← Agregar
-            client.subscribe(self.topics["control_predicciones"])  # ← Agregar
+            client.subscribe(self.topics["control_estadistica"]) 
+            client.subscribe(self.topics["control_LCD"])
+            logging.info(f"Suscrito a: {self.topics['control_LCD']}")
             logging.info(f"Suscrito a: {self.topics['control_comandos']}")
             logging.info(f"Suscrito a: {self.topics['control_modo']}")
 
@@ -99,21 +101,39 @@ class MQTTClient:
                     # Importar y usar analysis_manager aquí
                     from analisis import AnalysisManager
                     analysis_manager = AnalysisManager()
-                    analysis_manager.process_statistics_request(sensor)
-                    logging.info(f"Solicitud de estadísticas procesada para: {sensor}")
+                    
+                    # EJECUTAR AMBOS: estadísticas Y predicciones
+                    stats_success = analysis_manager.process_statistics_request(sensor)
+                    pred_success = analysis_manager.process_prediction_request(sensor)
+                    
+                    if stats_success and pred_success:
+                        logging.info(f"Cálculos completos (estadísticas + predicciones) para: {sensor}")
+                    elif stats_success:
+                        logging.info(f"Solo estadísticas completadas para: {sensor}")
+                    elif pred_success:
+                        logging.info(f"Solo predicciones completadas para: {sensor}")
+                    else:
+                        logging.error(f"Error en ambos cálculos para: {sensor}")
                 else:
-                    logging.warning("Comando de estadística sin sensor especificado")
-
-            elif topic == self.topics["control_predicciones"]:
-                sensor = payload.get("sensor")
-                if sensor:
-                    # Importar y usar analysis_manager aquí
-                    from analisis import AnalysisManager
-                    analysis_manager = AnalysisManager()
-                    analysis_manager.process_prediction_request(sensor)
-                    logging.info(f"Solicitud de predicciones procesada para: {sensor}")
+                    logging.warning("Comando de cálculo sin sensor especificado")
+                    
+            elif topic == self.topics["control_LCD"]:
+                selected = payload.get("selected")
+                if selected:
+                    # Cambiar modo de display según selección
+                    if selected == "sensores":
+                        shared.lcd_mode = "sensores"
+                        logging.info("LCD cambiado a modo: Sensores en tiempo real")
+                    elif selected == "predicciones":
+                        shared.lcd_mode = "predicciones"
+                        logging.info("LCD cambiado a modo: Predicciones")
+                    elif selected == "estadisticas":
+                        shared.lcd_mode = "estadisticas"
+                        logging.info("LCD cambiado a modo: Estadísticas")
+                    else:
+                        logging.warning(f"Modo LCD no reconocido: {selected}")
                 else:
-                    logging.warning("Comando de predicción sin sensor especificado")
+                    logging.warning("Comando LCD sin selección especificada")
 
             else:
                 logging.warning(
@@ -213,10 +233,65 @@ class MQTTClient:
             self.client.publish(
                 self.topics["actuators_status"], actuators_payload, retain=True
             )
+
+
+            #  Verificar si hay nuevos resultados de análisis para enviar
+            if getattr(shared, 'new_analysis_results_ready', False):
+                self.publish_analysis_results()
+                shared.new_analysis_results_ready = False  # Reset flag
+                logging.info("Resultados de análisis enviados automáticamente")
+
             self.last_publish_time = current_time
             logging.debug("Datos de sensores publicados a MQTT")
         except Exception as e:
             logging.error(f"Error publicando datos de sensores: {e}")
+
+
+    def publish_analysis_results(self):
+        """
+        Publica TODAS las variables globales de análisis (estadísticas + predicciones)
+        """
+        if not self.connected:
+            return
+        
+        try:
+            current_time = time.time()
+            timestamp = int(current_time * 1000)
+            
+            # Crear payload con TODAS las variables globales
+            analysis_payload = {
+                # Estadísticas
+                "media": getattr(shared, 'ultima_media', 0.0),
+                "mediana": getattr(shared, 'ultima_mediana', 0.0),
+                "moda": getattr(shared, 'ultima_moda', 0.0),
+                "minimo": getattr(shared, 'ultimo_minimo', 0.0),
+                "maximo": getattr(shared, 'ultimo_maximo', 0.0),
+                "desviacion": getattr(shared, 'ultima_desviacion', 0.0),
+                "varianza": getattr(shared, 'ultima_varianza', 0.0),
+                #"ultimo_sensor_estadisticas": getattr(shared, 'ultimo_sensor_estadisticas', ''),
+                
+                # Predicciones
+                "movil": getattr(shared, 'ultima_media_movil', 0.0),
+                "suavizado": getattr(shared, 'ultimo_suavizado_exponencial', 0.0),
+                #"ultimo_sensor_predicciones": getattr(shared, 'ultimo_sensor_predicciones', ''),
+                
+                # Metadata
+                "timestamp": timestamp,
+                "tipo": "resultados_completos"
+            }
+            
+            # Publicar al topic de resultados
+            self.client.publish(
+                self.topics["Envio_estadisticas"], 
+                json.dumps(analysis_payload), 
+                retain=True  # Mantener último resultado
+            )
+            
+            logging.info("Resultados de análisis publicados a MQTT")
+            
+        except Exception as e:
+            logging.error(f"Error publicando resultados de análisis: {e}")
+
 
     def publish_alert(self, alert_type, message, value):
         if not self.connected:

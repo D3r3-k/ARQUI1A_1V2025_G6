@@ -6,6 +6,7 @@ import json
 from datetime import datetime
 from globals import shared
 import mongodb
+import mqtt
 
 class AnalysisManager:
     
@@ -38,7 +39,7 @@ class AnalysisManager:
 
     def process_statistics_request(self, sensor_name):
         """
-        Procesa una solicitud de cálculo estadístico para un sensor específico
+        Procesa TODOS los cálculos (estadísticas + predicciones) para un sensor específico
         """
         try:
             # Normalizar nombre del sensor
@@ -47,7 +48,7 @@ class AnalysisManager:
                 logging.error(f"Sensor no reconocido: {sensor_name}")
                 return False
 
-            logging.info(f"Iniciando cálculo estadístico para sensor: {normalized_sensor}")
+            logging.info(f"Iniciando cálculos completos (estadísticas + predicciones) para sensor: {normalized_sensor}")
             
             # 1. Consultar datos de MongoDB
             data = self._get_sensor_data(normalized_sensor, 30)
@@ -56,36 +57,41 @@ class AnalysisManager:
                 return False
 
             # 2. Crear archivo temporal con datos
-            input_file = self._create_data_file(data, f"stats_input_{normalized_sensor}")
+            input_file = self._create_data_file(data, f"complete_input_{normalized_sensor}")
             if not input_file:
                 return False
 
-            # 3. TESTING: Solo mostrar que se creó el archivo, no ejecutar ARM64
+            # 3. TESTING: Solo mostrar que se creó el archivo¿
             logging.info(f"✓ Archivo de entrada creado exitosamente: {input_file}")
             logging.info(f"✓ Datos obtenidos de MongoDB: {len(data)} valores")
             logging.info(f"✓ Primeros 5 valores: {data[:5] if len(data) >= 5 else data}")
             
             # COMENTADO PARA TESTING - Descomentar cuando tengas ARM64
-            # output_file = f"{self.temp_dir}/stats_output_{normalized_sensor}.txt"
-            # success = self._execute_arm64_stats(input_file, output_file)
-            
-            # SIMULACIÓN DE ÉXITO PARA TESTING
-            shared.local_error_message = f"Test Stats {normalized_sensor} - File OK"
-            logging.info(f"TESTING: Estadísticas simuladas para {normalized_sensor}")
-            return True
-            
-            # COMENTADO PARA TESTING:
+            # output_file = f"{self.temp_dir}/complete_output_{normalized_sensor}.txt"
+            # success = self._execute_arm64_complete(input_file, output_file)
+            # 
             # if success:
-            #     results = self._parse_statistics_results(output_file, normalized_sensor)
+            #     # 4. Procesar TODOS los resultados de una vez
+            #     results = self._parse_all_results(output_file, normalized_sensor)
+            #     
             #     if results:
-            #         self._save_statistics_to_mongo(results, normalized_sensor)
-            #         self._update_shared_statistics(results, normalized_sensor)
-            #         logging.info(f"Estadísticas calculadas exitosamente para {normalized_sensor}")
+            #         # 5. Guardar en MongoDB (ambos tipos)
+            #         self._save_to_mongo(results, normalized_sensor)
+            #         # 6. Actualizar TODAS las variables globales
+            #         self._update_all_shared_variables(results, normalized_sensor)
+            #         
+            #         logging.info(f"Cálculos completos exitosos para {normalized_sensor}")
             #         return True
+            # 
             # return False
             
+            # SIMULACIÓN DE ÉXITO PARA TESTING
+            shared.local_error_message = f"Test Complete {normalized_sensor} - File OK"
+            logging.info(f"TESTING: Cálculos completos simulados para {normalized_sensor}")
+            return True
+            
         except Exception as e:
-            logging.error(f"Error procesando estadísticas para {sensor_name}: {e}")
+            logging.error(f"Error procesando cálculos completos para {sensor_name}: {e}")
             return False
         finally:
             # COMENTADO PARA TESTING - No borrar archivos para poder revisarlos
@@ -93,62 +99,6 @@ class AnalysisManager:
             logging.info(f"TESTING: Archivo temporal conservado en: {input_file}")
             pass
 
-    def process_prediction_request(self, sensor_name):
-        """
-        Procesa una solicitud de cálculo de predicciones para un sensor específico
-        """
-        try:
-            # Normalizar nombre del sensor
-            normalized_sensor = self.sensor_mapping.get(sensor_name.lower())
-            if not normalized_sensor:
-                logging.error(f"Sensor no reconocido: {sensor_name}")
-                return False
-
-            logging.info(f"Iniciando cálculo de predicciones para sensor: {normalized_sensor}")
-            
-            # 1. Consultar datos de MongoDB
-            data = self._get_sensor_data(normalized_sensor, 30)
-            if not data:
-                logging.warning(f"No se encontraron datos para el sensor: {normalized_sensor}")
-                return False
-
-            # 2. Crear archivo temporal con datos
-            input_file = self._create_data_file(data, f"pred_input_{normalized_sensor}")
-            if not input_file:
-                return False
-
-            # 3. TESTING: Solo mostrar que se creó el archivo, no ejecutar ARM64
-            logging.info(f"✓ Archivo de entrada creado exitosamente: {input_file}")
-            logging.info(f"✓ Datos obtenidos de MongoDB: {len(data)} valores")
-            logging.info(f"✓ Primeros 5 valores: {data[:5] if len(data) >= 5 else data}")
-            
-            # COMENTADO PARA TESTING - Descomentar cuando tengas ARM64
-            # output_file = f"{self.temp_dir}/pred_output_{normalized_sensor}.txt"
-            # success = self._execute_arm64_predictions(input_file, output_file)
-            
-            # SIMULACIÓN DE ÉXITO PARA TESTING
-            shared.local_error_message = f"Test Pred {normalized_sensor} - File OK"
-            logging.info(f"TESTING: Predicciones simuladas para {normalized_sensor}")
-            return True
-            
-            # COMENTADO PARA TESTING:
-            # if success:
-            #     results = self._parse_prediction_results(output_file, normalized_sensor)
-            #     if results:
-            #         self._save_predictions_to_mongo(results, normalized_sensor)
-            #         self._update_shared_predictions(results, normalized_sensor)
-            #         logging.info(f"Predicciones calculadas exitosamente para {normalized_sensor}")
-            #         return True
-            # return False
-            
-        except Exception as e:
-            logging.error(f"Error procesando predicciones para {sensor_name}: {e}")
-            return False
-        finally:
-            # COMENTADO PARA TESTING - No borrar archivos para poder revisarlos
-            # self._cleanup_temp_files([input_file, output_file])
-            logging.info(f"TESTING: Archivo temporal conservado en: {input_file}")
-            pass
 
     def _get_sensor_data(self, sensor_name, count=30):
         """
@@ -212,69 +162,44 @@ class AnalysisManager:
             logging.error(f"Error creando archivo de datos: {e}")
             return None
 
-    def _execute_arm64_stats(self, input_file, output_file):
+    def _execute_arm64_complete(self, input_file, output_file):
         """
-        Ejecuta el código ARM64 para cálculos estadísticos
+        Ejecuta el código ARM64 para TODOS los cálculos (estadísticas + predicciones)
         """
         try:
-            # Comando para ejecutar ARM64 (ajustar según tu implementación)
-            cmd = [self.arm64_stats_executable, input_file, output_file]
+            # Comando: 3 (Set File) -> archivo -> 1 (Statistics) -> 8 (Todas) -> 2 (Predictions) -> 6 (Media M) -> 7 (Suavizado) -> 5 (Exit)
+            commands = f"3\n{input_file}\n1\n8\n2\n6\n7\n5\n"
             
-            # Ejecutar proceso
-            result = subprocess.run(
-                cmd, 
-                capture_output=True, 
-                text=True, 
-                timeout=30  # 30 segundos timeout
+            process = subprocess.run(
+                [self.arm64_stats_executable],
+                input=commands,
+                capture_output=True,
+                text=True,
+                timeout=60  # Más tiempo porque hace más cálculos
             )
             
-            if result.returncode == 0:
-                logging.debug("Ejecutable ARM64 de estadísticas completado exitosamente")
+            if process.returncode == 0:
+                # Guardar la salida completa del stdout
+                with open(output_file, 'w') as f:
+                    f.write(process.stdout)
+                
+                logging.info("ARM64 cálculos completos exitosamente")
                 return True
             else:
-                logging.error(f"Error en ejecutable ARM64 de estadísticas: {result.stderr}")
+                logging.error(f"Error en ARM64 completo: {process.stderr}")
                 return False
                 
         except subprocess.TimeoutExpired:
-            logging.error("Timeout ejecutando código ARM64 de estadísticas")
+            logging.error("Timeout ejecutando código ARM64 completo")
             return False
         except Exception as e:
-            logging.error(f"Error ejecutando ARM64 de estadísticas: {e}")
+            logging.error(f"Error ejecutando ARM64 completo: {e}")
             return False
 
-    def _execute_arm64_predictions(self, input_file, output_file):
-        """
-        Ejecuta el código ARM64 para predicciones
-        """
-        try:
-            # Comando para ejecutar ARM64 (ajustar según tu implementación)
-            cmd = [self.arm64_pred_executable, input_file, output_file]
-            
-            # Ejecutar proceso
-            result = subprocess.run(
-                cmd, 
-                capture_output=True, 
-                text=True, 
-                timeout=30  # 30 segundos timeout
-            )
-            
-            if result.returncode == 0:
-                logging.debug("Ejecutable ARM64 de predicciones completado exitosamente")
-                return True
-            else:
-                logging.error(f"Error en ejecutable ARM64 de predicciones: {result.stderr}")
-                return False
-                
-        except subprocess.TimeoutExpired:
-            logging.error("Timeout ejecutando código ARM64 de predicciones")
-            return False
-        except Exception as e:
-            logging.error(f"Error ejecutando ARM64 de predicciones: {e}")
-            return False
 
-    def _parse_statistics_results(self, output_file, sensor_name):
+    def _parse_all_results(self, output_file, sensor_name):
         """
-        Parsea los resultados estadísticos del archivo de salida ARM64
+        Parsea TODOS los resultados del archivo ARM64 y extrae todo directamente
         """
         try:
             if not os.path.exists(output_file):
@@ -285,16 +210,6 @@ class AnalysisManager:
             
             with open(output_file, 'r') as f:
                 content = f.read().strip()
-                
-            # Parsear resultados (ajustar según formato de tu ARM64)
-            # Ejemplo de formato esperado:
-            # Media: 23.45
-            # Mediana: 23.00
-            # Moda: 22.00
-            # Minimo: 18.50
-            # Maximo: 28.30
-            # Desviacion: 2.15
-            # Varianza: 4.62
             
             lines = content.split('\n')
             for line in lines:
@@ -305,141 +220,77 @@ class AnalysisManager:
                         value = float(value.strip())
                         results[key] = value
                     except ValueError:
-                        results[key] = value.strip()
+                        continue
             
-            logging.debug(f"Resultados estadísticos parseados: {results}")
+            logging.debug(f"Todos los resultados parseados: {results}")
             return results
             
         except Exception as e:
-            logging.error(f"Error parseando resultados estadísticos: {e}")
+            logging.error(f"Error parseando todos los resultados: {e}")
             return None
 
-    def _parse_prediction_results(self, output_file, sensor_name):
+    def _save_to_mongo(self, results, sensor_name):
         """
-        Parsea los resultados de predicción del archivo de salida ARM64
-        """
-        try:
-            if not os.path.exists(output_file):
-                logging.error(f"Archivo de resultados no encontrado: {output_file}")
-                return None
-
-            results = {}
-            
-            with open(output_file, 'r') as f:
-                content = f.read().strip()
-                
-            # Parsear resultados (ajustar según formato de tu ARM64)
-            # Ejemplo de formato esperado:
-            # Media_Movil: 23.45
-            # Suavizado_Exponencial: 23.67
-            
-            lines = content.split('\n')
-            for line in lines:
-                if ':' in line:
-                    key, value = line.split(':', 1)
-                    key = key.strip().lower()
-                    try:
-                        value = float(value.strip())
-                        results[key] = value
-                    except ValueError:
-                        results[key] = value.strip()
-            
-            logging.debug(f"Resultados de predicción parseados: {results}")
-            return results
-            
-        except Exception as e:
-            logging.error(f"Error parseando resultados de predicción: {e}")
-            return None
-
-    def _save_statistics_to_mongo(self, results, sensor_name):
-        """
-        Guarda los resultados estadísticos en MongoDB
+        Guarda AMBOS tipos de resultados en MongoDB
         """
         try:
             timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             
-            # Usar la función existente de mongodb.py
-            mongodb.insertar_estadisticas(
-                sensor_de=sensor_name,
-                hora_fecha=timestamp,
-                media=results.get('media', 0),
-                mediana=results.get('mediana', 0),
-                moda=results.get('moda', 0),
-                MinMax=f"{results.get('minimo', 0)} / {results.get('maximo', 0)}",
-                desviacion=results.get('desviacion', 0),
-                varianza=results.get('varianza', 0)
-            )
+            # Guardar estadísticas si existen
+            if any(key in results for key in ['media', 'mediana', 'moda', 'minimo', 'maximo', 'desviacion', 'varianza']):
+                mongodb.insertar_estadisticas(
+                    sensor_de=sensor_name,
+                    hora_fecha=timestamp,
+                    media=results.get('media', 0),
+                    mediana=results.get('mediana', 0),
+                    moda=results.get('moda', 0),
+                    MinMax=f"{results.get('minimo', 0)} / {results.get('maximo', 0)}",
+                    desviacion=results.get('desviacion', 0),
+                    varianza=results.get('varianza', 0)
+                )
+                logging.info(f"Estadísticas guardadas en MongoDB para {sensor_name}")
             
-            logging.info(f"Estadísticas guardadas en MongoDB para {sensor_name}")
+            # Guardar predicciones si existen
+            if any(key in results for key in ['media_movil', 'suavizado_exponencial']):
+                mongodb.insertar_prediccion(
+                    sensor_de=sensor_name,
+                    hora_fecha=timestamp,
+                    mediaMovil=results.get('media_movil', 0),
+                    suavizado=results.get('suavizado_exponencial', 0)
+                )
+                logging.info(f"Predicciones guardadas en MongoDB para {sensor_name}")
             
         except Exception as e:
-            logging.error(f"Error guardando estadísticas en MongoDB: {e}")
+            logging.error(f"Error guardando resultados en MongoDB: {e}")
 
-    def _save_predictions_to_mongo(self, results, sensor_name):
+    def _update_all_shared_variables(self, results, sensor_name):
         """
-        Guarda los resultados de predicción en MongoDB
+        Actualiza TODAS las variables globales de una vez
         """
         try:
-            timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            # Actualizar estadísticas
+            shared.ultima_media = results.get('media', 0.0)
+            shared.ultima_mediana = results.get('mediana', 0.0)
+            shared.ultima_moda = results.get('moda', 0.0)
+            shared.ultimo_minimo = results.get('minimo', 0.0)
+            shared.ultimo_maximo = results.get('maximo', 0.0)
+            shared.ultima_desviacion = results.get('desviacion', 0.0)
+            shared.ultima_varianza = results.get('varianza', 0.0)
+            shared.ultimo_sensor_estadisticas = sensor_name
             
-            # Usar la función existente de mongodb.py
-            mongodb.insertar_prediccion(
-                sensor_de=sensor_name,
-                hora_fecha=timestamp,
-                mediaMovil=results.get('media_movil', 0),
-                suavizado=results.get('suavizado_exponencial', 0)
-            )
-            
-            logging.info(f"Predicciones guardadas en MongoDB para {sensor_name}")
-            
-        except Exception as e:
-            logging.error(f"Error guardando predicciones en MongoDB: {e}")
+            # Actualizar predicciones
+            shared.ultima_media_movil = results.get('media_movil', 0.0)
+            shared.ultimo_suavizado_exponencial = results.get('suavizado_exponencial', 0.0)
+            shared.ultimo_sensor_predicciones = sensor_name
 
-    def _update_shared_statistics(self, results, sensor_name):
-        """
-        Actualiza el estado global con los resultados estadísticos
-        """
-        try:
-            # Agregar resultados al estado global para mostrar en LCD/Dashboard
-            if not hasattr(shared, 'latest_statistics'):
-                shared.latest_statistics = {}
             
-            shared.latest_statistics[sensor_name] = {
-                'timestamp': datetime.now(),
-                'results': results
-            }
+            logging.info(f"TODAS las variables globales actualizadas para {sensor_name}")
             
-            # Flag para indicar que hay nuevos resultados estadísticos
-            shared.new_statistics_available = True
-            
-            # Mensaje para LCD
-            shared.local_error_message = f"Stats {sensor_name} OK"
+            shared.new_analysis_results_ready = True
             
         except Exception as e:
-            logging.error(f"Error actualizando estado global con estadísticas: {e}")
+            logging.error(f"Error actualizando variables globales: {e}")
 
-    def _update_shared_predictions(self, results, sensor_name):
-        """
-        Actualiza el estado global con los resultados de predicción
-        """
-        try:
-            # Agregar resultados al estado global para mostrar en LCD/Dashboard
-            if not hasattr(shared, 'latest_predictions'):
-                shared.latest_predictions = {}
-            
-            shared.latest_predictions[sensor_name] = {
-                'timestamp': datetime.now(),
-                'results': results
-            }
-            
-            # Flag para indicar que hay nuevas predicciones
-            shared.new_predictions_available = True
-            
-            # Mensaje para LCD
-            shared.local_error_message = f"Pred {sensor_name} OK"
-            
-        except Exception as e:
-            logging.error(f"Error actualizando estado global con predicciones: {e}")
 
     def _cleanup_temp_files(self, file_list):
         """
@@ -457,25 +308,26 @@ class AnalysisManager:
         """
         Obtiene las últimas estadísticas calculadas
         """
-        if not hasattr(shared, 'latest_statistics'):
-            return None
-            
-        if sensor_name:
-            return shared.latest_statistics.get(sensor_name)
-        else:
-            return shared.latest_statistics
+        return {
+            'media': getattr(shared, 'ultima_media', 0.0),
+            'mediana': getattr(shared, 'ultima_mediana', 0.0),
+            'moda': getattr(shared, 'ultima_moda', 0.0),
+            'minimo': getattr(shared, 'ultimo_minimo', 0.0),
+            'maximo': getattr(shared, 'ultimo_maximo', 0.0),
+            'desviacion': getattr(shared, 'ultima_desviacion', 0.0),
+            'varianza': getattr(shared, 'ultima_varianza', 0.0),
+            'sensor': getattr(shared, 'ultimo_sensor_estadisticas', '')
+        }
 
     def get_latest_predictions(self, sensor_name=None):
         """
         Obtiene las últimas predicciones calculadas
         """
-        if not hasattr(shared, 'latest_predictions'):
-            return None
-            
-        if sensor_name:
-            return shared.latest_predictions.get(sensor_name)
-        else:
-            return shared.latest_predictions
+        return {
+            'media_movil': getattr(shared, 'ultima_media_movil', 0.0),
+            'suavizado_exponencial': getattr(shared, 'ultimo_suavizado_exponencial', 0.0),
+            'sensor': getattr(shared, 'ultimo_sensor_predicciones', '')
+        }
 
     def cleanup(self):
         """
