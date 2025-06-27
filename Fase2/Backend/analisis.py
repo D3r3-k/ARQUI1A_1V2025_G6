@@ -38,6 +38,7 @@ class AnalysisManager:
         logging.info("AnalysisManager inicializado correctamente")
 
     def process_statistics_request(self, sensor_name):
+        
         """
         Procesa TODOS los cálculos (estadísticas + predicciones) para un sensor específico
         """
@@ -86,6 +87,7 @@ class AnalysisManager:
             # return False
             
             # SIMULACIÓN DE ÉXITO PARA TESTING
+            shared.new_analysis_results_ready = True ## bandera 
             shared.local_error_message = f"Test Complete {normalized_sensor} - File OK"
             logging.info(f"TESTING: Cálculos completos simulados para {normalized_sensor}")
             return True
@@ -286,7 +288,7 @@ class AnalysisManager:
             
             logging.info(f"TODAS las variables globales actualizadas para {sensor_name}")
             
-            shared.new_analysis_results_ready = True
+            #shared.new_analysis_results_ready = True
             
         except Exception as e:
             logging.error(f"Error actualizando variables globales: {e}")
