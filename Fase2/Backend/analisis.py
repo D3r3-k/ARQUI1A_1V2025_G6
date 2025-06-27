@@ -38,7 +38,6 @@ class AnalysisManager:
         logging.info("AnalysisManager inicializado correctamente")
 
     def process_statistics_request(self, sensor_name):
-        
         """
         Procesa TODOS los cálculos (estadísticas + predicciones) para un sensor específico
         """
@@ -62,7 +61,7 @@ class AnalysisManager:
             if not input_file:
                 return False
 
-            # 3. TESTING: Solo mostrar que se creó el archivo¿
+            # 3. TESTING: Solo mostrar que se creó el archivo
             logging.info(f"✓ Archivo de entrada creado exitosamente: {input_file}")
             logging.info(f"✓ Datos obtenidos de MongoDB: {len(data)} valores")
             logging.info(f"✓ Primeros 5 valores: {data[:5] if len(data) >= 5 else data}")
@@ -87,8 +86,20 @@ class AnalysisManager:
             # return False
             
             # SIMULACIÓN DE ÉXITO PARA TESTING
-            shared.new_analysis_results_ready = True ## bandera 
             shared.local_error_message = f"Test Complete {normalized_sensor} - File OK"
+            
+            # ===== PARA TESTING =====
+            # Simular que se actualizaron los resultados
+            shared.ultima_media = 25.5 if normalized_sensor == "temperature" else 82.0
+            shared.ultima_mediana = 25.0 if normalized_sensor == "temperature" else 82.0
+            shared.ultimo_sensor_estadisticas = normalized_sensor
+            shared.ultima_media_movil = 25.2 if normalized_sensor == "temperature" else 81.8
+            shared.ultimo_sensor_predicciones = normalized_sensor
+            
+            # actaulizacion de bandera
+            shared.new_analysis_results_ready = True
+            # ============================================
+            
             logging.info(f"TESTING: Cálculos completos simulados para {normalized_sensor}")
             return True
             
