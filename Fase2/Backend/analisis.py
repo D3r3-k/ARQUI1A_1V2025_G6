@@ -177,7 +177,7 @@ class AnalysisManager:
 
     def _execute_arm64_complete(self, input_file, output_file):
         """
-        Ejecuta ARM64 con delays como en el comando bash que funciona
+        Ejecuta ARM64 con delays y captura salida correctamente
         """
         try:
             # Cambiar a formato compatible con ARM64
@@ -197,7 +197,7 @@ class AnalysisManager:
             filename = os.path.basename(arm64_file)
             logging.info(f"🚀 Ejecutando con delays - Archivo: {filename}")
             
-            # ============ CREAR PROCESO Y ENVIAR COMANDOS CON DELAYS ============
+            # ============ CREAR PROCESO ============
             process = subprocess.Popen(
                 [executable_path],
                 stdin=subprocess.PIPE,
@@ -205,83 +205,103 @@ class AnalysisManager:
                 stderr=subprocess.PIPE,
                 text=True,
                 cwd=build_dir,
-                bufsize=0  # Sin buffer para escritura inmediata
+                bufsize=0
             )
             
             import time
             
             try:
-                # Comando 3: Cargar archivo
+                # ============ ENVIAR COMANDOS CON VERIFICACIÓN ============
+                def send_command_safely(cmd, delay=1):
+                    if process.poll() is not None:  # Proceso ya terminó
+                        logging.warning(f"⚠️ Proceso terminó antes de enviar: {cmd}")
+                        return False
+                    try:
+                        process.stdin.write(f"{cmd}\n")
+                        process.stdin.flush()
+                        time.sleep(delay)
+                        return True
+                    except BrokenPipeError:
+                        logging.warning(f"⚠️ Broken pipe al enviar: {cmd}")
+                        return False
+                
+                # Enviar comandos uno por uno
                 logging.info("📝 Enviando comando: 3")
-                process.stdin.write("3\n")
-                process.stdin.flush()
-                time.sleep(1)
-                
-                # Nombre del archivo
+                if not send_command_safely("3", 1):
+                    return False
+                    
                 logging.info(f"📝 Enviando archivo: {filename}")
-                process.stdin.write(f"{filename}\n")
-                process.stdin.flush()
-                time.sleep(1)
-                
-                # Comando 1: Estadísticas
+                if not send_command_safely(filename, 1):
+                    return False
+                    
                 logging.info("📝 Enviando comando: 1")
-                process.stdin.write("1\n")
-                process.stdin.flush()
-                time.sleep(1)
-                
-                # Comando 8: Todas las estadísticas
+                if not send_command_safely("1", 1):
+                    return False
+                    
                 logging.info("📝 Enviando comando: 8")
-                process.stdin.write("8\n")
-                process.stdin.flush()
-                time.sleep(2)  # Más tiempo para procesar estadísticas
-                
-                # Comando 9: Regresar al menú principal
+                if not send_command_safely("8", 2):  # Más tiempo para estadísticas
+                    return False
+                    
                 logging.info("📝 Enviando comando: 9")
-                process.stdin.write("9\n")
-                process.stdin.flush()
-                time.sleep(1)
-                
-                # Comando 6: Salir
+                if not send_command_safely("9", 1):
+                    return False
+                    
                 logging.info("📝 Enviando comando: 6")
-                process.stdin.write("6\n")
-                process.stdin.flush()
+                if not send_command_safely("6", 0):  # Sin delay al final
+                    return False
                 
-                # Cerrar stdin
-                process.stdin.close()
+                # ============ CERRAR STDIN Y ESPERAR SALIDA ============
+                try:
+                    process.stdin.close()
+                    logging.info("✅ stdin cerrado correctamente")
+                except:
+                    logging.info("ℹ️ stdin ya estaba cerrado")
                 
-                # Esperar a que termine (con timeout)
+                # Esperar que termine el proceso
                 logging.info("⏳ Esperando que termine el proceso...")
                 try:
-                    stdout, stderr = process.communicate(timeout=10)
+                    stdout, stderr = process.communicate(timeout=5)
                 except subprocess.TimeoutExpired:
-                    logging.error("⏰ TIMEOUT - Matando proceso")
+                    logging.error("⏰ TIMEOUT final - Matando proceso")
                     process.kill()
                     stdout, stderr = process.communicate()
                     return False
                 
                 logging.info(f"🎯 Return code: {process.returncode}")
-                logging.info(f"📄 Stdout (primeros 1000): {stdout[:1000] if stdout else 'Sin stdout'}")
+                logging.info(f"📄 Stdout recibido: {len(stdout) if stdout else 0} caracteres")
+                
+                if stdout:
+                    logging.info(f"📄 Stdout (preview): {stdout[:500]}")
                 
                 if stderr:
-                    logging.warning(f"⚠️ Stderr: {stderr[:500]}")
+                    logging.warning(f"⚠️ Stderr: {stderr[:300]}")
                 
-                # Verificar éxito
-                if process.returncode == 0:
+                # ============ VERIFICAR ÉXITO Y GUARDAR ============
+                if process.returncode == 0 and stdout:
                     # Guardar la salida completa
                     with open(output_file, 'w') as f:
                         f.write(stdout)
                     
-                    logging.info("✅ ARM64 ejecutado exitosamente con delays")
+                    logging.info("✅ ARM64 ejecutado exitosamente")
                     return True
+                elif process.returncode == 0:
+                    logging.warning("⚠️ Proceso exitoso pero sin stdout")
+                    return False
                 else:
                     logging.error(f"❌ ARM64 terminó con error: {process.returncode}")
                     return False
                     
-            except BrokenPipeError:
-                logging.error("❌ Broken pipe - el proceso ARM64 se cerró inesperadamente")
-                return False
             except Exception as e:
                 logging.error(f"❌ Error enviando comandos: {e}")
+                # Intentar obtener la salida parcial
+                try:
+                    if process.poll() is None:
+                        process.kill()
+                    stdout, stderr = process.communicate()
+                    if stdout:
+                        logging.info(f"📄 Stdout parcial: {stdout[:500]}")
+                except:
+                    pass
                 return False
                 
         except Exception as e:
