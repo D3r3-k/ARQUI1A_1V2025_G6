@@ -5,10 +5,7 @@ import paho.mqtt.client as mqtt
 from globals import shared
 
 
-<<<<<<< HEAD
-=======
 
->>>>>>> Feature/frontend_202001151
 class MQTTClient:
 
 
@@ -30,11 +27,6 @@ class MQTTClient:
             "distance": f"GRUPO{group_6}/sensores/rasp03/distancia",
             "alerts": f"GRUPO{group_6}/sensores/rasp03/alertas",
             "actuators_status": f"GRUPO{group_6}/sensores/rasp03/actuadores",
-<<<<<<< HEAD
-            # Topics de control:
-            "control_comandos": f"GRUPO{group_6}/sensores/rasp03/comandos",
-            "control_modo": f"GRUPO{group_6}/sensores/rasp03/modo",
-=======
             "Envio_estadisticas": f"GRUPO{group_6}/sensores/rasp03/resultados_calculos",
             "Envio_status": f"GRUPO{group_6}/sensores/rasp03/status",
             # Topics de control:
@@ -43,7 +35,6 @@ class MQTTClient:
             "control_estadistica": f"GRUPO{group_6}/sensores/rasp03/estadistica",
             "control_LCD": f"GRUPO{group_6}/sensores/rasp03/pantalla",
             
->>>>>>> Feature/frontend_202001151
         }
 
         self.client = mqtt.Client(client_id=self.client_id)
@@ -52,11 +43,7 @@ class MQTTClient:
         self.client.on_disconnect = self._on_disconnect
         self.connected = False
         self.last_publish_time = 0
-<<<<<<< HEAD
-        self.publish_interval = 2  # segundos
-=======
         self.publish_interval = 1  # segundos
->>>>>>> Feature/frontend_202001151
 
         logging.info(f"MQTT Client inicializado - Grupo: {group_6}")
 
@@ -72,12 +59,9 @@ class MQTTClient:
 
             client.subscribe(self.topics["control_comandos"])
             client.subscribe(self.topics["control_modo"])
-<<<<<<< HEAD
-=======
             client.subscribe(self.topics["control_estadistica"]) 
             client.subscribe(self.topics["control_LCD"])
             logging.info(f"Suscrito a: {self.topics['control_LCD']}")
->>>>>>> Feature/frontend_202001151
             logging.info(f"Suscrito a: {self.topics['control_comandos']}")
             logging.info(f"Suscrito a: {self.topics['control_modo']}")
 
@@ -100,10 +84,7 @@ class MQTTClient:
                     shared.modo_automatico = bool(modo)
                     modo_txt = "AUTOMÁTICO" if modo else "MANUAL"
                     logging.info(f"Modo de control cambiado a: {modo_txt}")
-<<<<<<< HEAD
-=======
                     shared.alert_status = True
->>>>>>> Feature/frontend_202001151
                 else:
                     shared.modo_control = True
 
@@ -115,12 +96,6 @@ class MQTTClient:
                     shared.actuadores[actuador] = bool(action)
                     estado_txt = "ENCENDIDO" if action else "APAGADO"
                     logging.info(f"Actuador '{actuador}' cambiado a: {estado_txt}")
-<<<<<<< HEAD
-                else:
-                    logging.warning(
-                        "Comando recibido sin actuador válido o acción no definida."
-                    )
-=======
 
             elif topic == self.topics["control_estadistica"]:
                 sensor = payload.get("sensor")
@@ -161,7 +136,6 @@ class MQTTClient:
                 logging.warning(
                 "Comando recibido sin actuador válido o acción no definida."
                 )
->>>>>>> Feature/frontend_202001151
 
         except Exception as e:
             logging.error(f"Error procesando mensaje MQTT: {e}")
@@ -256,8 +230,6 @@ class MQTTClient:
             self.client.publish(
                 self.topics["actuators_status"], actuators_payload, retain=True
             )
-<<<<<<< HEAD
-=======
 
 
             #  Verificar si hay nuevos resultados de análisis para enviar
@@ -272,14 +244,11 @@ class MQTTClient:
             # self.publish_analysis_results()
             # logging.info("Resultados de análisis enviados automáticamente")
 
->>>>>>> Feature/frontend_202001151
             self.last_publish_time = current_time
             logging.debug("Datos de sensores publicados a MQTT")
         except Exception as e:
             logging.error(f"Error publicando datos de sensores: {e}")
 
-<<<<<<< HEAD
-=======
 
     def publish_status(self):
         if not self.connected:
@@ -422,7 +391,6 @@ class MQTTClient:
             raise  # Re-lanzar para que se vea en los logs principales
 
 
->>>>>>> Feature/frontend_202001151
     def publish_alert(self, alert_type, message, value):
         if not self.connected:
             return

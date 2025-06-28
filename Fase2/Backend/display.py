@@ -14,10 +14,7 @@ class Display:
         self.lcd.clear()
         print("Pantalla LCD inicializada")
 
-<<<<<<< HEAD
-=======
     # ============ FUNCIONES ORIGINALES (SENSORES) ============
->>>>>>> Feature/frontend_202001151
     def display_temp(self):
         self.lcd.clear()
         self.lcd.write_string(f"Temp: {shared.temperature:.1f}C")
@@ -38,8 +35,6 @@ class Display:
         self.lcd.clear()
         self.lcd.write_string(f"Pre:  {shared.pressure:.1f} hpa")
 
-<<<<<<< HEAD
-=======
     # ============ FUNCIONES PARA ESTADÍSTICAS ============
     def display_media(self):
         self.lcd.clear()
@@ -97,22 +92,15 @@ class Display:
         self.lcd.write_string(f"SuavExp: {shared.ultimo_suavizado_exponencial:.2f}")
 
     # ============ FUNCIÓN PRINCIPAL DE MENSAJES ============
->>>>>>> Feature/frontend_202001151
     def display_message(self, message):
         self.lcd.clear()
         self.lcd.write_string(message[:16])  # primera línea
         if len(message) > 16:
             self.lcd.crlf()
             self.lcd.write_string(message[16:32])  # segunda línea
-<<<<<<< HEAD
-        #self.enable = False
-        self.last_t = time.time()
-
-=======
         self.last_t = time.time()
 
     # ============ FUNCIÓN PRINCIPAL UPDATE ============
->>>>>>> Feature/frontend_202001151
     def update(self):
         if not self.enable:
             if time.time() - self.last_t > self.threshold_message:
@@ -123,33 +111,12 @@ class Display:
             if time.time() - self.last_t < self.threshold_data:
                 return
 
-<<<<<<< HEAD
-        # Mostrar mensaje de alerta si existe
-=======
         # Prioridad 1: Mostrar mensaje de alerta si existe
->>>>>>> Feature/frontend_202001151
         if shared.local_error_message:
             self.display_message(shared.local_error_message)
             shared.local_error_message = ""
             return
 
-<<<<<<< HEAD
-        # Lista de funciones de visualización
-        display_functions = [
-            self.display_temp,
-            self.display_humidity,
-            self.display_air_quality,
-            self.display_light,
-            self.display_Pressure,
-        ]
-
-        # Mostrar el dato correspondiente
-        display_functions[self.display_index % len(display_functions)]()
-
-        # Avanzar al siguiente en la próxima llamada
-        self.display_index += 1
-        self.last_t = time.time()
-=======
         # Prioridad 2: Mostrar según modo seleccionado
         lcd_mode = getattr(shared, 'lcd_mode', 'sensores')  # Default a sensores
         
@@ -202,4 +169,3 @@ class Display:
         # Avanzar al siguiente en la próxima llamada
         self.display_index += 1
         self.last_t = time.time()
->>>>>>> Feature/frontend_202001151

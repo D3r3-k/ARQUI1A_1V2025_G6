@@ -3,25 +3,16 @@ class GlobalState:
     _instance = None  
                              
     
-<<<<<<< HEAD
-    def __new__(cls):                                       # Singleton pattern
-=======
     def __new__(cls):                      # Singleton pattern
->>>>>>> Feature/frontend_202001151
         if cls._instance is None:
             cls._instance = super().__new__(cls)
             cls._instance._init()
         return cls._instance
     
-<<<<<<< HEAD
-    def _init(self):    
-        current_time = time.time()                           # Initialize shared variables
-=======
     
     
     def _init(self):    
         current_time = time.time()       # Initialize shared variables
->>>>>>> Feature/frontend_202001151
         # Sensor readings
         self.temperature = 0.0
         self.humidity = 0.0
@@ -31,9 +22,6 @@ class GlobalState:
         self.air_quality = 0
         
         self.modo_control = True
-<<<<<<< HEAD
- 
-=======
         self.enviar_status = False
 
         self.lcd_mode = "sensores"
@@ -52,19 +40,14 @@ class GlobalState:
         
         self.new_analysis_results_ready = False
 
->>>>>>> Feature/frontend_202001151
         self.actuadores= {
             'red_led': True,      # Temperature alert
             'yellow_led': True,   # Humidity alert  
             'green_led': True,    # Light alert
             'blue_led': True,     # Air quality alert
             'motor_fan': True,    # Cooling fan
-<<<<<<< HEAD
-            'buzzer': True        # Audio alert          
-=======
             'buzzer': True,       # Audio alert  
             'Iluminacion': True   # Audio alert          
->>>>>>> Feature/frontend_202001151
         }
 
         # System messages
@@ -92,20 +75,6 @@ class GlobalState:
         
         # Alert thresholds (configurable)
         self.thresholds = {
-<<<<<<< HEAD
-            'temperature_max':  25,    # °C
-            'temperature_min': 15.0,    # °C
-            'humidity_max': 90.0,       # %
-            'humidity_min': 30.0,       # %
-            'light_min': 1.6,            # % (too dark)
-            'light_max': 10,            # % (too lifht)
-            'air_quality_max':120,    # Air quality index
-            'air_quality_min': 105,     # Air quality index
-            'presence_distance_min': 20.0,  # cm (presence detected)
-            'presence_distance_max': 100,  # cm (presence detected)
-            'Presure_min': 850,         # Presion hpa
-            'Presure_max': 870         # Presion en hpa
-=======
             'temperature_max':  25,         # °C
             'temperature_min': 15.0,        # °C
             'humidity_max': 90.0,           # %
@@ -118,7 +87,6 @@ class GlobalState:
             'presence_distance_max': 100,   # cm (presence detected)
             'Presure_min': 850,             # Presion hpa
             'Presure_max': 870              # Presion en hpa
->>>>>>> Feature/frontend_202001151
         }
 
 shared = GlobalState()  # Create a shared instance of GlobalState
