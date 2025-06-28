@@ -84,6 +84,7 @@ class MQTTClient:
                     shared.modo_automatico = bool(modo)
                     modo_txt = "AUTOMÁTICO" if modo else "MANUAL"
                     logging.info(f"Modo de control cambiado a: {modo_txt}")
+                    shared.alert_status = True
                 else:
                     shared.modo_control = True
 
@@ -236,6 +237,10 @@ class MQTTClient:
                 self.publish_analysis_results()
                 shared.new_analysis_results_ready = False  # Reset flag
                 logging.info("Resultados de análisis enviados automáticamente")
+
+            if(shared.enviar_status):
+                self.publish_status()
+                shared.enviar_status = False
             # self.publish_analysis_results()
             # logging.info("Resultados de análisis enviados automáticamente")
 

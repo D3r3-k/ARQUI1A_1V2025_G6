@@ -22,7 +22,7 @@ class GlobalState:
         self.air_quality = 0
         
         self.modo_control = True
-
+        self.enviar_status = False
 
         self.lcd_mode = "sensores"
         self.ultima_media = 0.0
