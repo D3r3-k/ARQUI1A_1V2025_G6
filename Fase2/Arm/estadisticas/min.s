@@ -3,6 +3,8 @@ newline:
     .ascii "\n"
 no_data_msg:
     .ascii "No data available\n"
+min_msg:
+    .ascii "Minimo: "
 
 .section .text
 .global minMain
@@ -28,10 +30,18 @@ minMain:
     // Calcular minimo
     bl min
     
-    // PRESERVAR x0 antes de print_number
+    // PRESERVAR x0 antes de imprimir mensaje
     mov x10, x0                 // x10 = resultado mínimo
     
-    // Imprimir resultado
+    // Imprimir mensaje "Minimo: "
+    mov x0, 1
+    ldr x1, =min_msg
+    mov x2, 8
+    mov x8, 64
+    svc 0
+    
+    // Restaurar resultado y imprimir
+    mov x0, x10                 // x0 = resultado mínimo preservado
     bl print_number
     
     // Imprimir salto de línea

@@ -1,9 +1,20 @@
-"use client"
+"use client";
 
 import { useAuth } from "@/hooks/useAuth";
 import { useIsMobile } from "@/hooks/useMobile";
 import { useMqtt } from "@/hooks/useMqtt";
-import { AlertOctagon, BarChart2, ChevronRight, LayoutDashboard, LogOut, Moon, Settings, Sun } from "lucide-react";
+import {
+  AlertOctagon,
+  BarChart2,
+  Calculator,
+  ChevronRight,
+  LayoutDashboard,
+  LogOut,
+  LucideTable,
+  Moon,
+  Settings,
+  Sun,
+} from "lucide-react";
 import { useTheme } from "next-themes";
 import Image from "next/image";
 import Link from "next/link";
@@ -60,26 +71,31 @@ export default function Sidebar() {
       {/* Pestaña para moviles */}
       <div
         onClick={handleSidebarOpen}
-        className={`md:hidden fixed z-50 top-1/2 left-0 bg-white text-gray-800 dark:bg-gray-900 dark:text-gray-200 shadow-lg border border-gray-200 dark:border-gray-700 rounded-r-lg py-4 px-3.5 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-800 ${!isOpen ? "translate-x-0 transition-transform duration-300" : "-translate-x-full transition-transform duration-300"
-          }`}
+        className={`md:hidden fixed z-50 top-1/2 left-0 bg-white text-gray-800 dark:bg-gray-900 dark:text-gray-200 shadow-lg border border-gray-200 dark:border-gray-700 rounded-r-lg py-4 px-3.5 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-800 ${
+          !isOpen
+            ? "translate-x-0 transition-transform duration-300"
+            : "-translate-x-full transition-transform duration-300"
+        }`}
       >
         <ChevronRight size={16} />
       </div>
       {/* Sidebar */}
       <aside
         className={`fixed left-0 z-50 flex h-full w-64 flex-col shadow-xl border-r border-gray-200 dark:border-zinc-800 bg-gray-900
-        dark:bg-gray-800 transition-transform duration-300 ${isOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0 md:shadow-none md:bg-transparent
+        dark:bg-gray-800 transition-transform duration-300 ${
+          isOpen ? "translate-x-0" : "-translate-x-full"
+        } md:translate-x-0 md:shadow-none md:bg-transparent
           `}
       >
         <div className="flex h-14 items-center border-b border-gray-200 dark:border-zinc-800 px-4 bg-white dark:bg-gray-900">
-          <Link href="/dashboard" className="flex items-center gap-3 font-semibold">
-            <Image
-              src="/short-logo.svg"
-              alt="Logo"
-              width={24}
-              height={24}
-            />
-            <span className="text-xl font-bold tracking-wide md:inline">SIEPA</span>
+          <Link
+            href="/dashboard"
+            className="flex items-center gap-3 font-semibold"
+          >
+            <Image src="/short-logo.svg" alt="Logo" width={24} height={24} />
+            <span className="text-xl font-bold tracking-wide md:inline">
+              SIEPA
+            </span>
           </Link>
         </div>
         <div className="flex-1 overflow-auto p-2 bg-white dark:bg-gray-900">
@@ -108,6 +124,22 @@ export default function Sidebar() {
               <Settings size={16} />
               <span>Panel de control</span>
             </Link>
+            <Link
+              href="/dashboard/reportes"
+              className={`flex items-center gap-3 rounded-md px-3 py-2 transition-all bg-primary text-sm
+                ${getNavClass("/dashboard/reportes")}`}
+            >
+              <LucideTable size={16} />
+              <span>Reportes</span>
+            </Link>
+            <Link
+              href="/dashboard/calculos"
+              className={`flex items-center gap-3 rounded-md px-3 py-2 transition-all bg-primary text-sm
+                ${getNavClass("/dashboard/calculos")}`}
+            >
+              <Calculator size={16} />
+              <span>Calculos</span>
+            </Link>
           </nav>
         </div>
         <div className="mt-auto border-t border-gray-200 dark:border-zinc-800 bg-white dark:bg-gray-900 p-4">
@@ -117,7 +149,9 @@ export default function Sidebar() {
           </span>
           <div className="mt-2 flex flex-col gap-1">
             <span className="text-xs text-gray-500 dark:text-gray-400">
-              {alertCount > 0 ? `Tienes ${alertCount} alerta${alertCount > 1 ? "s" : ""}` : "No hay alertas activas"}
+              {alertCount > 0
+                ? `Tienes ${alertCount} alerta${alertCount > 1 ? "s" : ""}`
+                : "No hay alertas activas"}
             </span>
           </div>
         </div>
@@ -150,7 +184,7 @@ export default function Sidebar() {
             </button>
           </div>
         </div>
-      </aside >
+      </aside>
     </>
-  )
+  );
 }

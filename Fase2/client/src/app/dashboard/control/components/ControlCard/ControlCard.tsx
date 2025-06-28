@@ -13,15 +13,15 @@ interface ControlCardProps {
   initialState: boolean;
   isLocked?: boolean;
   color:
-    | "blue"
-    | "red"
-    | "green"
-    | "yellow"
-    | "purple"
-    | "gray"
-    | "white"
-    | "slate"
-    | "cyan";
+  | "blue"
+  | "red"
+  | "green"
+  | "yellow"
+  | "purple"
+  | "gray"
+  | "white"
+  | "slate"
+  | "cyan";
   disabled: boolean;
 }
 
@@ -39,7 +39,7 @@ export default function ControlCard({
   disabled = false,
 }: ControlCardProps) {
   // Hook's
-  const { publish } = useMqtt();
+  const { publish, handleControlChange } = useMqtt();
   // State's
   const [isOn, setIsOn] = useState<boolean>(initialState);
 
@@ -59,7 +59,7 @@ export default function ControlCard({
   }, [id]);
 
   useEffect(() => {
-    setIsOn(disabled ? true: initialState );
+    setIsOn(disabled ? true : initialState);
 
     return () => {
       setIsOn(initialState);
@@ -174,32 +174,28 @@ export default function ControlCard({
           onClick={handleToggle}
           disabled={disabled}
           type="button"
-          className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 transition-colors duration-200 ease-in-out ${
-            disabled ? "cursor-not-allowed" : ""
-          } ${
-            isOn
+          className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 transition-colors duration-200 ease-in-out ${disabled ? "cursor-not-allowed" : ""
+            } ${isOn
               ? colorClass.bgSwitch
               : "bg-gray-200 border-gray-200 dark:bg-gray-700 dark:border-gray-700"
-          }`}
+            }`}
           aria-pressed={isOn}
           aria-label={`Toggle ${title}`}
         >
           <span className="sr-only">{`Toggle ${title}`}</span>
           <span
-            className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-              isOn ? "translate-x-5 scale-100" : "translate-x-0 scale-100"
-            }`}
+            className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${isOn ? "translate-x-5 scale-100" : "translate-x-0 scale-100"
+              }`}
           ></span>
         </button>
       </div>
       <div className="text-sm">
         <span className="text-gray-500 dark:text-gray-400">Estado: </span>
         <span
-          className={`font-medium ${
-            isOn
-              ? "text-green-600 dark:text-green-400"
-              : "text-red-600 dark:text-red-400"
-          }`}
+          className={`font-medium ${isOn
+            ? "text-green-600 dark:text-green-400"
+            : "text-red-600 dark:text-red-400"
+            }`}
         >
           {isOn ? "Activado" : "Desactivado"}
         </span>

@@ -3,6 +3,8 @@ newline:
     .ascii "\n"
 no_data_msg:
     .ascii "No data available\n"
+max_msg:
+    .ascii "Maximo: "
 
 .section .text
 .global maxMain
@@ -28,10 +30,18 @@ maxMain:
     // Calcular máximo
     bl max
     
-    // Preservar x0 antes de print
+    // Preservar x0 antes de imprimir mensaje
     mov x10, x0                 // x10 = resultado máximo
     
-    // Imprimir resultado
+    // Imprimir mensaje "Maximo: "
+    mov x0, 1
+    ldr x1, =max_msg
+    mov x2, 8
+    mov x8, 64
+    svc 0
+    
+    // Restaurar resultado y imprimir
+    mov x0, x10                 // x0 = resultado máximo preservado
     bl print_number
     
     // Imprimir salto de línea

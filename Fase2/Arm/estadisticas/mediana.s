@@ -1,6 +1,8 @@
 .section .data
 newline:
     .ascii "\n"
+mediana_msg:
+    .ascii "Mediana: "
 mi_arreglo:
     .quad 25, 80, 95, 105, 200, 690, 10, 20
 .section .text
@@ -23,8 +25,18 @@ medianaMain:
     // Calcular mediana
     bl mediana
 
-    // PRESERVAR x0 antes de print_number
+    // PRESERVAR x0 antes de imprimir mensaje
     mov x10, x0                 // x10 = resultado mediana
+    
+    // Imprimir mensaje "Mediana: "
+    mov x0, 1
+    ldr x1, =mediana_msg
+    mov x2, 9
+    mov x8, 64
+    svc 0
+    
+    // Restaurar resultado y imprimir
+    mov x0, x10                 // x0 = resultado mediana preservado
     bl print_number
 
     // Imprimir salto de línea

@@ -92,16 +92,7 @@ predictions:
     bl print
     b predictions
 
-// Funciones de predicciones (pendientes de implementar)
-llamar_Suavizado:
-    bl suavizadoMain
-    // El suavizado imprime directamente, no necesita guardar resultado
-    b predictions
 
-media_movil:
-    // Media móvil = misma media estadística
-    bl mediaMain
-    b predictions
 
 //llamar a funciones externas
 llamar_Estadistica:
@@ -205,8 +196,8 @@ Sub_Menu:
     beq llamar_Varianza
     // cmp x0, 7
     // beq llamar_DesviacionE
-    //cmp x0, 8
-    //beq llamar_Todos
+    cmp x0, 8
+    beq llamar_Todos
     cmp x0, 9
     beq while
 
@@ -214,6 +205,72 @@ Sub_Menu:
     ldr x1, =invalid_option_msg
     mov x2, 17
     bl print
+    b Sub_Menu
+
+llamar_Todos:
+    // Calcular y guardar mínimo
+    bl minMain
+    mov x10, x0
+    ldr x1, =resultado_min
+    str x10, [x1]
+    ldr x1, =min_calculado
+    mov x2, #1
+    strb w2, [x1]
+    
+    // Calcular y guardar máximo
+    bl maxMain
+    mov x10, x0
+    ldr x1, =resultado_max
+    str x10, [x1]
+    ldr x1, =max_calculado
+    mov x2, #1
+    strb w2, [x1]
+    
+    // Calcular y guardar media
+    bl mediaMain
+    mov x10, x0
+    ldr x1, =resultado_media
+    str x10, [x1]
+    ldr x1, =media_calculada
+    mov x2, #1
+    strb w2, [x1]
+    
+    // Calcular y guardar mediana
+    bl medianaMain
+    mov x10, x0
+    ldr x1, =resultado_mediana
+    str x10, [x1]
+    ldr x1, =mediana_calculada
+    mov x2, #1
+    strb w2, [x1]
+    
+    // Calcular y guardar moda
+    bl moda
+    mov x10, x0
+    ldr x1, =resultado_moda
+    str x10, [x1]
+    ldr x1, =moda_calculada
+    mov x2, #1
+    strb w2, [x1]
+    
+    // Calcular y guardar varianza
+    bl varianza
+    mov x10, x0
+    ldr x1, =resultado_varianza
+    str x10, [x1]
+    ldr x1, =varianza_calculada
+    mov x2, #1
+    strb w2, [x1]
+    
+    // Calcular y guardar suavizado
+    bl suavizadoMain
+    mov x10, x0
+    ldr x1, =resultado_suavizado
+    str x10, [x1]
+    ldr x1, =suavizado_calculado
+    mov x2, #1
+    strb w2, [x1]
+
     b Sub_Menu
 
 // Nuevas funciones para mínimo y máximo
@@ -281,7 +338,30 @@ llamar_Varianza:
     mov x2, #1
     strb w2, [x1]               // marcar como calculado
     b Sub_Menu
+    
+// Funciones de predicciones (pendientes de implementar)
+llamar_Suavizado:
+    bl suavizadoMain
+    mov x10, x0
+    ldr x1, =resultado_suavizado
+    str x10, [x1]
+    ldr x1, =suavizado_calculado
+    mov x2, #1
+    strb w2, [x1]
+    
+    b predictions
 
+media_movil:
+    // Media móvil = misma media estadística
+    bl mediaMain
+    mov x10, x0                 // x10 = resultado media
+    // AHORA guardar desde x10
+    ldr x1, =resultado_media
+    str x10, [x1]               // guardar desde x10, no x0
+    ldr x1, =media_calculada
+    mov x2, #1
+    strb w2, [x1]               // marcar como calculado
+    b predictions
 end_menu:
     mov x30, x27
     ret

@@ -49,3 +49,25 @@ export type TopicAlert = {
   air_quality: boolean;
   presence: boolean;
 };
+
+export type CalculationResults = {
+  moda?: number;
+  media?: number;
+  mediana?: number;
+  minimo?: number;
+  maximo?: number;
+  desviacion?: number;
+  varianza?: number;
+  suavizado?: number;
+  movil?: number;
+};
+
+export type ControlsTipic = {
+  Iluminacion: boolean;
+  red_led: boolean;
+  yellow_led: boolean;
+  green_led: boolean;
+  blue_led: boolean;
+  motor_fan: boolean;
+  buzzer: boolean;
+};
