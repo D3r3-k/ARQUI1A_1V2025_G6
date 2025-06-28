@@ -176,96 +176,111 @@ class AnalysisManager:
             return None
 
     def _execute_arm64_complete(self, input_file, output_file):
-            """
-            Ejecuta el código ARM64 con delays como en el comando que funciona
-            """
-            try:
-                # Cambiar a formato compatible con ARM64
-                arm64_file = self._convert_to_arm64_format(input_file)
-                if not arm64_file:
-                    return False
-                
-                # Rutas desde Backend/
-                executable_path = "./Arm/build/main"
-                build_dir = "./Arm/build"
-                
-                logging.info(f"Ejecutable: {executable_path}")
-                logging.info(f"Archivo ARM64: {arm64_file}")
-                logging.info(f"Ejecutando desde Backend/ hacia: {build_dir}")
-                logging.info("INICIANDO subprocess con delays...")
-                
-                # Crear proceso ARM64 - ejecutar desde Backend pero el ejecutable está en Arm/build
-                process = subprocess.Popen(
-                    [executable_path],  # ./Arm/build/main desde Backend/
-                    stdin=subprocess.PIPE,
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE,
-                    text=True,
-                    cwd=build_dir  # Cambiar directorio de trabajo a ./Arm/build
-                )
-                
-                # Enviar comandos con delays (como en bash que funciona)
-                import time
-                
-                # Comando 3: Leer archivo
-                process.stdin.write("3\n")
-                process.stdin.flush()
-                time.sleep(1)
-                
-                # Nombre del archivo - solo el nombre sin ruta (porque ARM64 ejecuta desde build/)
-                filename = os.path.basename(arm64_file)
-                process.stdin.write(f"{filename}\n")
-                process.stdin.flush()
-                time.sleep(1)
-                
-                # Comando 1: Estadísticas
-                process.stdin.write("1\n")
-                process.stdin.flush()
-                time.sleep(0.5)
-                
-                # Comando 8: Todas las estadísticas
-                process.stdin.write("8\n")
-                process.stdin.flush()
-                time.sleep(1)
-                
-                # Comando 9: Regresar al menú principal
-                process.stdin.write("9\n")
-                process.stdin.flush()
-                time.sleep(0.5)
-                
-                # Comando 6: Salir
-                process.stdin.write("6\n")
-                process.stdin.flush()
-                
-                # Cerrar stdin y esperar resultado
-                process.stdin.close()
-                stdout, stderr = process.communicate(timeout=30)
-                
-                logging.info(f"ARM64 return code: {process.returncode}")
-                logging.info(f"ARM64 stdout (primeros 500): {stdout[:500]}")
-                
-                if stderr:
-                    logging.info(f"ARM64 stderr: {stderr}")
-                
-                if process.returncode == 0 and "File loaded successfully" in stdout:
-                    # Guardar la salida completa
-                    with open(output_file, 'w') as f:
-                        f.write(stdout)
-                    
-                    logging.info("ARM64 cálculos completos exitosamente")
-                    return True
-                else:
-                    logging.error(f"Error en ARM64 o archivo no se cargó")
-                    return False
-                    
-            except subprocess.TimeoutExpired:
-                logging.error("Timeout ejecutando código ARM64 completo")
-                process.kill()
+        """
+        Ejecuta el código ARM64 con delays como en el comando que funciona
+        """
+        try:
+            # Cambiar a formato compatible con ARM64
+            arm64_file = self._convert_to_arm64_format(input_file)
+            if not arm64_file:
                 return False
-            except Exception as e:
-                logging.error(f"Error ejecutando ARM64 completo: {e}")
+            
+            # ============ RUTAS ABSOLUTAS CORREGIDAS ============
+            # Obtener directorio actual donde está analisis.py (Backend/)
+            current_dir = os.path.dirname(os.path.abspath(__file__))
+            
+            # Construir rutas absolutas
+            executable_path = os.path.join(current_dir, "Arm", "build", "main")
+            build_dir = os.path.join(current_dir, "Arm", "build")
+            
+            logging.info(f"🔧 Ejecutable (ruta absoluta): {executable_path}")
+            logging.info(f"🔧 Build dir (ruta absoluta): {build_dir}")
+            logging.info(f"🔧 Archivo ARM64: {arm64_file}")
+            
+            # Verificar que el ejecutable existe
+            if not os.path.exists(executable_path):
+                logging.error(f"❌ Ejecutable no encontrado en: {executable_path}")
                 return False
-
+                
+            if not os.access(executable_path, os.X_OK):
+                logging.error(f"❌ Ejecutable no tiene permisos de ejecución: {executable_path}")
+                return False
+            
+            logging.info("✅ Ejecutable encontrado y verificado")
+            logging.info("🚀 INICIANDO subprocess con delays...")
+            
+            # Crear proceso ARM64 - usar rutas absolutas
+            process = subprocess.Popen(
+                [executable_path],  # Ruta absoluta al ejecutable
+                stdin=subprocess.PIPE,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+                cwd=build_dir  # Cambiar directorio de trabajo a build/
+            )
+            
+            # Enviar comandos con delays (como en bash que funciona)
+            import time
+            
+            # Comando 3: Leer archivo
+            process.stdin.write("3\n")
+            process.stdin.flush()
+            time.sleep(1)
+            
+            # Nombre del archivo - solo el nombre sin ruta (porque ARM64 ejecuta desde build/)
+            filename = os.path.basename(arm64_file)
+            process.stdin.write(f"{filename}\n")
+            process.stdin.flush()
+            time.sleep(1)
+            
+            # Comando 1: Estadísticas
+            process.stdin.write("1\n")
+            process.stdin.flush()
+            time.sleep(0.5)
+            
+            # Comando 8: Todas las estadísticas
+            process.stdin.write("8\n")
+            process.stdin.flush()
+            time.sleep(1)
+            
+            # Comando 9: Regresar al menú principal
+            process.stdin.write("9\n")
+            process.stdin.flush()
+            time.sleep(0.5)
+            
+            # Comando 6: Salir
+            process.stdin.write("6\n")
+            process.stdin.flush()
+            
+            # Cerrar stdin y esperar resultado
+            process.stdin.close()
+            stdout, stderr = process.communicate(timeout=30)
+            
+            logging.info(f"🎯 ARM64 return code: {process.returncode}")
+            logging.info(f"📄 ARM64 stdout (primeros 500): {stdout[:500]}")
+            
+            if stderr:
+                logging.info(f"⚠️ ARM64 stderr: {stderr}")
+            
+            if process.returncode == 0 and "File loaded successfully" in stdout:
+                # Guardar la salida completa
+                with open(output_file, 'w') as f:
+                    f.write(stdout)
+                
+                logging.info("✅ ARM64 cálculos completos exitosamente")
+                return True
+            else:
+                logging.error(f"❌ Error en ARM64 o archivo no se cargó")
+                return False
+                
+        except subprocess.TimeoutExpired:
+            logging.error("⏰ Timeout ejecutando código ARM64 completo")
+            process.kill()
+            return False
+        except Exception as e:
+            logging.error(f"❌ Error ejecutando ARM64 completo: {e}")
+            return False
+    
     def _convert_to_arm64_format(self, input_file):
         """
         Convierte el archivo de Python al formato que acepta ARM64
