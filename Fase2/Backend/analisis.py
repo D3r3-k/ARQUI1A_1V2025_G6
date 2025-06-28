@@ -189,11 +189,11 @@ class AnalysisManager:
             build_dir = os.path.join(current_dir, "Arm", "build")
 
             if not os.path.exists(executable_path):
-                logging.error("❌ Ejecutable no encontrado")
+                logging.error("Ejecutable no encontrado")
                 return False
 
             filename = os.path.basename(arm64_file)
-            logging.info(f"🚀 Ejecutando con delays - Archivo: {filename}")
+            logging.info(f"Ejecutando con delays - Archivo: {filename}")
 
             import threading
             import queue
@@ -224,7 +224,7 @@ class AnalysisManager:
 
             def send_command_safely(cmd, delay=1):
                 if process.poll() is not None:
-                    logging.warning(f"⚠️ Proceso terminó antes de enviar: {cmd}")
+                    logging.warning(f"Proceso terminó antes de enviar: {cmd}")
                     return False
                 try:
                     process.stdin.write(f"{cmd}\n")
@@ -232,10 +232,9 @@ class AnalysisManager:
                     time.sleep(delay)
                     return True
                 except (BrokenPipeError, ValueError):
-                    logging.warning(f"⚠️ Error al enviar: {cmd}")
+                    logging.warning(f"Error al enviar: {cmd}")
                     return False
 
-            # Enviar los comandos
             if not send_command_safely("3", 1): return False
             if not send_command_safely(filename, 1): return False
             if not send_command_safely("1", 1): return False
@@ -243,18 +242,17 @@ class AnalysisManager:
             if not send_command_safely("9", 1): return False
             if not send_command_safely("6", 0): return False
 
-            # ✅ Ahora sí cerramos stdin
             try:
                 process.stdin.close()
-                logging.info("✅ stdin cerrado correctamente")
+                logging.info("stdin cerrado correctamente")
             except Exception:
-                logging.info("ℹ️ stdin ya estaba cerrado")
+                logging.info("stdin ya estaba cerrado")
 
-            logging.info("⏳ Recopilando stdout...")
+            logging.info("Recopilando stdout...")
 
             stdout_lines = []
             timeout_count = 0
-            max_timeout = 50  # 5 segundos
+            max_timeout = 50
 
             while timeout_count < max_timeout:
                 try:
@@ -272,80 +270,77 @@ class AnalysisManager:
                 except queue.Empty:
                     break
 
-            # ✅ Esperamos que el proceso termine
             try:
                 process.wait(timeout=2)
             except subprocess.TimeoutExpired:
                 process.kill()
-                logging.error("⚠️ Proceso ARM64 se colgó, fue terminado manualmente")
+                logging.error("Proceso ARM64 se colgó, fue terminado manualmente")
 
             stderr = process.stderr.read()
             stdout = ''.join(stdout_lines)
 
-            logging.info(f"🎯 Return code: {process.returncode}")
-            logging.info(f"📄 Stdout recopilado: {len(stdout)} caracteres")
+            logging.info(f"Return code: {process.returncode}")
+            logging.info(f"Stdout recopilado: {len(stdout)} caracteres")
             if stdout:
-                logging.info(f"📄 Stdout (preview): {stdout[:500]}")
+                logging.info(f"Stdout (preview): {stdout[:500]}")
             else:
-                logging.warning("⚠️ No se recibió stdout")
+                logging.warning("No se recibió stdout")
 
             if stderr:
-                logging.warning(f"⚠️ Stderr: {stderr[:300]}")
+                logging.warning(f"Stderr: {stderr[:300]}")
 
             if stdout and len(stdout) > 50:
                 with open(output_file, 'w') as f:
                     f.write(stdout)
-                logging.info("✅ ARM64 ejecutado exitosamente")
+                logging.info("ARM64 ejecutado exitosamente")
                 return True
             else:
-                logging.error(f"❌ Stdout insuficiente o proceso falló")
+                logging.error("Stdout insuficiente o proceso falló")
                 return False
 
         except Exception as e:
-            logging.error(f"❌ Error general: {e}")
+            logging.error(f"Error general: {e}")
             return False
+
 
     def _convert_to_arm64_format(self, input_file):
         """
         Convierte el archivo de Python al formato que acepta ARM64
         """
         try:
-            # Leer datos del archivo original
             with open(input_file, 'r') as f:
                 content = f.read()
-            
-            # Extraer números
+
             numbers = []
             for line in content.strip().split('\n'):
                 line = line.strip()
-                if line and line != '$': 
+                if line and line != '$':
                     try:
-                        # Convertir a entero (formato que acepta ARM64)
                         numbers.append(int(float(line)))
                     except:
                         continue
-            
+
             if not numbers:
                 logging.error("No se encontraron números válidos")
                 return None
-            
-            # Crear archivo en el directorio build (desde Backend/)
-            build_dir = "./Arm/build"  # Desde Backend/ hacia Arm/build/
+
+            build_dir = "./Arm/build"
             timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
             filename = f"sensor_data_{timestamp}.txt"
             filepath = os.path.join(build_dir, filename)
-            
+
             with open(filepath, 'w') as f:
                 for num in numbers:
                     f.write(f"{num}\n")
                 f.write("$\n")
-            
+
             logging.info(f"Archivo ARM64 creado: {filepath} ({len(numbers)} valores)")
             return filepath
-            
+
         except Exception as e:
             logging.error(f"Error convirtiendo archivo: {e}")
             return None
+
 
     def _parse_all_results(self, output_file, sensor_name):
         """
