@@ -1,11 +1,3 @@
-/*
-    atoi_partial.s - VERSION CON DETECCIÓN DE EOF
-    
-    Retorna valores especiales:
-    - Número positivo: cantidad de números procesados
-    - -1: Encontró '$' (fin de archivo)
-*/
-
 .global atoi_partial
 
 .section .text

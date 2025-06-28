@@ -40,12 +40,13 @@ print_number:
     uxtw    x2, w3            // longitud original en x2
 
     // --- Parche temporal: si longitud == 4, intercambia últimos 2 dígitos ---
-    cmp     w3, 4
+/*    cmp     w3, 4
     bne     .no_swap          // si no son 4 dígitos, salta swap
     ldrb    w5, [x1, #2]      // tercer dígito
     ldrb    w6, [x1, #3]      // cuarto dígito
     strb    w6, [x1, #2]
     strb    w5, [x1, #3]
+*/
 .no_swap:
 
     mov     x8, 64            // syscall write

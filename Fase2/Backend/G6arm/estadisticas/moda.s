@@ -11,13 +11,6 @@ moda:
     stp x23, x24, [sp, #-16]!
     stp x25, x26, [sp, #-16]!
 
-    // Mensaje inicial
-    mov x0, 1
-    adr x1, moda_start_msg
-    mov x2, 18
-    mov x8, 64
-    svc 0
-
     // Obtener array
     ldr x19, =data_array_limits
     ldr x19, [x19]
@@ -27,105 +20,6 @@ moda:
     ldr x20, =data_array_limits_size
     ldr x20, [x20]
     cbz x20, .moda_empty
-
-    // SOLO DEBUG: Mostrar el tamaño real usando método simple
-    mov x0, 1
-    adr x1, debug_msg
-    mov x2, 12
-    mov x8, 64
-    svc 0
-
-    // Convertir tamaño a string manualmente (solo para números pequeños)
-    cmp x20, 10
-    blt .size_single_digit
-
-    cmp x20, 100
-    blt .size_two_digits
-
-    cmp x20, 1000
-    blt .size_three_digits
-
-    // Si es >= 1000, mostrar "BIG"
-    mov x0, 1
-    adr x1, big_msg
-    mov x2, 3
-    mov x8, 64
-    svc 0
-    b .size_done
-
-.size_single_digit:
-    add w20, w20, #'0'
-    adr x1, char_buffer
-    strb w20, [x1]
-    mov x0, 1
-    mov x2, 1
-    mov x8, 64
-    svc 0
-    b .size_done
-
-.size_two_digits:
-    mov x1, 10
-    udiv x2, x20, x1
-    msub x3, x2, x1, x20
-
-    add w2, w2, #'0'
-    adr x4, char_buffer
-    strb w2, [x4]
-    mov x0, 1
-    mov x1, x4
-    mov x2, 1
-    mov x8, 64
-    svc 0
-
-    add w3, w3, #'0'
-    strb w3, [x4]
-    mov x0, 1
-    mov x1, x4
-    mov x2, 1
-    mov x8, 64
-    svc 0
-    b .size_done
-
-.size_three_digits:
-    mov x1, 100
-    udiv x2, x20, x1
-    msub x3, x2, x1, x20
-
-    add w2, w2, #'0'
-    adr x4, char_buffer
-    strb w2, [x4]
-    mov x0, 1
-    mov x1, x4
-    mov x2, 1
-    mov x8, 64
-    svc 0
-
-    mov x1, 10
-    udiv x2, x3, x1
-    msub x5, x2, x1, x3
-
-    add w2, w2, #'0'
-    strb w2, [x4]
-    mov x0, 1
-    mov x1, x4
-    mov x2, 1
-    mov x8, 64
-    svc 0
-
-    add w5, w5, #'0'
-    strb w5, [x4]
-    mov x0, 1
-    mov x1, x4
-    mov x2, 1
-    mov x8, 64
-    svc 0
-
-.size_done:
-    mov x0, 1
-    adr x1, newline
-    mov x2, 1
-    mov x8, 64
-    svc 0
 
     // ALGORITMO ORIGINAL DE MODA (SIN TOCAR)
     mov x21, 0              // elemento con mayor frecuencia (moda)
@@ -172,28 +66,13 @@ moda:
 
     mov x0, 1
     adr x1, moda_result_msg
-    mov x2, 13
+    mov x2, 6
     mov x8, 64
     svc 0
 
     // Imprimir la moda usando el método simple que funcionaba
     mov x0, x21
     bl convert_and_print
-
-    mov x0, 1
-    adr x1, moda_appears_msg
-    mov x2, 10
-    mov x8, 64
-    svc 0
-
-    mov x0, x22
-    bl convert_and_print
-
-    mov x0, 1
-    adr x1, moda_times_msg
-    mov x2, 8
-    mov x8, 64
-    svc 0
 
     b .moda_exit
 
@@ -264,27 +143,12 @@ convert_and_print:
     ret
 
 .moda_no_array:
-    mov x0, 1
-    adr x1, moda_no_array_msg
-    mov x2, 20
-    mov x8, 64
-    svc 0
     b .moda_exit
 
 .moda_empty:
-    mov x0, 1
-    adr x1, moda_empty_msg
-    mov x2, 15
-    mov x8, 64
-    svc 0
     b .moda_exit
 
 .moda_no_data:
-    mov x0, 1
-    adr x1, moda_no_data_msg
-    mov x2, 25
-    mov x8, 64
-    svc 0
     b .moda_exit
 
 .moda_exit:
@@ -296,26 +160,8 @@ convert_and_print:
     ret
 
 .section .data
-moda_start_msg:
-    .ascii "Calculando moda...\n"
-debug_msg:
-    .ascii "Array size: "
-big_msg:
-    .ascii "BIG"
-newline:
-    .ascii "\n"
 moda_result_msg:
-    .ascii "La moda es: "
-moda_appears_msg:
-    .ascii " (aparece "
-moda_times_msg:
-    .ascii " veces)\n"
-moda_no_array_msg:
-    .ascii "ERROR: No hay datos\n"
-moda_empty_msg:
-    .ascii "ERROR: Array vacio\n"
-moda_no_data_msg:
-    .ascii "ERROR: No se encontraron datos\n"
+    .ascii "Moda: "
 
 .section .bss
 char_buffer:
