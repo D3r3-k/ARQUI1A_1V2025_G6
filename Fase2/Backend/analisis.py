@@ -180,38 +180,33 @@ class AnalysisManager:
         Ejecuta ARM64 con delays y captura stdout en tiempo real
         """
         try:
-            # Cambiar a formato compatible con ARM64
             arm64_file = self._convert_to_arm64_format(input_file)
             if not arm64_file:
                 return False
-            
-            # Rutas absolutas
+
             current_dir = os.path.dirname(os.path.abspath(__file__))
             executable_path = os.path.join(current_dir, "Arm", "build", "main")
             build_dir = os.path.join(current_dir, "Arm", "build")
-            
+
             if not os.path.exists(executable_path):
-                logging.error(f"❌ Ejecutable no encontrado")
+                logging.error("❌ Ejecutable no encontrado")
                 return False
-            
+
             filename = os.path.basename(arm64_file)
             logging.info(f"🚀 Ejecutando con delays - Archivo: {filename}")
-            
-            # ============ USAR THREADING PARA LEER STDOUT ============
+
             import threading
             import queue
             import time
-            
+
             def read_stdout(process, stdout_queue):
-                """Lee stdout en un hilo separado"""
                 try:
                     for line in iter(process.stdout.readline, ''):
                         stdout_queue.put(line)
                     process.stdout.close()
                 except:
                     pass
-            
-            # ============ CREAR PROCESO ============
+
             process = subprocess.Popen(
                 [executable_path],
                 stdin=subprocess.PIPE,
@@ -219,128 +214,97 @@ class AnalysisManager:
                 stderr=subprocess.PIPE,
                 text=True,
                 cwd=build_dir,
-                bufsize=1  # Line buffered
+                bufsize=1
             )
-            
-            # Crear queue para stdout y hilo lector
+
             stdout_queue = queue.Queue()
             stdout_thread = threading.Thread(target=read_stdout, args=(process, stdout_queue))
             stdout_thread.daemon = True
             stdout_thread.start()
-            
-            try:
-                # ============ ENVIAR COMANDOS CON VERIFICACIÓN ============
-                def send_command_safely(cmd, delay=1):
-                    if process.poll() is not None:  # Proceso ya terminó
-                        logging.warning(f"⚠️ Proceso terminó antes de enviar: {cmd}")
-                        return False
-                    try:
-                        process.stdin.write(f"{cmd}\n")
-                        process.stdin.flush()
-                        time.sleep(delay)
-                        return True
-                    except (BrokenPipeError, ValueError):
-                        logging.warning(f"⚠️ Error al enviar: {cmd}")
-                        return False
-                
-                # Enviar comandos uno por uno
-                logging.info("📝 Enviando comando: 3")
-                if not send_command_safely("3", 1):
+
+            def send_command_safely(cmd, delay=1):
+                if process.poll() is not None:
+                    logging.warning(f"⚠️ Proceso terminó antes de enviar: {cmd}")
                     return False
-                    
-                logging.info(f"📝 Enviando archivo: {filename}")
-                if not send_command_safely(filename, 1):
-                    return False
-                    
-                logging.info("📝 Enviando comando: 1")
-                if not send_command_safely("1", 1):
-                    return False
-                    
-                logging.info("📝 Enviando comando: 8")
-                if not send_command_safely("8", 2):  # Más tiempo para estadísticas
-                    return False
-                    
-                logging.info("📝 Enviando comando: 9")
-                if not send_command_safely("9", 1):
-                    return False
-                    
-                logging.info("📝 Enviando comando: 6")
-                if not send_command_safely("6", 0):  # Sin delay al final
-                    return False
-                
-                # ============ CERRAR STDIN ============
                 try:
-                    process.stdin.close()
-                    logging.info("✅ stdin cerrado correctamente")
-                except:
-                    logging.info("ℹ️ stdin ya estaba cerrado")
-                
-                # ============ ESPERAR Y RECOPILAR STDOUT ============
-                logging.info("⏳ Recopilando stdout...")
-                
-                stdout_lines = []
-                timeout_count = 0
-                max_timeout = 50  # 5 segundos total
-                
-                while timeout_count < max_timeout:
-                    try:
-                        # Intentar leer stdout con timeout corto
-                        line = stdout_queue.get(timeout=0.1)
-                        stdout_lines.append(line)
-                        timeout_count = 0  # Reset timeout si recibimos datos
-                    except queue.Empty:
-                        timeout_count += 1
-                        # Verificar si el proceso terminó
-                        if process.poll() is not None:
-                            break
-                
-                # Recopilar cualquier línea restante
-                while not stdout_queue.empty():
-                    try:
-                        stdout_lines.append(stdout_queue.get_nowait())
-                    except queue.Empty:
-                        break
-                
-                # Esperar que el proceso termine
-                try:
-                    _, stderr = process.communicate(timeout=2)
-                except subprocess.TimeoutExpired:
-                    process.kill()
-                    _, stderr = process.communicate()
-                
-                stdout = ''.join(stdout_lines)
-                
-                logging.info(f"🎯 Return code: {process.returncode}")
-                logging.info(f"📄 Stdout recopilado: {len(stdout)} caracteres")
-                
-                if stdout:
-                    logging.info(f"📄 Stdout (preview): {stdout[:500]}")
-                else:
-                    logging.warning("⚠️ No se recibió stdout")
-                
-                if stderr:
-                    logging.warning(f"⚠️ Stderr: {stderr[:300]}")
-                
-                # ============ VERIFICAR ÉXITO Y GUARDAR ============
-                if stdout and len(stdout) > 50:  # Verificar que hay contenido sustancial
-                    # Guardar la salida completa
-                    with open(output_file, 'w') as f:
-                        f.write(stdout)
-                    
-                    logging.info("✅ ARM64 ejecutado exitosamente")
+                    process.stdin.write(f"{cmd}\n")
+                    process.stdin.flush()
+                    time.sleep(delay)
                     return True
-                else:
-                    logging.error(f"❌ Stdout insuficiente o proceso falló")
+                except (BrokenPipeError, ValueError):
+                    logging.warning(f"⚠️ Error al enviar: {cmd}")
                     return False
-                    
-            except Exception as e:
-                logging.error(f"❌ Error enviando comandos: {e}")
+
+            # Enviar los comandos
+            if not send_command_safely("3", 1): return False
+            if not send_command_safely(filename, 1): return False
+            if not send_command_safely("1", 1): return False
+            if not send_command_safely("8", 2): return False
+            if not send_command_safely("9", 1): return False
+            if not send_command_safely("6", 0): return False
+
+            # ✅ Ahora sí cerramos stdin
+            try:
+                process.stdin.close()
+                logging.info("✅ stdin cerrado correctamente")
+            except Exception:
+                logging.info("ℹ️ stdin ya estaba cerrado")
+
+            logging.info("⏳ Recopilando stdout...")
+
+            stdout_lines = []
+            timeout_count = 0
+            max_timeout = 50  # 5 segundos
+
+            while timeout_count < max_timeout:
+                try:
+                    line = stdout_queue.get(timeout=0.1)
+                    stdout_lines.append(line)
+                    timeout_count = 0
+                except queue.Empty:
+                    timeout_count += 1
+                    if process.poll() is not None:
+                        break
+
+            while not stdout_queue.empty():
+                try:
+                    stdout_lines.append(stdout_queue.get_nowait())
+                except queue.Empty:
+                    break
+
+            # ✅ Esperamos que el proceso termine
+            try:
+                process.wait(timeout=2)
+            except subprocess.TimeoutExpired:
+                process.kill()
+                logging.error("⚠️ Proceso ARM64 se colgó, fue terminado manualmente")
+
+            stderr = process.stderr.read()
+            stdout = ''.join(stdout_lines)
+
+            logging.info(f"🎯 Return code: {process.returncode}")
+            logging.info(f"📄 Stdout recopilado: {len(stdout)} caracteres")
+            if stdout:
+                logging.info(f"📄 Stdout (preview): {stdout[:500]}")
+            else:
+                logging.warning("⚠️ No se recibió stdout")
+
+            if stderr:
+                logging.warning(f"⚠️ Stderr: {stderr[:300]}")
+
+            if stdout and len(stdout) > 50:
+                with open(output_file, 'w') as f:
+                    f.write(stdout)
+                logging.info("✅ ARM64 ejecutado exitosamente")
+                return True
+            else:
+                logging.error(f"❌ Stdout insuficiente o proceso falló")
                 return False
-                
+
         except Exception as e:
             logging.error(f"❌ Error general: {e}")
             return False
-        
+
     def _convert_to_arm64_format(self, input_file):
         """
         Convierte el archivo de Python al formato que acepta ARM64
