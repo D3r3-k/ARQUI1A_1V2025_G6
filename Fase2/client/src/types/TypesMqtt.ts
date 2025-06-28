@@ -63,9 +63,11 @@ export type CalculationResults = {
 };
 
 export type ControlsTipic = {
-  temperature: boolean;
-  humidity: boolean;
-  light: boolean;
-  air_quality: boolean;
-  presence: boolean;
+  Iluminacion: boolean;
+  red_led: boolean;
+  yellow_led: boolean;
+  green_led: boolean;
+  blue_led: boolean;
+  motor_fan: boolean;
+  buzzer: boolean;
 };

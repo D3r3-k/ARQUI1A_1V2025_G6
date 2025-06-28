@@ -28,7 +28,7 @@ interface MqttContextType {
   activeAlerts: AlertItem[];
   alertCount: number;
   calculateRes: CalculationResults;
-  controls: Record<string, boolean>;
+  controls: ControlsTipic;
   handleControlChange: (control: string, value: boolean) => void;
 }
 
@@ -115,11 +115,13 @@ export const MqttProvider = ({ children }: { children: ReactNode }) => {
     suavizado: -1,
   });
   const [controls, setControls] = useState<ControlsTipic>({
-    temperature: true,
-    humidity: true,
-    light: true,
-    air_quality: true,
-    presence: true,
+    Iluminacion: true,
+    red_led: true,
+    yellow_led: true,
+    green_led: true,
+    blue_led: true,
+    motor_fan: true,
+    buzzer: true
   });
 
   const formatTimestamp = (ts: number | string): string => {
@@ -316,7 +318,7 @@ export const MqttProvider = ({ children }: { children: ReactNode }) => {
       client.off("message", handleActuadoresMessage);
     };
   }, []);
-  
+
   // Suscripción a resultados de cálculos
   useEffect(() => {
     const client = clientRef.current;

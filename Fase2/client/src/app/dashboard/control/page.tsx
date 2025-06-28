@@ -100,7 +100,7 @@ export default function ControlPage() {
               icon={Lightbulb}
               title="Iluminacion"
               description="Indica la iluminacion"
-              initialState={controls.light}
+              initialState={controls.Iluminacion}
               color="white"
               disabled={isAutoMode}
             />
@@ -109,7 +109,7 @@ export default function ControlPage() {
               icon={Lightbulb}
               title="LED Rojo"
               description="Indica estado de alerta"
-              initialState={true}
+              initialState={controls.red_led}
               color="red"
               disabled={isAutoMode}
             />
@@ -118,7 +118,7 @@ export default function ControlPage() {
               icon={Lightbulb}
               title="LED Amarillo"
               description="Indica estado de advertencia"
-              initialState={true}
+              initialState={controls.yellow_led}
               color="yellow"
               disabled={isAutoMode}
             />
@@ -127,7 +127,7 @@ export default function ControlPage() {
               icon={Lightbulb}
               title="LED Verde"
               description="Indica estado normal"
-              initialState={true}
+              initialState={controls.green_led}
               color="green"
               disabled={isAutoMode}
             />
@@ -136,7 +136,7 @@ export default function ControlPage() {
               icon={Lightbulb}
               title="LED Azul"
               description="Indica estado de información"
-              initialState={true}
+              initialState={controls.blue_led}
               color="blue"
               disabled={isAutoMode}
             />
@@ -145,7 +145,7 @@ export default function ControlPage() {
               icon={Fan}
               title="Ventilador"
               description="Controla la velocidad del ventilador"
-              initialState={true}
+              initialState={controls.motor_fan}
               color="cyan"
               disabled={isAutoMode}
             />
@@ -154,7 +154,7 @@ export default function ControlPage() {
               icon={AudioLines}
               title="Buzzer"
               description="Emite sonidos de alerta"
-              initialState={true}
+              initialState={controls.buzzer}
               color="purple"
               disabled={isAutoMode}
             />
