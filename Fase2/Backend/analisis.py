@@ -181,7 +181,8 @@ class AnalysisManager:
         """
         try:
             # Comando: 3 (Set File) -> archivo -> 1 (Statistics) -> 8 (Todas) -> 2 (Predictions) -> 6 (Media M) -> 7 (Suavizado) -> 5 (Exit)
-            commands = f"3\n{input_file}\n1\n8\n9\n6\n"
+            absolute_input_file = os.path.abspath(input_file)
+            commands = f"3\n{absolute_input_file}\n1\n8\n9\n6\n"
             
             process = subprocess.run(
                 [self.arm64_stats_executable],
