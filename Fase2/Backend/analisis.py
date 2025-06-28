@@ -192,7 +192,7 @@ class AnalysisManager:
                 input=commands,
                 capture_output=True,
                 text=True,
-                timeout=10  # Más tiempo porque hace más cálculos
+                timeout=60  # Más tiempo porque hace más cálculos
             )
                     # AGREGAR ESTOS LOGS DETALLADOS:
             logging.info(f"ARM64 return code: {process.returncode}")
