@@ -256,11 +256,13 @@ class MQTTClient:
             return
   
         actuators_status = {
-            'temperature': shared.alert_status['temperature'],
-            'humidity': shared.alert_status['humidity'],
-            'light': shared.alert_status['light'],
-            'air_quality': shared.alert_status['air_quality'],
-            'presence': shared.alert_status['presence']
+            'red_led': shared.actuadores['red_led'],
+            'yellow_led': shared.actuadores['yellow_led'], 
+            'green_led': shared.actuadores['green_led'],
+            'blue_led': shared.actuadores['blue_led'],
+            'motor_fan': shared.actuadores['motor_fan'],
+            'buzzer': shared.actuadores['buzzer'],
+            'Iluminacion': shared.actuadores['Iluminacion'],
         }
         payload_json = json.dumps(actuators_status)
 
