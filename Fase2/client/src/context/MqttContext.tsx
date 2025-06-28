@@ -5,6 +5,7 @@ import {
   HistoryItem,
   TopicHistoryStack,
   CalculationResults,
+  ControlsTipic,
 } from "@/types/TypesMqtt";
 import mqtt, { MqttClient } from "mqtt";
 import { createContext, ReactNode, useEffect, useRef, useState } from "react";
@@ -27,9 +28,13 @@ interface MqttContextType {
   activeAlerts: AlertItem[];
   alertCount: number;
   calculateRes: CalculationResults;
+  controls: Record<string, boolean>;
+  handleControlChange: (control: string, value: boolean) => void;
 }
 
-export const MqttContext = createContext<MqttContextType | undefined>(undefined);
+export const MqttContext = createContext<MqttContextType | undefined>(
+  undefined
+);
 
 const STACKEABLE_TOPICS = [
   `${process.env.NEXT_PUBLIC_TOPICS_LINK}/temperatura`,
@@ -48,12 +53,19 @@ const INFO_TOPICS = [
 
 const alertTopic = `${process.env.NEXT_PUBLIC_TOPICS_LINK}/alertas`;
 const resultadosCalculosTopic = `${process.env.NEXT_PUBLIC_TOPICS_LINK}/resultados_calculos`;
+const actuadoresTopic = `${process.env.NEXT_PUBLIC_TOPICS_LINK}/actuadores`;
 
-type AlertKey = "temperature" | "humidity" | "light" | "air_quality" | "presence";
+type AlertKey =
+  | "temperature"
+  | "humidity"
+  | "light"
+  | "air_quality"
+  | "presence";
 const messageAlerts: Record<AlertKey, string> = {
   temperature: "Temperatura fuera del rango óptimo para el vivero de plantas.",
   humidity: "Humedad inadecuada detectada en el vivero.",
-  light: "Niveles de iluminación no adecuados para el crecimiento de las plantas.",
+  light:
+    "Niveles de iluminación no adecuados para el crecimiento de las plantas.",
   air_quality: "Calidad del aire comprometida en el vivero.",
   presence: "Se ha detectado presencia no autorizada en el vivero.",
 };
@@ -64,7 +76,9 @@ const INFO_STORAGE_KEY = "mqttInfoTopics";
 export const MqttProvider = ({ children }: { children: ReactNode }) => {
   const clientRef = useRef<MqttClient | null>(null);
 
-  const [stackTopics, setStackTopics] = useState<Record<TopicName, TopicHistoryStack>>(() => {
+  const [stackTopics, setStackTopics] = useState<
+    Record<TopicName, TopicHistoryStack>
+  >(() => {
     try {
       const saved = localStorage.getItem(STACK_STORAGE_KEY);
       return saved ? JSON.parse(saved) : {};
@@ -73,16 +87,20 @@ export const MqttProvider = ({ children }: { children: ReactNode }) => {
     }
   });
 
-  const [infoTopics, setInfoTopics] = useState<Record<TopicName, TopicAmbient>>(() => {
-    try {
-      const saved = localStorage.getItem(INFO_STORAGE_KEY);
-      return saved ? JSON.parse(saved) : {};
-    } catch {
-      return {};
+  const [infoTopics, setInfoTopics] = useState<Record<TopicName, TopicAmbient>>(
+    () => {
+      try {
+        const saved = localStorage.getItem(INFO_STORAGE_KEY);
+        return saved ? JSON.parse(saved) : {};
+      } catch {
+        return {};
+      }
     }
-  });
+  );
 
-  const [ambientTopics, setAmbientTopics] = useState<Record<TopicName, TopicAmbient>>({});
+  const [ambientTopics, setAmbientTopics] = useState<
+    Record<TopicName, TopicAmbient>
+  >({});
   const [isConnected, setIsConnected] = useState(false);
   const [activeAlerts, setActiveAlerts] = useState<AlertItem[]>([]);
   const [calculateRes, setCalculateRes] = useState<CalculationResults>({
@@ -96,8 +114,13 @@ export const MqttProvider = ({ children }: { children: ReactNode }) => {
     movil: -1,
     suavizado: -1,
   });
-
-
+  const [controls, setControls] = useState<ControlsTipic>({
+    temperature: true,
+    humidity: true,
+    light: true,
+    air_quality: true,
+    presence: true,
+  });
 
   const formatTimestamp = (ts: number | string): string => {
     const date = new Date(Number(ts));
@@ -124,7 +147,9 @@ export const MqttProvider = ({ children }: { children: ReactNode }) => {
 
   // Conexión inicial y suscripción
   useEffect(() => {
-    const client = mqtt.connect(process.env.NEXT_PUBLIC_MQTT_BROKER_URL || "mqtt://localhost:1883");
+    const client = mqtt.connect(
+      process.env.NEXT_PUBLIC_MQTT_BROKER_URL || "mqtt://localhost:1883"
+    );
     clientRef.current = client;
 
     client.on("connect", () => {
@@ -195,7 +220,17 @@ export const MqttProvider = ({ children }: { children: ReactNode }) => {
         let anyNewAlert = false;
 
         Object.entries(alertData.alerts).forEach(([key, value]) => {
-          if ((["temperature", "humidity", "light", "air_quality", "presence"] as string[]).includes(key)) {
+          if (
+            (
+              [
+                "temperature",
+                "humidity",
+                "light",
+                "air_quality",
+                "presence",
+              ] as string[]
+            ).includes(key)
+          ) {
             const sensor = key as AlertKey;
             const mensaje = messageAlerts[sensor];
 
@@ -248,6 +283,40 @@ export const MqttProvider = ({ children }: { children: ReactNode }) => {
     };
   }, []);
 
+  // Suscripción a actuadores y setear los valores en setControls
+  useEffect(() => {
+    const client = clientRef.current;
+    if (!client) return;
+
+    const handleActuadoresMessage = (topic: string, message: Buffer) => {
+      if (topic === actuadoresTopic) {
+        try {
+          const actuadoresData = JSON.parse(message.toString());
+          setControls((prev) => ({
+            ...prev,
+            ...actuadoresData,
+          }));
+        } catch (e) {
+          console.error("Error parseando mensaje de actuadores", e);
+        }
+      }
+    };
+
+    client.subscribe(actuadoresTopic);
+    client.on("message", handleActuadoresMessage);
+
+    return () => {
+      if (client.connected && !client.disconnecting) {
+        client.unsubscribe(actuadoresTopic, (err) => {
+          if (err) {
+            console.warn("Error durante unsubscribe:", err);
+          }
+        });
+      }
+      client.off("message", handleActuadoresMessage);
+    };
+  }, []);
+  
   // Suscripción a resultados de cálculos
   useEffect(() => {
     const client = clientRef.current;
@@ -279,7 +348,6 @@ export const MqttProvider = ({ children }: { children: ReactNode }) => {
     };
   }, []);
 
-
   const publish = (topic: string, message: string) => {
     if (clientRef.current && isConnected) {
       clientRef.current.publish(topic, message, (err) => {
@@ -287,6 +355,18 @@ export const MqttProvider = ({ children }: { children: ReactNode }) => {
       });
     }
   };
+
+  const handleControlChange = (control: string, value: boolean) => {
+    if (clientRef.current && isConnected) {
+      const newControls = { ...controls, [control]: value };
+      setControls(newControls);
+      clientRef.current.publish(actuadoresTopic, JSON.stringify(newControls), (err) => {
+        if (err) {
+          console.error(`Error al publicar en ${actuadoresTopic}:`, err);
+        }
+      });
+    }
+  }
 
   return (
     <MqttContext.Provider
@@ -298,7 +378,9 @@ export const MqttProvider = ({ children }: { children: ReactNode }) => {
         publish,
         activeAlerts,
         alertCount: activeAlerts.length,
-        calculateRes
+        calculateRes,
+        controls,
+        handleControlChange: (control: string, value: boolean) => handleControlChange(control, value)
       }}
     >
       {children}

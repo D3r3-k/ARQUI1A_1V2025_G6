@@ -17,7 +17,7 @@ const topic = `${process.env.NEXT_PUBLIC_TOPICS_LINK}/modo`;
 
 export default function ControlPage() {
   // Hook's
-  const { publish } = useMqtt();
+  const { publish, controls } = useMqtt();
   // State's
   const [isAutoMode, setIsAutoMode] = useState<boolean>(true);
   // Effect's
@@ -100,7 +100,7 @@ export default function ControlPage() {
               icon={Lightbulb}
               title="Iluminacion"
               description="Indica la iluminacion"
-              initialState={true}
+              initialState={controls.light}
               color="white"
               disabled={isAutoMode}
             />

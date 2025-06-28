@@ -61,3 +61,11 @@ export type CalculationResults = {
   suavizado?: number;
   movil?: number;
 };
+
+export type ControlsTipic = {
+  temperature: boolean;
+  humidity: boolean;
+  light: boolean;
+  air_quality: boolean;
+  presence: boolean;
+};
