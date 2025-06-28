@@ -16,7 +16,7 @@ class Sensors:
         self.pcf8591_address = 0x48  # Dirección por defecto
 
         # Sensor DHT11
-        self.dht = adafruit_dht.DHT11(board.D4)
+        #self.dht = adafruit_dht.DHT11(board.D4)
 
         # Sensor ultrasónico
         self.distance_sensor = DistanceSensor(echo=24, trigger=23, max_distance=2.0)
@@ -51,12 +51,12 @@ class Sensors:
             return val - (1 << bits)
         return val
     
-    def read_dht11(self):
-        try:
-            shared.temperature = int(self.dht.temperature)
-            shared.humidity = int(self.dht.humidity)
-        except Exception as e:
-            print(f"Error leyendo DHT11: {e}")
+    # def read_dht11(self):
+    #     try:
+    #         shared.temperature = int(self.dht.temperature)
+    #         shared.humidity = int(self.dht.humidity)
+    #     except Exception as e:
+    #         print(f"Error leyendo DHT11: {e}")
 
     def read_ultrasonic(self):
         try:
@@ -152,7 +152,7 @@ class Sensors:
 
 
     def read_sensors(self):
-        self.read_dht11()
+        #self.read_dht11()
         self.read_ultrasonic()
         self.read_light_sensor()
         self.read_pressure_sensor()
