@@ -190,7 +190,10 @@ class AnalysisManager:
                 text=True,
                 timeout=60  # Más tiempo porque hace más cálculos
             )
-            
+                    # AGREGAR ESTOS LOGS DETALLADOS:
+            logging.info(f"ARM64 return code: {process.returncode}")
+            logging.info(f"ARM64 stdout: {repr(process.stdout)}")
+            logging.info(f"ARM64 stderr: {repr(process.stderr)}")
             if process.returncode == 0:
                 # Guardar la salida completa del stdout
                 with open(output_file, 'w') as f:
