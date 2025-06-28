@@ -27,17 +27,21 @@ mediaMain:
         ldr     x1, [x1]
         ldr     x2, =data_array_limits_size
         ldr     w2, [x2]
-
         bl      media          // x0 ← media
-
-        bl      print_number   // imprime media
+        
+        // PRESERVAR x0 antes de print_number
+        mov     x10, x0        // x10 = resultado media
+        bl      print_number   // imprime media (puede cambiar x0)
+        
         // '\n'
         ldr     x1, =newline
         mov     x2, #1
         mov     x0, #1
         mov     x8, #64
         svc     #0
-
+        
+        // RESTAURAR resultado antes de retornar
+        mov     x0, x10        // x0 = resultado media preservado
         ldp     x29, x30, [sp], #16
         ret
 

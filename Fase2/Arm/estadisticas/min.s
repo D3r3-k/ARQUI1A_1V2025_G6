@@ -3,6 +3,8 @@ newline:
     .ascii "\n"
 no_data_msg:
     .ascii "No data available\n"
+min_msg:
+    .ascii "Minimo: "
 
 .section .text
 .global minMain
@@ -28,7 +30,18 @@ minMain:
     // Calcular minimo
     bl min
     
-    // Imprimir resultado
+    // PRESERVAR x0 antes de imprimir mensaje
+    mov x10, x0                 // x10 = resultado mínimo
+    
+    // Imprimir mensaje "Minimo: "
+    mov x0, 1
+    ldr x1, =min_msg
+    mov x2, 8
+    mov x8, 64
+    svc 0
+    
+    // Restaurar resultado y imprimir
+    mov x0, x10                 // x0 = resultado mínimo preservado
     bl print_number
     
     // Imprimir salto de línea
@@ -38,9 +51,12 @@ minMain:
     mov x8, 64
     svc 0
     
-    // Restaurar dirección de retorno y volver al submenú
+    // RESTAURAR resultado antes del ret
+    mov x0, x10                 // x0 = resultado mínimo preservado
+    
+    // Restaurar dirección de retorno
     mov x30, x26
-    b Sub_Menu
+    ret
 
 .no_data:
     // Mostrar mensaje de error si no hay datos
@@ -52,7 +68,7 @@ minMain:
     
     // Restaurar dirección de retorno y volver al submenú
     mov x30, x26
-    b Sub_Menu
+    ret
 
 // -------------------------------------------------
 // Función: min
@@ -70,10 +86,10 @@ min:
     mov x3, 1                   // x3 = índice actual (use 64-bit register)
     
 .min_loop:
-    cmp x3, x2                  // Compare index with size (x2 is zero-extended)
+    cmp x3, x2                  // Compare index with size
     beq .done                   // Si llegamos al final, terminar
     
-    ldr x4, [x1, x3, lsl #3]    // Cargar elemento actual (use x3 for offset)
+    ldr x4, [x1, x3, lsl #3]    // Cargar elemento actual
     cmp x4, x0
     bge .no_update              // Si no es menor, saltar
     mov x0, x4                  // Actualizar minimo
@@ -81,7 +97,6 @@ min:
 .no_update:
     add x3, x3, 1               // Incrementar índice
     b .min_loop
-
 .empty_array:
     mov x0, 0                   // Retornar 0 si el arreglo está vacío
     

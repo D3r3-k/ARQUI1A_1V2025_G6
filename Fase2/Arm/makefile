@@ -12,11 +12,16 @@ BUILD_DIR = build
 MAIN_SRC = $(SRC_DIR)/main.s
 LIB_SRC = $(wildcard $(LIB_DIR)/*.s)
 STATS_SRC = $(wildcard $(STATS_DIR)/*.s)
+PRED_DIR = predicciones
+PRED_SRC = $(wildcard $(PRED_DIR)/*.s)
+XML_SRC = $(SRC_DIR)/xml_export.s
 
 # Objetos
 MAIN_OBJ = $(BUILD_DIR)/main.o
 LIB_OBJ = $(patsubst $(LIB_DIR)/%.s, $(BUILD_DIR)/lib_%.o, $(LIB_SRC))
 STATS_OBJ = $(patsubst $(STATS_DIR)/%.s, $(BUILD_DIR)/stats_%.o, $(STATS_SRC))
+PRED_OBJ = $(patsubst $(PRED_DIR)/%.s, $(BUILD_DIR)/pred_%.o, $(PRED_SRC))
+XML_OBJ = $(BUILD_DIR)/xml_export.o
 
 # Ejecutable final
 OUTPUT = $(BUILD_DIR)/main
@@ -24,7 +29,7 @@ OUTPUT = $(BUILD_DIR)/main
 # Regla principal
 all: $(OUTPUT)
 
-# Compilar main.s
+# Compilar main_modificado_completo.s
 $(MAIN_OBJ): $(MAIN_SRC)
 	mkdir -p $(BUILD_DIR)
 	$(AS) $< -o $@
@@ -39,10 +44,34 @@ $(BUILD_DIR)/stats_%.o: $(STATS_DIR)/%.s
 	mkdir -p $(BUILD_DIR)
 	$(AS) $< -o $@
 
+# Compilar predicciones/*.s → pred_%.o
+$(BUILD_DIR)/pred_%.o: $(PRED_DIR)/%.s
+	mkdir -p $(BUILD_DIR)
+	$(AS) $< -o $@
+
+# Compilar xml_export_completo.s
+$(XML_OBJ): $(XML_SRC)
+	mkdir -p $(BUILD_DIR)
+	$(AS) $< -o $@
+
 # Enlazar todos los objetos
-$(OUTPUT): $(MAIN_OBJ) $(LIB_OBJ) $(STATS_OBJ)
+$(OUTPUT): $(MAIN_OBJ) $(LIB_OBJ) $(STATS_OBJ) $(PRED_OBJ) $(XML_OBJ)
 	$(LD) $^ -o $@
 
 # Limpiar
 clean:
 	rm -rf $(BUILD_DIR)
+
+# Regla para probar la compilación
+test: $(OUTPUT)
+	@echo "Compilación exitosa. Ejecutable en: $(OUTPUT)"
+	@echo "Para probar: cd $(BUILD_DIR) && ./main"
+
+# Mostrar estructura de archivos
+info:
+	@echo "=== ESTRUCTURA DEL PROYECTO ==="
+	@echo "Main: $(MAIN_SRC)"
+	@echo "XML Export: $(XML_SRC)"
+	@echo "Bibliotecas: $(LIB_SRC)"
+	@echo "Estadísticas: $(STATS_SRC)"
+	@echo "Ejecutable: $(OUTPUT)"

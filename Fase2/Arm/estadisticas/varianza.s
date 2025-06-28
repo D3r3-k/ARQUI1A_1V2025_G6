@@ -10,13 +10,6 @@ varianza:
     stp x21, x22, [sp, #-16]!
     stp x23, x24, [sp, #-16]!
 
-    // Mensaje inicial
-    mov x0, 1
-    adr x1, varianza_start_msg
-    mov x2, 23
-    mov x8, 64
-    svc 0
-
     // Obtener array de datos
     ldr x19, =data_array_limits
     ldr x19, [x19]
@@ -52,10 +45,10 @@ varianza:
     mul x24, x20, x20       // x24 = n²
     udiv x24, x23, x24      // x24 = varianza final
 
-    // Imprimir "La varianza es: "
+    // Imprimir "Varianza: "
     mov x0, 1
-    adr x1, varianza_result_msg
-    mov x2, 17
+    adr x1, varianza_msg
+    mov x2, 10
     mov x8, 64
     svc 0
 
@@ -69,6 +62,9 @@ varianza:
     mov x2, 1
     mov x8, 64
     svc 0
+
+    // Retornar la varianza en x0
+    mov x0, x24              // x0 = varianza calculada 
 
     b .varianza_exit
 
@@ -157,6 +153,7 @@ print_varianza_number:
     mov x2, 20
     mov x8, 64
     svc 0
+    mov x0, #-1              // AGREGAR: retornar -1 si no hay datos
     b .varianza_exit
 
 .varianza_empty:
@@ -165,6 +162,7 @@ print_varianza_number:
     mov x2, 15
     mov x8, 64
     svc 0
+    mov x0, #-1              // AGREGAR: retornar -1 si está vacío
     b .varianza_exit
 
 .varianza_exit:
@@ -175,10 +173,8 @@ print_varianza_number:
     ret
 
 .section .data
-varianza_start_msg:
-    .ascii "Calculando varianza...\n"
-varianza_result_msg:
-    .ascii "La varianza es: "
+varianza_msg:
+    .ascii "Varianza: "
 newline_msg:
     .ascii "\n"
 varianza_no_array_msg:
