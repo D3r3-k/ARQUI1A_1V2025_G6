@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<estadisticas>
+  <informacion_filtrado>
+    <filtro_aplicado>false</filtro_aplicado>
+    <total_datos>501</total_datos>
+  </informacion_filtrado>
+  <resultados_estadisticos>
+    <media>No calculado</media>
+    <mediana>No calculado</mediana>
+    <moda>No calculado</moda>
+    <minimo>48</minimo>
+    <maximo>10586</maximo>
+    <varianza>No calculado</varianza>
+  </resultados_estadisticos>
+  <predicciones>
+    <suavizado_exponencial>1</suavizado_exponencial>
+    <media_movil>No calculado</media_movil>
+  </predicciones>
+</estadisticas>
