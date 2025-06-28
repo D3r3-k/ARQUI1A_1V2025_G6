@@ -185,11 +185,8 @@ class AnalysisManager:
             if not arm64_file:
                 return False
             
-            # ============ RUTAS ABSOLUTAS CORREGIDAS ============
-            # Obtener directorio actual donde está analisis.py (Backend/)
+            # Rutas absolutas corregidas
             current_dir = os.path.dirname(os.path.abspath(__file__))
-            
-            # Construir rutas absolutas
             executable_path = os.path.join(current_dir, "Arm", "build", "main")
             build_dir = os.path.join(current_dir, "Arm", "build")
             
@@ -211,74 +208,58 @@ class AnalysisManager:
             
             # Crear proceso ARM64 - usar rutas absolutas
             process = subprocess.Popen(
-                [executable_path],  # Ruta absoluta al ejecutable
+                [executable_path],
                 stdin=subprocess.PIPE,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 text=True,
-                cwd=build_dir  # Cambiar directorio de trabajo a build/
+                cwd=build_dir
             )
             
-            # Enviar comandos con delays (como en bash que funciona)
+            # ============ NUEVA ESTRATEGIA: ENVIAR TODO DE UNA VEZ ============
+            # En lugar de enviar comando por comando con delays, enviar toda la secuencia
             import time
             
-            # Comando 3: Leer archivo
-            process.stdin.write("3\n")
-            process.stdin.flush()
-            time.sleep(1)
-            
-            # Nombre del archivo - solo el nombre sin ruta (porque ARM64 ejecuta desde build/)
+            # Nombre del archivo - solo el nombre sin ruta
             filename = os.path.basename(arm64_file)
-            process.stdin.write(f"{filename}\n")
-            process.stdin.flush()
-            time.sleep(1)
             
-            # Comando 1: Estadísticas
-            process.stdin.write("1\n")
-            process.stdin.flush()
-            time.sleep(0.5)
+            # Crear toda la secuencia de comandos de una vez
+            command_sequence = f"3\n{filename}\n1\n8\n9\n6\n"
             
-            # Comando 8: Todas las estadísticas
-            process.stdin.write("8\n")
-            process.stdin.flush()
-            time.sleep(1)
+            logging.info(f"📝 Enviando secuencia de comandos: {repr(command_sequence)}")
+            logging.info(f"📁 Nombre del archivo: {filename}")
             
-            # Comando 9: Regresar al menú principal
-            process.stdin.write("9\n")
-            process.stdin.flush()
-            time.sleep(0.5)
-            
-            # Comando 6: Salir
-            process.stdin.write("6\n")
-            process.stdin.flush()
-            
-            # Cerrar stdin y esperar resultado
-            process.stdin.close()
-            stdout, stderr = process.communicate(timeout=30)
-            
-            logging.info(f"🎯 ARM64 return code: {process.returncode}")
-            logging.info(f"📄 ARM64 stdout (primeros 500): {stdout[:500]}")
-            
-            if stderr:
-                logging.info(f"⚠️ ARM64 stderr: {stderr}")
-            
-            if process.returncode == 0 and "File loaded successfully" in stdout:
-                # Guardar la salida completa
-                with open(output_file, 'w') as f:
-                    f.write(stdout)
+            try:
+                # Enviar toda la secuencia y cerrar stdin
+                stdout, stderr = process.communicate(input=command_sequence, timeout=60)  # Aumentar timeout
                 
-                logging.info("✅ ARM64 cálculos completos exitosamente")
-                return True
-            else:
-                logging.error(f"❌ Error en ARM64 o archivo no se cargó")
+                logging.info(f"🎯 ARM64 return code: {process.returncode}")
+                logging.info(f"📄 ARM64 stdout (completo): {stdout}")
+                
+                if stderr:
+                    logging.warning(f"⚠️ ARM64 stderr: {stderr}")
+                
+                # Verificar si fue exitoso
+                if process.returncode == 0:
+                    # Guardar la salida completa
+                    with open(output_file, 'w') as f:
+                        f.write(stdout)
+                    
+                    logging.info("✅ ARM64 ejecutado exitosamente")
+                    return True
+                else:
+                    logging.error(f"❌ ARM64 terminó con código de error: {process.returncode}")
+                    return False
+                    
+            except subprocess.TimeoutExpired:
+                logging.error("⏰ Timeout ejecutando código ARM64")
+                process.kill()
                 return False
                 
-        except subprocess.TimeoutExpired:
-            logging.error("⏰ Timeout ejecutando código ARM64 completo")
-            process.kill()
-            return False
         except Exception as e:
             logging.error(f"❌ Error ejecutando ARM64 completo: {e}")
+            import traceback
+            logging.error(f"🔍 Traceback: {traceback.format_exc()}")
             return False
     
     def _convert_to_arm64_format(self, input_file):
