@@ -12,9 +12,9 @@ class AnalysisManager:
     
     def __init__(self):
         # Configuración de paths y archivos
-        self.temp_dir = "./G6arm/analysis_files" 
-        self.arm64_stats_executable = "./G6arm/build/main"  # Path de estadísticas
-        self.arm64_pred_executable = "./G6arm/build/main"  # Path de predicciones
+        self.temp_dir = "./Arm/analysis_files" 
+        self.arm64_stats_executable = "./Arm/build/main"  # Path de estadísticas
+        self.arm64_pred_executable = "./Arm/build/main"  # Path de predicciones
         
         # Crear directorio temporal si no existe
         os.makedirs(self.temp_dir, exist_ok=True)
@@ -66,42 +66,42 @@ class AnalysisManager:
             logging.info(f"✓ Datos obtenidos de MongoDB: {len(data)} valores")
             logging.info(f"✓ Primeros 5 valores: {data[:5] if len(data) >= 5 else data}")
             
-            # COMENTADO PARA TESTING - Descomentar cuando tengas ARM64
-            # output_file = f"{self.temp_dir}/complete_output_{normalized_sensor}.txt"
-            # success = self._execute_arm64_complete(input_file, output_file)
-            # 
-            # if success:
-            #     # 4. Procesar TODOS los resultados de una vez
-            #     results = self._parse_all_results(output_file, normalized_sensor)
-            #     
-            #     if results:
-            #         # 5. Guardar en MongoDB (ambos tipos)
-            #         self._save_to_mongo(results, normalized_sensor)
-            #         # 6. Actualizar TODAS las variables globales
-            #         self._update_all_shared_variables(results, normalized_sensor)
-            #         
-            #         logging.info(f"Cálculos completos exitosos para {normalized_sensor}")
-            #         return True
-            # 
-            # return False
+            
+            output_file = f"{self.temp_dir}/complete_output_{normalized_sensor}.txt"
+            success = self._execute_arm64_complete(input_file, output_file)
+            
+            if success:
+                # 4. Procesar TODOS los resultados de una vez
+                results = self._parse_all_results(output_file, normalized_sensor)
+                
+                if results:
+                    # 5. Guardar en MongoDB (ambos tipos)
+                    self._save_to_mongo(results, normalized_sensor)
+                    # 6. Actualizar TODAS las variables globales
+                    self._update_all_shared_variables(results, normalized_sensor)
+                    
+                    logging.info(f"Cálculos completos exitosos para {normalized_sensor}")
+                    return True
+            
+            return False
             
             # SIMULACIÓN DE ÉXITO PARA TESTING
-            shared.local_error_message = f"Test Complete {normalized_sensor} - File OK"
+            # shared.local_error_message = f"Test Complete {normalized_sensor} - File OK"
             
             # ===== PARA TESTING =====
             # Simular que se actualizaron los resultados
-            shared.ultima_media = 25.5 if normalized_sensor == "temperature" else 82.0
-            shared.ultima_mediana = 25.0 if normalized_sensor == "temperature" else 82.0
-            shared.ultimo_sensor_estadisticas = normalized_sensor
-            shared.ultima_media_movil = 25.2 if normalized_sensor == "temperature" else 81.8
-            shared.ultimo_sensor_predicciones = normalized_sensor
+            # shared.ultima_media = 25.5 if normalized_sensor == "temperature" else 82.0
+            # shared.ultima_mediana = 25.0 if normalized_sensor == "temperature" else 82.0
+            # shared.ultimo_sensor_estadisticas = normalized_sensor
+            # shared.ultima_media_movil = 25.2 if normalized_sensor == "temperature" else 81.8
+            # shared.ultimo_sensor_predicciones = normalized_sensor
             
             # actaulizacion de bandera
-            shared.new_analysis_results_ready = True
+            # shared.new_analysis_results_ready = True
             # ============================================
             
-            logging.info(f"TESTING: Cálculos completos simulados para {normalized_sensor}")
-            return True
+            # logging.info(f"TESTING: Cálculos completos simulados para {normalized_sensor}")
+            # return True
             
         except Exception as e:
             logging.error(f"Error procesando cálculos completos para {sensor_name}: {e}")
@@ -181,7 +181,7 @@ class AnalysisManager:
         """
         try:
             # Comando: 3 (Set File) -> archivo -> 1 (Statistics) -> 8 (Todas) -> 2 (Predictions) -> 6 (Media M) -> 7 (Suavizado) -> 5 (Exit)
-            commands = f"3\n{input_file}\n1\n8\n2\n6\n7\n5\n"
+            commands = f"3\n{input_file}\n1\n8\n9\n6\n"
             
             process = subprocess.run(
                 [self.arm64_stats_executable],
@@ -299,7 +299,7 @@ class AnalysisManager:
             
             logging.info(f"TODAS las variables globales actualizadas para {sensor_name}")
             
-            #shared.new_analysis_results_ready = True
+            shared.new_analysis_results_ready = True
             
         except Exception as e:
             logging.error(f"Error actualizando variables globales: {e}")
