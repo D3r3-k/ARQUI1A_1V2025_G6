@@ -5,6 +5,7 @@ import busio
 import smbus2 as smbus
 from gpiozero import DistanceSensor, DigitalInputDevice
 from globals import shared
+import mongodb
 
 class Sensors:
     def __init__(self):
@@ -15,7 +16,7 @@ class Sensors:
         self.pcf8591_address = 0x48  # Dirección por defecto
 
         # Sensor DHT11
-        self.dht = adafruit_dht.DHT11(board.D4)
+        #self.dht = adafruit_dht.DHT11(board.D4)
 
         # Sensor ultrasónico
         self.distance_sensor = DistanceSensor(echo=24, trigger=23, max_distance=2.0)
@@ -50,17 +51,17 @@ class Sensors:
             return val - (1 << bits)
         return val
     
-    def read_dht11(self):
-        try:
-            shared.temperature = float(self.dht.temperature)
-            shared.humidity = float(self.dht.humidity)
-        except Exception as e:
-            print(f"Error leyendo DHT11: {e}")
+    # def read_dht11(self):
+    #     try:
+    #         shared.temperature = int(self.dht.temperature)
+    #         shared.humidity = int(self.dht.humidity)
+    #     except Exception as e:
+    #         print(f"Error leyendo DHT11: {e}")
 
     def read_ultrasonic(self):
         try:
            distance_m = self.distance_sensor.distance
-           shared.distance = round(distance_m * 100, 2)
+           shared.distance = int(distance_m * 100)
         except Exception as e:
             print(f"Error leyendo distancia ultrasónica: {e}")
 
@@ -78,7 +79,7 @@ class Sensors:
             else:
                 lux = 18.0 * (1.0 / Vout) ** 2.2
 
-            shared.light_level = round(lux, 2)
+            shared.light_level = int(lux)
             #print(f"ADC value: {value} | Vout: {Vout:.2f} V | Lux: {lux:.2f}")
 
         except Exception as e:
@@ -113,7 +114,7 @@ class Sensors:
             var2 = (self.dig_P8 * p) >> 19
             p = ((p + var1 + var2) >> 8) + (self.dig_P7 << 4)
 
-            shared.pressure = round(p / 25600.0, 2)
+            shared.pressure = int(p / 25600.0)
     
 
         except Exception as e:
@@ -142,27 +143,32 @@ class Sensors:
             # Estimación de ppm (puedes cambiar a y b según el gas que te interese)
             a = 116.6020682
             b = 2.769034857
-            ppm = a * (ratio ** -b)
+            ppm = a * (ratio ** b)
 
-            shared.air_quality = round(ppm, 2)
+            shared.air_quality = int(ppm)
 
         except Exception as e:
             print(f"Error leyendo MQ135 desde PCF8591: {e}")
 
-        
-    
-
 
     def read_sensors(self):
-        self.read_dht11()
+        #self.read_dht11()
         self.read_ultrasonic()
         self.read_light_sensor()
         self.read_pressure_sensor()
         self.read_air_quality()
 
-    
-
     def print_data(self):
+        mongodb.ingresar_lectura(
+            datetime.now().strftime("%Y-%m-%d %H:%M:%S"),       
+            shared.light_level,
+            shared.temperature, 
+            shared.humidity,
+            shared.pressure,
+            shared.air_quality,
+            shared.distance
+        )
+        
         print(f"Temp: {shared.temperature:.1f}°C | "
             f"Humidity: {shared.humidity:.1f}% | "
             f"Distance: {shared.distance:.1f}cm | "

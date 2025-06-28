@@ -5,6 +5,7 @@ import paho.mqtt.client as mqtt
 from globals import shared
 
 
+
 class MQTTClient:
 
 
@@ -26,9 +27,14 @@ class MQTTClient:
             "distance": f"GRUPO{group_6}/sensores/rasp03/distancia",
             "alerts": f"GRUPO{group_6}/sensores/rasp03/alertas",
             "actuators_status": f"GRUPO{group_6}/sensores/rasp03/actuadores",
+            "Envio_estadisticas": f"GRUPO{group_6}/sensores/rasp03/resultados_calculos",
+            "Envio_status": f"GRUPO{group_6}/sensores/rasp03/status",
             # Topics de control:
             "control_comandos": f"GRUPO{group_6}/sensores/rasp03/comandos",
             "control_modo": f"GRUPO{group_6}/sensores/rasp03/modo",
+            "control_estadistica": f"GRUPO{group_6}/sensores/rasp03/estadistica",
+            "control_LCD": f"GRUPO{group_6}/sensores/rasp03/pantalla",
+            
         }
 
         self.client = mqtt.Client(client_id=self.client_id)
@@ -37,7 +43,7 @@ class MQTTClient:
         self.client.on_disconnect = self._on_disconnect
         self.connected = False
         self.last_publish_time = 0
-        self.publish_interval = 2  # segundos
+        self.publish_interval = 1  # segundos
 
         logging.info(f"MQTT Client inicializado - Grupo: {group_6}")
 
@@ -53,6 +59,9 @@ class MQTTClient:
 
             client.subscribe(self.topics["control_comandos"])
             client.subscribe(self.topics["control_modo"])
+            client.subscribe(self.topics["control_estadistica"]) 
+            client.subscribe(self.topics["control_LCD"])
+            logging.info(f"Suscrito a: {self.topics['control_LCD']}")
             logging.info(f"Suscrito a: {self.topics['control_comandos']}")
             logging.info(f"Suscrito a: {self.topics['control_modo']}")
 
@@ -75,6 +84,7 @@ class MQTTClient:
                     shared.modo_automatico = bool(modo)
                     modo_txt = "AUTOMÁTICO" if modo else "MANUAL"
                     logging.info(f"Modo de control cambiado a: {modo_txt}")
+                    shared.alert_status = True
                 else:
                     shared.modo_control = True
 
@@ -86,10 +96,46 @@ class MQTTClient:
                     shared.actuadores[actuador] = bool(action)
                     estado_txt = "ENCENDIDO" if action else "APAGADO"
                     logging.info(f"Actuador '{actuador}' cambiado a: {estado_txt}")
+
+            elif topic == self.topics["control_estadistica"]:
+                sensor = payload.get("sensor")
+                if sensor:
+        
+                    from analisis import AnalysisManager
+                    analysis_manager = AnalysisManager()
+                    
+                    stats_success = analysis_manager.process_statistics_request(sensor)
+                    
+                    if stats_success:
+                        logging.info(f"Cálculos completos para: {sensor}")
+                    else:
+                        logging.error(f"Error en cálculos para: {sensor}")
                 else:
-                    logging.warning(
-                        "Comando recibido sin actuador válido o acción no definida."
-                    )
+                    logging.warning("Comando de cálculo sin sensor especificado")
+
+                    
+            elif topic == self.topics["control_LCD"]:
+                selected = payload.get("selected")
+                if selected:
+                    # Cambiar modo de display según selección
+                    if selected == "sensores":
+                        shared.lcd_mode = "sensores"
+                        logging.info("LCD cambiado a modo: Sensores en tiempo real")
+                    elif selected == "predicciones":
+                        shared.lcd_mode = "predicciones"
+                        logging.info("LCD cambiado a modo: Predicciones")
+                    elif selected == "estadisticas":
+                        shared.lcd_mode = "estadisticas"
+                        logging.info("LCD cambiado a modo: Estadísticas")
+                    else:
+                        logging.warning(f"Modo LCD no reconocido: {selected}")
+                else:
+                    logging.warning("Comando LCD sin selección especificada")
+
+            else:
+                logging.warning(
+                "Comando recibido sin actuador válido o acción no definida."
+                )
 
         except Exception as e:
             logging.error(f"Error procesando mensaje MQTT: {e}")
@@ -184,10 +230,166 @@ class MQTTClient:
             self.client.publish(
                 self.topics["actuators_status"], actuators_payload, retain=True
             )
+
+
+            #  Verificar si hay nuevos resultados de análisis para enviar
+            if getattr(shared, 'new_analysis_results_ready', False):
+                self.publish_analysis_results()
+                shared.new_analysis_results_ready = False  # Reset flag
+                logging.info("Resultados de análisis enviados automáticamente")
+
+            if(shared.enviar_status):
+                self.publish_status()
+                shared.enviar_status = False
+            # self.publish_analysis_results()
+            # logging.info("Resultados de análisis enviados automáticamente")
+
             self.last_publish_time = current_time
             logging.debug("Datos de sensores publicados a MQTT")
         except Exception as e:
             logging.error(f"Error publicando datos de sensores: {e}")
+
+
+    def publish_status(self):
+        if not self.connected:
+            logging.error(" MQTT no conectado - abortando envío de resultados")
+            return
+  
+        actuators_status = {
+            'red_led': shared.actuadores['red_led'],
+            'yellow_led': shared.actuadores['yellow_led'], 
+            'green_led': shared.actuadores['green_led'],
+            'blue_led': shared.actuadores['blue_led'],
+            'motor_fan': shared.actuadores['motor_fan'],
+            'buzzer': shared.actuadores['buzzer'],
+            'Iluminacion': shared.actuadores['Iluminacion'],
+        }
+        payload_json = json.dumps(actuators_status)
+
+        try:
+            topic_name = self.topics["Envio_status"]
+            logging.info(f" Topic de destino: {topic_name}")
+            # Usar QoS 1 para garantizar entrega
+            message_info = self.client.publish(
+                topic_name, 
+                payload_json, 
+                qos=1,  # ← Cambiar a QoS 1 para garantizar entrega
+                retain=True
+            )
+            
+            # Verificar si el mensaje fue aceptado
+            if hasattr(message_info, 'rc'):
+                if message_info.rc == 0:
+                    logging.info(" Mensaje aceptado por el cliente MQTT")
+                else:
+                    logging.error(f" Error en publish: código {message_info.rc}")
+            
+            # Verificar mid (message ID)
+            if hasattr(message_info, 'mid'):
+                logging.info(f" Message ID: {message_info.mid}")
+            
+        except Exception as publish_error:
+            logging.error(f" Error específico en client.publish(): {publish_error}")
+            raise
+        
+        logging.info(" publish_analysis_results() completado exitosamente")       
+        
+    def publish_analysis_results(self):
+        """
+        Publica TODAS las variables globales de análisis (estadísticas + predicciones)
+        """
+        logging.info(" INICIANDO publish_analysis_results()")
+        
+        if not self.connected:
+            logging.error(" MQTT no conectado - abortando envío de resultados")
+            return
+        
+        try:
+            current_time = time.time()
+            timestamp = int(current_time * 1000)
+            
+            # ========== DEBUG: VERIFICAR TOPIC ==========
+            topic_name = self.topics["Envio_estadisticas"]
+            logging.info(f" Topic de destino: {topic_name}")
+            
+            # ========== DEBUG: LEER VARIABLES GLOBALES ==========
+            logging.info(" Leyendo variables globales...")
+            
+            media = getattr(shared, 'ultima_media', 0.0)
+            mediana = getattr(shared, 'ultima_mediana', 0.0)
+            moda = getattr(shared, 'ultima_moda', 0.0)
+            minimo = getattr(shared, 'ultimo_minimo', 0.0)
+            maximo = getattr(shared, 'ultimo_maximo', 0.0)
+            desviacion = getattr(shared, 'ultima_desviacion', 0.0)
+            varianza = getattr(shared, 'ultima_varianza', 0.0)
+            movil = getattr(shared, 'ultima_media_movil', 0.0)
+            suavizado = getattr(shared, 'ultimo_suavizado_exponencial', 0.0)
+            
+            logging.info(f"    Estadísticas: media={media}, mediana={mediana}, moda={moda}")
+            logging.info(f"    Min/Max: min={minimo}, max={maximo}")
+            logging.info(f"    Desviación/Varianza: desv={desviacion}, var={varianza}")
+            logging.info(f"    Predicciones: movil={movil}, suavizado={suavizado}")
+            
+            # Crear payload con TODAS las variables globales
+            analysis_payload = {
+                # Estadísticas
+                "media": media,
+                "mediana": mediana,
+                "moda": moda,
+                "minimo": minimo,
+                "maximo": maximo,
+                "desviacion": desviacion,
+                "varianza": varianza,
+                
+                # Predicciones
+                "movil": movil,
+                "suavizado": suavizado,
+                
+                # Metadata
+                "timestamp": timestamp,
+                "tipo": "resultados_completos"
+            }
+            
+            # ========== DEBUG: VERIFICAR PAYLOAD ==========
+            payload_json = json.dumps(analysis_payload)
+            logging.info(f" Payload creado (tamaño: {len(payload_json)} chars)")
+            logging.info(f" Payload completo: {payload_json}")
+            
+            # ========== INTENTAR PUBLICAR ==========
+            logging.info(f" Intentando publicar a topic: {topic_name}")
+            
+            try:
+                # Usar QoS 1 para garantizar entrega
+                message_info = self.client.publish(
+                    topic_name, 
+                    payload_json, 
+                    qos=1,  # ← Cambiar a QoS 1 para garantizar entrega
+                    retain=True
+                )
+                
+                # Verificar si el mensaje fue aceptado
+                if hasattr(message_info, 'rc'):
+                    if message_info.rc == 0:
+                        logging.info(" Mensaje aceptado por el cliente MQTT")
+                    else:
+                        logging.error(f" Error en publish: código {message_info.rc}")
+                
+                # Verificar mid (message ID)
+                if hasattr(message_info, 'mid'):
+                    logging.info(f" Message ID: {message_info.mid}")
+                
+            except Exception as publish_error:
+                logging.error(f" Error específico en client.publish(): {publish_error}")
+                raise
+            
+            logging.info(" publish_analysis_results() completado exitosamente")
+            
+        except Exception as e:
+            logging.error(f" Error en publish_analysis_results(): {e}")
+            import traceback
+            logging.error(f" Traceback completo: {traceback.format_exc()}")
+            raise  # Re-lanzar para que se vea en los logs principales
+
 
     def publish_alert(self, alert_type, message, value):
         if not self.connected:
