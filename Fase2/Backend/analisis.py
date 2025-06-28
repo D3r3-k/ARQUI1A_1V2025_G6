@@ -177,7 +177,7 @@ class AnalysisManager:
 
     def _execute_arm64_complete(self, input_file, output_file):
         """
-        Ejecuta el código ARM64 con timeout reducido y stdout limitado
+        Ejecuta ARM64 con delays como en el comando bash que funciona
         """
         try:
             # Cambiar a formato compatible con ARM64
@@ -185,78 +185,107 @@ class AnalysisManager:
             if not arm64_file:
                 return False
             
-            # Rutas absolutas corregidas
+            # Rutas absolutas
             current_dir = os.path.dirname(os.path.abspath(__file__))
             executable_path = os.path.join(current_dir, "Arm", "build", "main")
             build_dir = os.path.join(current_dir, "Arm", "build")
             
-            logging.info(f"🔧 Ejecutable: {executable_path}")
-            logging.info(f"🔧 Build dir: {build_dir}")
-            
-            # Verificar que el ejecutable existe
             if not os.path.exists(executable_path):
                 logging.error(f"❌ Ejecutable no encontrado")
                 return False
-                
-            if not os.access(executable_path, os.X_OK):
-                logging.error(f"❌ Ejecutable no tiene permisos de ejecución")
-                return False
             
-            logging.info("✅ Ejecutable encontrado y verificado")
+            filename = os.path.basename(arm64_file)
+            logging.info(f"🚀 Ejecutando con delays - Archivo: {filename}")
             
-            # Crear proceso ARM64
+            # ============ CREAR PROCESO Y ENVIAR COMANDOS CON DELAYS ============
             process = subprocess.Popen(
                 [executable_path],
                 stdin=subprocess.PIPE,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 text=True,
-                cwd=build_dir
+                cwd=build_dir,
+                bufsize=0  # Sin buffer para escritura inmediata
             )
             
-            # Nombre del archivo - solo el nombre sin ruta
-            filename = os.path.basename(arm64_file)
-            
-            # Crear toda la secuencia de comandos de una vez
-            command_sequence = f"3\n{filename}\n1\n8\n9\n6\n"
-            
-            logging.info(f"📝 Secuencia: {repr(command_sequence)}")
-            logging.info(f"📁 Archivo: {filename}")
+            import time
             
             try:
-                # ============ TIMEOUT REDUCIDO A 10 SEGUNDOS ============
-                stdout, stderr = process.communicate(input=command_sequence, timeout=10)
+                # Comando 3: Cargar archivo
+                logging.info("📝 Enviando comando: 3")
+                process.stdin.write("3\n")
+                process.stdin.flush()
+                time.sleep(1)
+                
+                # Nombre del archivo
+                logging.info(f"📝 Enviando archivo: {filename}")
+                process.stdin.write(f"{filename}\n")
+                process.stdin.flush()
+                time.sleep(1)
+                
+                # Comando 1: Estadísticas
+                logging.info("📝 Enviando comando: 1")
+                process.stdin.write("1\n")
+                process.stdin.flush()
+                time.sleep(1)
+                
+                # Comando 8: Todas las estadísticas
+                logging.info("📝 Enviando comando: 8")
+                process.stdin.write("8\n")
+                process.stdin.flush()
+                time.sleep(2)  # Más tiempo para procesar estadísticas
+                
+                # Comando 9: Regresar al menú principal
+                logging.info("📝 Enviando comando: 9")
+                process.stdin.write("9\n")
+                process.stdin.flush()
+                time.sleep(1)
+                
+                # Comando 6: Salir
+                logging.info("📝 Enviando comando: 6")
+                process.stdin.write("6\n")
+                process.stdin.flush()
+                
+                # Cerrar stdin
+                process.stdin.close()
+                
+                # Esperar a que termine (con timeout)
+                logging.info("⏳ Esperando que termine el proceso...")
+                try:
+                    stdout, stderr = process.communicate(timeout=10)
+                except subprocess.TimeoutExpired:
+                    logging.error("⏰ TIMEOUT - Matando proceso")
+                    process.kill()
+                    stdout, stderr = process.communicate()
+                    return False
                 
                 logging.info(f"🎯 Return code: {process.returncode}")
-                
-                # ============ LIMITAR STDOUT PARA LOGGING ============
-                stdout_preview = stdout[:1000] if stdout else "Sin stdout"
-                logging.info(f"📄 Stdout (primeros 1000 chars): {stdout_preview}")
+                logging.info(f"📄 Stdout (primeros 1000): {stdout[:1000] if stdout else 'Sin stdout'}")
                 
                 if stderr:
-                    stderr_preview = stderr[:500] if stderr else "Sin stderr"
-                    logging.warning(f"⚠️ Stderr (primeros 500 chars): {stderr_preview}")
+                    logging.warning(f"⚠️ Stderr: {stderr[:500]}")
                 
-                # Verificar si fue exitoso
+                # Verificar éxito
                 if process.returncode == 0:
-                    # Guardar la salida completa (sin limitarla en el archivo)
+                    # Guardar la salida completa
                     with open(output_file, 'w') as f:
                         f.write(stdout)
                     
-                    logging.info("✅ ARM64 ejecutado exitosamente")
+                    logging.info("✅ ARM64 ejecutado exitosamente con delays")
                     return True
                 else:
                     logging.error(f"❌ ARM64 terminó con error: {process.returncode}")
                     return False
                     
-            except subprocess.TimeoutExpired:
-                logging.error("⏰ TIMEOUT (10s) - Matando proceso ARM64")
-                process.kill()
-                process.wait()  # Esperar a que termine completamente
+            except BrokenPipeError:
+                logging.error("❌ Broken pipe - el proceso ARM64 se cerró inesperadamente")
+                return False
+            except Exception as e:
+                logging.error(f"❌ Error enviando comandos: {e}")
                 return False
                 
         except Exception as e:
-            logging.error(f"❌ Error ejecutando ARM64: {e}")
+            logging.error(f"❌ Error general: {e}")
             return False
         
     def _convert_to_arm64_format(self, input_file):
