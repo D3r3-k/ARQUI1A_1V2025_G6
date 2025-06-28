@@ -182,14 +182,17 @@ class AnalysisManager:
         try:
             # Comando: 3 (Set File) -> archivo -> 1 (Statistics) -> 8 (Todas) -> 2 (Predictions) -> 6 (Media M) -> 7 (Suavizado) -> 5 (Exit)
             absolute_input_file = os.path.abspath(input_file)
+            logging.info(f"Ruta absoluta: {absolute_input_file}")
+            logging.info(f"Ejecutable: {self.arm64_stats_executable}")
             commands = f"3\n{absolute_input_file}\n1\n8\n9\n6\n"
-            
+            logging.info(f"Comandos: {repr(commands)}")
+            logging.info("INICIANDO subprocess.run()...")
             process = subprocess.run(
                 [self.arm64_stats_executable],
                 input=commands,
                 capture_output=True,
                 text=True,
-                timeout=60  # Más tiempo porque hace más cálculos
+                timeout=10  # Más tiempo porque hace más cálculos
             )
                     # AGREGAR ESTOS LOGS DETALLADOS:
             logging.info(f"ARM64 return code: {process.returncode}")
