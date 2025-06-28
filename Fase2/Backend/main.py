@@ -7,6 +7,10 @@ from sensors import Sensors
 from display import Display
 from actuadores import Actuators
 from mqtt import MQTTClient
+<<<<<<< HEAD
+=======
+from mongodb import consultar_lecturas
+>>>>>>> Feature/frontend_202001151
 
 
 # Configurar logging
@@ -21,11 +25,24 @@ class SIEPA:
     def __init__(self, mqtt_broker='broker.emqx.io', mqtt_port=1883, group_number="G6"):
         self.running = True
         self.intervals = {
+<<<<<<< HEAD
             "principal": 2.0,  # ← ahora cada 2 segundos imprimimos los datos
             "mqtt": 5,
         }
 
         try:
+=======
+            "principal": 2.0,  
+            "mqtt": 1,
+        }
+
+        try:
+            # print('conslta mongo')
+            # respuesta =  consultar_lecturas()
+            # for r in respuesta:
+            #     print(r)
+            # print('*************************************************************')
+>>>>>>> Feature/frontend_202001151
             self.sensors = Sensors()
             self.display = Display()
             self.actuators = Actuators()
@@ -129,10 +146,13 @@ class SIEPA:
             logging.error(f"Error during cleanup: {e}")
 
 
+<<<<<<< HEAD
 
 
 
 
+=======
+>>>>>>> Feature/frontend_202001151
 if __name__ == "__main__":
     MQTT_BROKER = "broker.emqx.io"  
     MQTT_PORT = 1883
